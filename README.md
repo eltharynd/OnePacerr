@@ -1,6 +1,19 @@
 # OnePacerr
 
-## Example docker-compose
+Automatically downloads One Pace episodes for Plex.
+
+- Pulls [One Pace's RSS Release feed](https://onepace.net/en/releases/rss.xml)
+- Pulls [One Pace's metadata](https://raw.githubusercontent.com/ladyisatis/one-pace-metadata/refs/heads/v2/metadata/data.json)
+- Scans all available episodes and compares them to files on Plex
+  - If missing, sends magnetURI to qBittorrent for download
+  - If existing, optionally hashes the existing file to check if it matches the latest release, and re-downloads if out of date
+  - If existing, optionally updates metadata
+- Monitors downloads in qBittorrent to process completed
+  - Copies file to Plex Library folder
+  - Updates Metadata on plex
+  - Sets new category for processed torrents
+
+## Installation with docker-compose
 
 ```yaml
 services:
