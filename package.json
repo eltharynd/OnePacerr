@@ -1,6 +1,6 @@
 {
-	"name": "jwt-service",
-	"version": "1.0.4-37",
+	"name": "OnePacerr",
+	"version": "1.0.0",
 	"description": "",
 	"main": "dist/index.js",
 	"type": "module",
@@ -10,7 +10,7 @@
 		"test": "vitest",
 		"test:coverage": "vitest run --coverage"
 	},
-	"author": "Laurent Schwitter",
+	"author": "eltharynd",
 	"license": "ISC",
 	"dependencies": {
 		"axios": "^1.18.0",
