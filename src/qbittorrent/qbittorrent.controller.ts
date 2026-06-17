@@ -178,16 +178,7 @@ export class qBittorrentController {
 					`File for ${episode.arc}-${episode.episode} imported successfully`,
 				)
 
-				await Context.plex.scanLibrary(targetPlexPath, episode.arc)
-
-				await Context.plex.updateEpisodeMetadata(
-					episode.arc,
-					episode.episode,
-					episodeDescription.title,
-					episodeDescription.description,
-				)
-				await Context.plex.updateSeasonMetadata(episode.arc)
-				await Context.plex.updateShowMetadata()
+				await Context.metadata.updatemetadata(episode.arc, episode.episode)
 			} else {
 				Logger.error(`No CRC32 found in file name: ${file}`)
 			}
