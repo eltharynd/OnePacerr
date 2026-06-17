@@ -1,6 +1,6 @@
 {
 	"name": "OnePacerr",
-	"version": "1.0.0",
+	"version": "0.0.1",
 	"description": "",
 	"main": "dist/index.js",
 	"type": "module",
@@ -8,13 +8,17 @@
 		"build": "tsc",
 		"start": "node --enable-source-maps dist/index.js",
 		"test": "vitest",
-		"test:coverage": "vitest run --coverage"
+		"test:coverage": "vitest run --coverage",
+		"package": "cross-var docker buildx build --platform linux/amd64,linux/arm64 . -t eltharynd/onepacerr:v$npm_package_version -t eltharynd/onepacerr:latest --push"
 	},
 	"author": "eltharynd",
 	"license": "ISC",
 	"dependencies": {
+		"@ctrl/plex": "^6.0.0",
+		"@ctrl/qbittorrent": "^9.14.0",
 		"axios": "^1.18.0",
 		"body-parser": "^1.20.5",
+		"buffer-crc32": "^1.0.0",
 		"capitalize": "^2.0.4",
 		"chalk": "^4.1.2",
 		"class-transformer": "^0.5.1",
@@ -26,6 +30,7 @@
 		"node-json-logger": "^0.2.1",
 		"reflect-metadata": "^0.2.2",
 		"routing-controllers": "^0.11.3",
+		"rss-parser": "^3.13.0",
 		"rxjs": "^7.8.2"
 	},
 	"devDependencies": {
@@ -35,6 +40,7 @@
 		"@types/node": "^20.19.43",
 		"@types/node-json-logger": "^0.0.3",
 		"@vitest/coverage-v8": "^4.1.8",
+		"cross-var": "^1.1.0",
 		"nodemon": "^3.1.14",
 		"typescript": "^5.9.3",
 		"vitest": "^4.1.8"
