@@ -52,8 +52,8 @@ export class qBittorrentController {
 			Logger.error(`Error processing completed downloads`)
 			Logger.error(e)
 		} finally {
-			setTimeout(() => {
-				this.processCompleted()
+			setTimeout(async () => {
+				await this.processCompleted()
 			}, environment.TORRENT_CHECK_INTERVAL)
 		}
 	}

@@ -68,7 +68,7 @@ services:
     volumes:
       - /mnt/Library/Movies:/mnt/Library/Movies
       - /mnt/Library/Series:/mnt/Library/Series
-      - /mnt/Application/Downloads:/mnt/Application/Downloads
+      - /mnt/Applications/Downloads:/mnt/Applications/Downloads
 ```
 
 ## Credits
