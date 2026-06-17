@@ -16,7 +16,7 @@ export default {
 	TORRENT_USER: process.env.TORRENT_USER || `user`,
 	TORRENT_PASSWORD: process.env.TORRENT_PASSWORD || `password`,
 	TORRENT_CATEGORY: process.env.TORRENT_CATEGORY || `onepacerr`,
-	TORRENT_CATEGORY_ONCE_COMPLETED: process.env.TORRENT_CATEGORY || `test`,
+	TORRENT_CATEGORY_ONCE_COMPLETED: process.env.TORRENT_CATEGORY || `completed`,
 	TORRENT_CHECK_INTERVAL:
 		Number.parseInt(process.env.TORRENT_CHECK_INTERVAL || '30') * 1000,
 
@@ -26,6 +26,7 @@ export default {
 	SKIP_UPDATE_METADATA_PRESENT_FILES: /true/i.test(
 		process.env.SKIP_UPDATE_METADATA_PRESENT_FILES || 'false',
 	),
+
 	INCLUDE_SPECIALS: /true/i.test(process.env.INCLUDE_SPECIALS || 'false'),
 	PREFER_EXTENDED: /true/i.test(process.env.PREFER_EXTENDED || 'true'),
 
