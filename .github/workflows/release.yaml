@@ -9,6 +9,7 @@ on:
       - 'package.json'
       - 'Dockerfile'
       - '.dockerignore'
+      - '.github/workflows/release.yaml'
   workflow_dispatch:
     inputs:
       version:
@@ -53,7 +54,7 @@ jobs:
 
       - name: Commit version bump
         run: |
-          git add package.json package-lock.json
+          git add package.json
           git commit -m "chore: bump version to v${{ steps.version.outputs.version }} [skip ci]"
           git push
 
