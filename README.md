@@ -76,7 +76,7 @@ services:
       - PREFER_EXTENDED=true
 
       # Metadata Settings
-      #-METADATA_URL=raw.githubusercontent.com/ladyisatis/one-pace-metadata/refs/heads/v2metadata/data.json
+      # -METADATA_URL=raw.githubusercontent.com/ladyisatis/one-pace-metadata/refs/heads/v2metadata/data.json
       #- METADATA_LANGUAGE=en
       #- METADATA_CHECK_INTERVAL=3600
 
