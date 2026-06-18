@@ -122,6 +122,7 @@ services:
       - PLEX_LIBRARY_NAME=TV Shows
       - PLEX_SERIES_NAME=One Pace
       #- PLEX_SERIES_FOLDER_NAME=One Pace
+      #- PLEX_FILENAME_FORMAT={SERIES_NAME} - S{ARC}E{EPISODE} - {TITLE}.mkv
       #- PLEX_CREATE_SHOW_IF_NOT_FOUND=true
 
     volumes:
@@ -136,6 +137,7 @@ Here is a breakdown of key optional variables you can adjust in your
 `docker-compose.yml`:
 
 - ⭐ Mandatory
+- 🍤 Can leave empty but double check default matches plex
 - 🍏 Useful
 
 | Pipeline Variables | Default | Description |
@@ -159,8 +161,8 @@ Here is a breakdown of key optional variables you can adjust in your
 | :--- | :--- | :--- |
 | ⭐ `PLEX_URL` | `http://localhost:32400` | Plex URL. |
 | ⭐ `PLEX_TOKEN` | _None_ | Your [Plex Token](https://support.plex.tv/articles/204059436-finding-an-authentication-token-x-plex-token/). |
-| ⭐ `PLEX_LIBRARY_NAME` | `TV Shows` | Name of the Library in Plex. |
-| ⭐ `PLEX_SERIES_NAME` | `One Pace` | Name of the Series in Plex. |
+| 🍤 `PLEX_LIBRARY_NAME` | `TV Shows` | Name of the Library in Plex. |
+| 🍤 `PLEX_SERIES_NAME` | `One Pace` | Name of the Series in Plex. |
 | `PLEX_SERIES_FOLDER_NAME` | `PLEX_SERIES_NAME` | Override when the Plex folder needs to be called differently from `PLEX_SERIES_NAME`. |
 | `PLEX_FILENAME_FORMAT` | `{SERIES_NAME} - S{ARC}E{EPISODE} - {TITLE}.mkv` | Overrides the filename each file should have, `{SERIES_NAME}`, `{ARC}`, `{EPISODE}` and `{TITLE}` will be replaced with values. `.mkv` automatically added if not specified |
 | `PLEX_CREATE_SHOW_IF_NOT_FOUND` | `true` | If `false`, the app crashes if "One Pace" isn't already on Plex (useful for catching typos on first setup). Set to `true` to auto-create the show. |
