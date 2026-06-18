@@ -20,12 +20,14 @@ episodes fully up to date.
   metadata to detect new episodes.
 - **Smart Library Scanning:** Scans your existing Plex library to compare available
   episodes against your local files.
-- **Seamless Downloading:** Automatically sends `magnetURI` links to qBittorrent for
-  missing episodes.
 - **File Verification (Optional):** Hashes existing files to ensure they match the latest
   releases and automatically re-downloads outdated versions.
-- **qBittorrent Monitoring:** Tracks download progress. Once completed, it:
-  - Copies the file to your designated Plex Library folder.
+- **File Organization (Optional):** Scans your existing Plex library and renames files accordingly when needed.
+- **Seamless Downloading (Optional):** Automatically sends `magnetURI` links to qBittorrent for
+  missing episodes.
+
+- **qBittorrent Monitoring (Optional):** Tracks download progress. Once completed, it:
+  - Copies and renames the file to your designated Plex Library folder.
   - Updates the metadata directly on Plex.
   - Assigns a custom (`completed`) category to the processed torrents in qBittorrent.
 
