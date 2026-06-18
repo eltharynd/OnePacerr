@@ -27,7 +27,7 @@ episodes fully up to date, as well as adding metadata and custom posters for the
 - ⚙️ [Environment Variables Explained](#️-environment-variables-explained)
 - 📅 [Roadmap](#-roadmap)
 - 🤝 [Credits & Acknowledgements](#-credits--acknowledgements)
-- 💗 [Support (One Pace, not me)](#-support-one-pace-not-me)
+- 💗 [Support (One Pace, not me!)](#-support-one-pace-not-me)
 
 ## ✨ Features
 
