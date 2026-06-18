@@ -70,7 +70,7 @@ Before running OnePacerr, ensure you have the following services up and running:
 
 #### 🐔 Base Operation
 
-If your files are nicely named and organized and if Plex has all the metadata, you can safely leave these as false (true) or not declare them at all:
+If your files are nicely named and organized and if Plex has all the metadata, you can safely leave these as true (default) or not declare them at all:
 
 ```bash
 # 🐔 BASE CONFIG WHEN YOUR LIBRARY IS ALREADY WELL ORGANIZED
@@ -79,14 +79,11 @@ SKIP_ORGANIZE_PRESENT_FILES=true
 SKIP_UPDATE_METADATA_PRESENT_FILES=true
 ```
 
-This will prevent the app to verify the files you already have downloaded (CRC32 hashing can take a while depending on your machine).
+This will prevent the app to verify hash (CRC32 hashing can take a while depending on your machine), to verify plex file names (and rename where nexessary) and to update the metadata on plex for **the files that are already present on Plex**.
 
 #### 🐣 First Run
 
-In fact my recommendation is to:
-
-- running the app one with both set to `false`. This makes sure your current library is up to date and all metadata is there.
-- afterwards always run the app with both to `true`. This will avoid checking files you already checked on first run.
+My recommendation **when plex already has some/all of the episodes** is to run it once with the following configs, so that every file is gonna get verified to be up to date and all metadata is gonna be imported.
 
 ```bash
 # 🐣 RECOMMENDED CONFIG FOR FIRST RUN
@@ -94,6 +91,10 @@ SKIP_VERIFY_PRESENT_FILES=false
 SKIP_ORGANIZE_PRESENT_FILES=false
 SKIP_UPDATE_METADATA_PRESENT_FILES=false
 ```
+
+After the app is done processing all of the present seasons/episodes, its gonna continue monitoring for completed downloads and import as usual.
+
+You can also optionally disable downloads for this firet run, theb stop the app once it's done and update the env vars to run it with the basic config.
 
 ### Installation
 
