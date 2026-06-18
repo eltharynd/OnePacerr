@@ -134,7 +134,7 @@ Here is a breakdown of key optional variables you can adjust in your
 | `PLEX_CREATE_SHOW_IF_NOT_FOUND` | `true` | If `false`, the app crashes if "One Pace" isn't already on Plex (useful for catching typos on first setup). Set to `true` to auto-create the show. |
 | `MOUNT_*` Variables | _None_ | Use these mapping variables if Plex or qBittorrent use different mount paths than the OnePacerr container. |
 
-## ️ Roadmap
+## ️🗺️ Roadmap
 
 - [ ] **Rest API** Health/Ready checks and manual execution endpoints
 - [ ] **Support alternate torrent clients**
