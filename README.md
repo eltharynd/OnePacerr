@@ -240,6 +240,6 @@ This project wouldn't be possible without the incredible work of the community:
 Please **do not** donate to me for this tool.
 
 Instead, please show your support for the team
-doing the heavy lifting by backing **[One Pace on Patreon](https://patreon.com/onepace)**.
+doing the heavy lifting by backing **[One Pace](https://onepace.net)**.
 
 [Go Back up](#-table-of-contents)
