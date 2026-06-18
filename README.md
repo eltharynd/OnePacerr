@@ -14,6 +14,21 @@ Pace](https://onepace.net/) (the fan-edited, manga-accurate version of One Piece
 bridges the gap by automatically downloading, organizing, and keeping your One Pace
 episodes fully up to date, as well as adding metadata and custom posters for them in Plex.
 
+## 📃 Table of Contents
+
+- [✨ Features](#-features)
+- [🧪 Pipeline](#-pipeline)
+- [🚀 Getting Started](#-getting-started)
+  - [Prerequisites](#prerequisites)
+  - [📝 Recommended configs](#-recommended-configs)
+    - [🐔Base Operation](#-base-operation)
+    - [🐣 First Run](#-first-run)
+  - [Installation](#installation)
+- [⚙️ Environment Variables Explained](#️-environment-variables-explained)
+- [📅 Roadmap](#-roadmap)
+- [🤝 Credits & Acknowledgements](#-credits--acknowledgements)
+- [💗 Support (One Pace, not me)](#-support-one-pace-not-me)
+
 ## ✨ Features
 
 - **Automated Discovery:** Continuously pulls One Pace's RSS Release feed and
@@ -31,7 +46,7 @@ episodes fully up to date, as well as adding metadata and custom posters for the
   - Updates the metadata directly on Plex.
   - Assigns a custom (`completed`) category to the processed torrents in qBittorrent.
 
-## 📃 Pipeline
+## 🧪 Pipeline
 
 The following diagram tries to explain the process in a simple way
 
@@ -51,11 +66,14 @@ Before running OnePacerr, ensure you have the following services up and running:
 - **Plex Media Server**
 - **qBittorrent** (with WebUI enabled)
 
-### Reccomendations for first run
+### 📝 Recommended configs
+
+#### 🐔 Base Operation
 
 If your files are nicely named and organized and if Plex has all the metadata, you can safely leave these as false (true) or not declare them at all:
 
 ```bash
+# 🐔 BASE CONFIG WHEN YOUR LIBRARY IS ALREADY WELL ORGANIZED
 SKIP_VERIFY_PRESENT_FILES=true
 SKIP_ORGANIZE_PRESENT_FILES=true
 SKIP_UPDATE_METADATA_PRESENT_FILES=true
@@ -63,10 +81,19 @@ SKIP_UPDATE_METADATA_PRESENT_FILES=true
 
 This will prevent the app to verify the files you already have downloaded (CRC32 hashing can take a while depending on your machine).
 
+#### 🐣 First Run
+
 In fact my recommendation is to:
 
 - running the app one with both set to `false`. This makes sure your current library is up to date and all metadata is there.
 - afterwards always run the app with both to `true`. This will avoid checking files you already checked on first run.
+
+```bash
+# 🐣 RECOMMENDED CONFIG FOR FIRST RUN
+SKIP_VERIFY_PRESENT_FILES=false
+SKIP_ORGANIZE_PRESENT_FILES=false
+SKIP_UPDATE_METADATA_PRESENT_FILES=false
+```
 
 ### Installation
 
@@ -134,7 +161,7 @@ services:
       - /mnt/Applications/Downloads:/mnt/Applications/Downloads
 ```
 
-### ⚙️ Environment Variables Explained
+## ⚙️ Environment Variables Explained
 
 Here is a breakdown of key optional variables you can adjust in your
 `docker-compose.yml`:
@@ -186,7 +213,7 @@ Here is a breakdown of key optional variables you can adjust in your
 | `METADATA_LANGUAGE` | `en` | Currently only language supported. |
 | `METADATA_CHECK_INTERVAL` | `3600` | Seconds between checking for new metadata. |
 
-## ️🗺️ Roadmap
+## 📅 Roadmap
 
 - [x] **Custom folder/files names** (since v1.0.12)
 - [x] **Organize Library (rename/move)** (since v1.0.12)
@@ -207,9 +234,11 @@ This project wouldn't be possible without the incredible work of the community:
   [one-pace-metadata](https://github.com/ladyisatis/one-pace-metadata) repository.
 - **[/u/piratezekk](https://reddit.com/user/piratezekk):** For the custom poster artwork.
 
-## ❤️ Support
+## 💗 Support (One Pace, not me!)
 
 Please **do not** donate to me for this tool.
 
 Instead, please show your support for the team
 doing the heavy lifting by backing **[One Pace on Patreon](https://patreon.com/onepace)**.
+
+[Go Back up](#-table-of-contents)
