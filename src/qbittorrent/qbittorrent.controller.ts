@@ -84,8 +84,14 @@ export class qBittorrentController {
 		}
 
 		for (let file of files) {
-			const match = file.match(/\[([0-9A-F]{8})\]\.mkv$/i)
+			let match = file.match(/\[([0-9A-F]{8})\]\.mkv$/i)
 
+			if (!match) {
+				match = file
+					.replace('316829437', '964FB36B')
+					.match(/\[([0-9A-F]{8})\]\.mkv$/i)
+				Logger.debug(`Punk Hazard 13 manual correction`)
+			}
 			if (match) {
 				const CRC32 = match[1].toUpperCase()
 				Logger.debug(`Parsed CRC32: ${CRC32}`)
