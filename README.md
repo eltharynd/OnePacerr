@@ -49,7 +49,7 @@ I listed all variables commenting out the defaults for convenience.
 ```yaml
 services:
   onepacerr:
-    image: eltharynd/onepacerr:latest
+    image: ghcr.io/eltharynd/onepacerr:latest
     container_name: onepacerr
     restart: unless-stopped
     environment:
