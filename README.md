@@ -63,8 +63,8 @@ tldr: the RSS Feed refresh is triggered by metadata having updates.
 Before running OnePacerr, ensure you have the following services up and running:
 
 - **Docker & Docker Compose** (or k8s, or custom app in Truenas or equivalent)
-- **Plex Media Server**
-- **qBittorrent** (with WebUI enabled)
+- [**Plex Media Server**](https://hub.docker.com/r/linuxserver/plex)
+- [**qBittorrent**](https://hub.docker.com/r/linuxserver/qbittorrent) (with WebUI enabled)
 
 ### 📝 Recommended configs
 
