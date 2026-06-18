@@ -12,7 +12,7 @@ Sonarr/Plex Home Server setups.
 Because Sonarr does not natively support [One
 Pace](https://onepace.net/) (the fan-edited, manga-accurate version of One Piece), this app
 bridges the gap by automatically downloading, organizing, and keeping your One Pace
-episodes fully up to date.
+episodes fully up to date, as well as adding metadata and custom posters for them in Plex.
 
 ## ✨ Features
 
