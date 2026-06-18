@@ -114,6 +114,7 @@ export class MetadataController {
 							Logger.info(
 								`Episode ${arc.part}-${episode.episode} - Standard downloaded when extended request, adding to download queue...`,
 							)
+							await this.addToDownloadQueue(arc.part, episode.episode)
 						}
 					} else if (CRC32 === episode.standard) {
 						Logger.info(
