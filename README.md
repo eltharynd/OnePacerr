@@ -71,6 +71,10 @@ services:
       - /mnt/Applications/Downloads:/mnt/Applications/Downloads
 ```
 
+## Requests
+
+- Jellyfin support
+
 ## Credits
 
 - Metadata from [one-pace-metadata](https://github.com/ladyisatis/one-pace-metadata) by [Ladyisatis](https://github.com/ladyisatis)
