@@ -184,9 +184,9 @@ Here is a breakdown of key optional variables you can adjust in your
 
 ## ️🗺️ Roadmap
 
-- [x] **Custom folder/files names** (since v1.0.11)
-- [x] **Organize Library (rename/move)** (since v1.0.11)
-- [x] **Skip Download** (since v1.0.11)
+- [x] **Custom folder/files names** (since v1.0.12)
+- [x] **Organize Library (rename/move)** (since v1.0.12)
+- [x] **Skip Download** (since v1.0.12)
 - [ ] **Rest API** Manual execution endpoints
 - [ ] **Support alternate torrent clients**
 - [ ] **Poster settings to chose either official/alternate or customs**
