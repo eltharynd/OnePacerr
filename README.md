@@ -131,7 +131,7 @@ Here is a breakdown of key optional variables you can adjust in your
 | `SKIP_VERIFY_PRESENT_FILES` | `false` | If `false`, hashes files present in Plex upon metadata updates to ensure they are the latest/wanted versions. |
 | `SKIP_UPDATE_METADATA_PRESENT_FILES` | `false` | If `false`, automatically updates metadata for files already in your Plex library, otherwise only does so for new downloads. |
 | `PREFER_EXTENDED` | `false` | Set to `true` to prioritize extended cuts over standard releases. |
-| `PLEX_CREATE_SHOW_IF_NOT_FOUND` | `false` | If `false`, the app crashes if "One Pace" isn't already on Plex (useful for catching typos on first setup). Set to `true` to auto-create the show. |
+| `PLEX_CREATE_SHOW_IF_NOT_FOUND` | `true` | If `false`, the app crashes if "One Pace" isn't already on Plex (useful for catching typos on first setup). Set to `true` to auto-create the show. |
 | `MOUNT_*` Variables | _None_ | Use these mapping variables if Plex or qBittorrent use different mount paths than the OnePacerr container. |
 
 ## ️ Roadmap
