@@ -22,10 +22,10 @@ export default {
 		Number.parseInt(process.env.TORRENT_CHECK_INTERVAL || '30') * 1000,
 
 	SKIP_VERIFY_PRESENT_FILES: /true/i.test(
-		process.env.SKIP_VERIFY_PRESENT_FILES || 'false',
+		process.env.SKIP_VERIFY_PRESENT_FILES || 'true',
 	),
 	SKIP_UPDATE_METADATA_PRESENT_FILES: /true/i.test(
-		process.env.SKIP_UPDATE_METADATA_PRESENT_FILES || 'false',
+		process.env.SKIP_UPDATE_METADATA_PRESENT_FILES || 'true',
 	),
 
 	INCLUDE_SPECIALS: /true/i.test(process.env.INCLUDE_SPECIALS || 'false'),

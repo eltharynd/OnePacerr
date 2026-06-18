@@ -47,19 +47,19 @@ Before running OnePacerr, ensure you have the following services up and running:
 
 ### Reccomendations for first run
 
-If your files are nicely named and organized and if Plex has all the metadata, you can safely leave these as false (default) or not declare them at all:
+If your files are nicely named and organized and if Plex has all the metadata, you can safely leave these as false (true) or not declare them at all:
 
 ```bash
-SKIP_VERIFY_PRESENT_FILES=false
-SKIP_UPDATE_METADATA_PRESENT_FILES=false
+SKIP_VERIFY_PRESENT_FILES=true
+SKIP_UPDATE_METADATA_PRESENT_FILES=true
 ```
 
 This will prevent the app to verify the files you already have downloaded (CRC32 hashing can take a while depending on your machine).
 
 In fact my recommendation is to:
 
-- running the app one with both set to `true`. This makes sure your current library is up to date and all metadata is there.
-- afterwards always run the app with both to `false`. This will avoid checking files you already checked on first run.
+- running the app one with both set to `false`. This makes sure your current library is up to date and all metadata is there.
+- afterwards always run the app with both to `true`. This will avoid checking files you already checked on first run.
 
 ### Installation
 
@@ -92,8 +92,8 @@ services:
       #- TORRENT_CHECK_INTERVAL=30
 
       # File & Metadata Management
-      - SKIP_VERIFY_PRESENT_FILES=true
-      - SKIP_UPDATE_METADATA_PRESENT_FILES=true
+      - SKIP_VERIFY_PRESENT_FILES=false
+      - SKIP_UPDATE_METADATA_PRESENT_FILES=false
       #- INCLUDE_SPECIALS=false
       - PREFER_EXTENDED=true
 
@@ -128,8 +128,8 @@ Here is a breakdown of key optional variables you can adjust in your
 
 | Variable | Default | Description |
 | :--- | :--- | :--- |
-| `SKIP_VERIFY_PRESENT_FILES` | `false` | If `false`, hashes files present in Plex upon metadata updates to ensure they are the latest/wanted versions. |
-| `SKIP_UPDATE_METADATA_PRESENT_FILES` | `false` | If `false`, automatically updates metadata for files already in your Plex library, otherwise only does so for new downloads. |
+| `SKIP_VERIFY_PRESENT_FILES` | `true` | If `false`, hashes files present in Plex upon metadata updates to ensure they are the latest/wanted versions. |
+| `SKIP_UPDATE_METADATA_PRESENT_FILES` | `true` | If `false`, automatically updates metadata for files already in your Plex library, otherwise only does so for new downloads. |
 | `PREFER_EXTENDED` | `false` | Set to `true` to prioritize extended cuts over standard releases. |
 | `PLEX_CREATE_SHOW_IF_NOT_FOUND` | `true` | If `false`, the app crashes if "One Pace" isn't already on Plex (useful for catching typos on first setup). Set to `true` to auto-create the show. |
 | `MOUNT_*` Variables | _None_ | Use these mapping variables if Plex or qBittorrent use different mount paths than the OnePacerr container. |
