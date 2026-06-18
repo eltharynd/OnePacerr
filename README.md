@@ -35,6 +35,10 @@ The following diagram tries to explain the process in a simple way
 
 ![workflow](docs/workflow.png)
 
+The RSS only refreshes when trying to get a magnetURI and it's not in RSS. This is possible because metadata is only updated after RSS is, so there's no need to refresh both periodically.
+
+tldr: the RSS Feed refresh is triggered by metadata having updates.
+
 ## 🚀 Getting Started
 
 ### Prerequisites
