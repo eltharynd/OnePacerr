@@ -45,6 +45,22 @@ Before running OnePacerr, ensure you have the following services up and running:
 - **Plex Media Server**
 - **qBittorrent** (with WebUI enabled)
 
+### Reccomendations for first run
+
+If your files are nicely named and organized and if Plex has all the metadata, you can safely leave these as false (default) or not declare them at all:
+
+```bash
+SKIP_VERIFY_PRESENT_FILES=false
+SKIP_UPDATE_METADATA_PRESENT_FILES=false
+```
+
+This will prevent the app to verify the files you already have downloaded (CRC32 hashing can take a while depending on your machine).
+
+In fact my recommendation is to:
+
+- running the app one with both set to `true`. This makes sure your current library is up to date and all metadata is there.
+- afterwards always run the app with both to `false`. This will avoid checking files you already checked on first run.
+
 ### Installation
 
 The recommended way to install and run OnePacerr is via `docker-compose`.
