@@ -76,8 +76,6 @@ services:
     image: ghcr.io/eltharynd/onepacerr:latest
     container_name: onepacerr
     restart: unless-stopped
-    healthcheck:
-      test: "curl -f http://localhost:3000/api/v1/healthz"
     environment:
       - TZ=Europe/Zurich
       - PUID=568
