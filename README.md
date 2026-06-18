@@ -76,6 +76,8 @@ services:
     image: ghcr.io/eltharynd/onepacerr:latest
     container_name: onepacerr
     restart: unless-stopped
+    healthcheck:
+      test: "curl -f http://localhost:3000/api/v1/healthz"
     environment:
       - TZ=Europe/Zurich
       - PUID=568
@@ -136,7 +138,7 @@ Here is a breakdown of key optional variables you can adjust in your
 
 ## ️🗺️ Roadmap
 
-- [ ] **Rest API** Health/Ready checks and manual execution endpoints
+- [ ] **Rest API** Manual execution endpoints
 - [ ] **Support alternate torrent clients**
 - [ ] **Custom folder/files names**
 - [ ] **Poster settings to chose either official/alternate or customs**
