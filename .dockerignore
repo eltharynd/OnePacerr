@@ -1,4 +1,11 @@
-node_modules
-dist
 .env
-coverage
+.git/
+.github/
+.gitignore
+coverage/
+dist/
+docker-build.js
+node_modules/
+README.md
+sample.env
+sonar-project.properties

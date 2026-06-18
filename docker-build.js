@@ -10,15 +10,34 @@ if (!version) {
 	process.exit(1)
 }
 
-// Construct your exact Docker command
-const command = `docker buildx build --platform linux/amd64,linux/arm64 . -t eltharynd/onepacerr:v${version} -t eltharynd/onepacerr:latest --push`
+// Your GitHub username/org (lowercase)
+const GITHUB_USER = 'eltharynd'
+const IMAGE = `ghcr.io/${GITHUB_USER}/onepacerr`
+
+console.log(`🔐 Logging in to GHCR...`)
+// Requires a Personal Access Token with write:packages scope
+// stored in the GITHUB_TOKEN env variable:
+//   export GITHUB_TOKEN=ghp_xxxx
+//   npm run package
+if (!process.env.GITHUB_TOKEN) {
+	console.error('❌ Error: GITHUB_TOKEN environment variable is not set.')
+	console.error(
+		'   Create a PAT at https://github.com/settings/tokens with write:packages scope',
+	)
+	process.exit(1)
+}
+execSync(
+	`echo ${process.env.GITHUB_TOKEN} | docker login ghcr.io -u ${GITHUB_USER} --password-stdin`,
+	{ stdio: 'inherit' },
+)
+
+const command = `docker buildx build --platform linux/amd64,linux/arm64 . -t ${IMAGE}:v${version} -t ${IMAGE}:latest --push`
 
 console.log(
 	`🚀 Starting multi-platform Docker build for version v${version}...`,
 )
 
 try {
-	// Executes the command and inherits the terminal output so you see the progress
 	execSync(command, { stdio: 'inherit' })
 	console.log('✅ Docker build and push completed successfully!')
 } catch (error) {
