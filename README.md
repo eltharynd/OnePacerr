@@ -29,6 +29,12 @@ episodes fully up to date.
   - Updates the metadata directly on Plex.
   - Assigns a custom (`completed`) category to the processed torrents in qBittorrent.
 
+## 📃 Workflow
+
+The following diagram tries to explain the process in a simple way
+
+![workflow](docs/workflow.png)
+
 ## 🚀 Getting Started
 
 ### Prerequisites

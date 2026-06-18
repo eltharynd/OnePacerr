@@ -4,6 +4,7 @@
 .gitignore
 coverage/
 dist/
+docs/
 docker-build.js
 node_modules/
 README.md
