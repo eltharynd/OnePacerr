@@ -4,6 +4,9 @@ import Logger from '../util/logger.js'
 import { Context } from '../util/context.js'
 import getFileCrc32Hash from '../util/crc32.js'
 import { env } from 'process'
+import path from 'path'
+import { copyFileSync, mkdirSync, unlinkSync, writeFileSync } from 'fs'
+import { sanitizeWindowsFileName } from '../qbittorrent/qbittorrent.controller.js'
 
 export class MetadataController {
 	private metadata: {
@@ -65,7 +68,9 @@ export class MetadataController {
 			Logger.info(`Processing Season ${arc.part}...`)
 
 			for (let episode of arc.episodes) {
-				Logger.debug(`Episode ${arc.part}-${episode.episode} - Processing`)
+				Logger.debug(
+					`Episode ${arc.part}-${String(episode.episode).padStart(2, '0')} - Processing`,
+				)
 
 				if (episode.standard == '702231E9') {
 					Logger.debug(`Skypiea 14 manual correction`)
@@ -79,8 +84,14 @@ export class MetadataController {
 				if (file) {
 					if (environment.SKIP_VERIFY_PRESENT_FILES) {
 						Logger.debug(
-							`Episode ${arc.part}-${episode.episode} - Exist on plex (Verification skipped)...`,
+							`Episode ${arc.part}-${String(episode.episode).padStart(2, '0')} - Exist on plex (Verification skipped)...`,
 						)
+						if (!environment.SKIP_ORGANIZE_PRESENT_FILES) {
+							await this.organizeFile(
+								arc.part,
+								Number.parseInt(episode.episode),
+							)
+						}
 						if (!environment.SKIP_UPDATE_METADATA_PRESENT_FILES) {
 							await this.updatemetadata(
 								arc.part,
@@ -91,20 +102,28 @@ export class MetadataController {
 					}
 
 					Logger.debug(
-						`Episode ${arc.part}-${episode.episode} - Exists on plex (Verifying)`,
+						`Episode ${arc.part}-${String(episode.episode).padStart(2, '0')} - Exists on plex (Verifying)`,
 					)
 
-					Logger.debug(`Episode ${arc.part}-${episode.episode} - Hashing`)
+					Logger.debug(
+						`Episode ${arc.part}-${String(episode.episode).padStart(2, '0')} - Hashing`,
+					)
 					let CRC32 = await getFileCrc32Hash(file)
 					Logger.debug(
-						`Episode ${arc.part}-${episode.episode} - Hash complete (${CRC32})`,
+						`Episode ${arc.part}-${String(episode.episode).padStart(2, '0')} - Hash complete (${CRC32})`,
 					)
 
 					if (environment.PREFER_EXTENDED && !!episode.extended) {
 						if (CRC32 === episode.extended) {
 							Logger.info(
-								`Episode ${arc.part}-${episode.episode} - Already present`,
+								`Episode ${arc.part}-${String(episode.episode).padStart(2, '0')} - Already present`,
 							)
+							if (!environment.SKIP_ORGANIZE_PRESENT_FILES) {
+								await this.organizeFile(
+									arc.part,
+									Number.parseInt(episode.episode),
+								)
+							}
 							if (!environment.SKIP_UPDATE_METADATA_PRESENT_FILES) {
 								await this.updatemetadata(
 									arc.part,
@@ -114,14 +133,20 @@ export class MetadataController {
 							continue
 						} else if (CRC32 === episode.standard) {
 							Logger.info(
-								`Episode ${arc.part}-${episode.episode} - Standard downloaded when extended request, adding to download queue...`,
+								`Episode ${arc.part}-${String(episode.episode).padStart(2, '0')} - Standard downloaded when extended request, adding to download queue...`,
 							)
 							await this.addToDownloadQueue(arc.part, episode.episode, true)
 						}
 					} else if (CRC32 === episode.standard) {
 						Logger.info(
-							`Episode ${arc.part}-${episode.episode} - Already present`,
+							`Episode ${arc.part}-${String(episode.episode).padStart(2, '0')} - Already present`,
 						)
+						if (!environment.SKIP_ORGANIZE_PRESENT_FILES) {
+							await this.organizeFile(
+								arc.part,
+								Number.parseInt(episode.episode),
+							)
+						}
 						if (!environment.SKIP_UPDATE_METADATA_PRESENT_FILES) {
 							await this.updatemetadata(
 								arc.part,
@@ -131,7 +156,7 @@ export class MetadataController {
 						continue
 					} else {
 						Logger.info(
-							`Episode ${arc.part}-${episode.episode} - Missing, adding to download queue...`,
+							`Episode ${arc.part}-${String(episode.episode).padStart(2, '0')} - Missing, adding to download queue...`,
 						)
 						await this.addToDownloadQueue(
 							arc.part,
@@ -150,21 +175,71 @@ export class MetadataController {
 		}
 	}
 
+	async organizeFile(arc: number, episode: number) {
+		Logger.debug(
+			`Episode ${arc}-${String(episode).padStart(2, '0')} - Verifying path format...`,
+		)
+
+		let plexFile = await Context.plex.getEpisodeFile(arc, episode, true)
+		let { targetPlexPath, targetPlexFileName } =
+			await Context.plex.getTargetPlexFullPath(arc, episode)
+		if (plexFile != `${targetPlexPath}${targetPlexFileName}`) {
+			let serverFile = await Context.plex.getEpisodeFile(arc, episode)
+			let targetFolder = path.resolve(
+				`${targetPlexPath}`.replace(
+					environment.MOUNT_LIBRARY_PLEX,
+					environment.MOUNT_LIBRARY_ONEPACERR,
+				),
+			)
+			let targetFile = path.resolve(
+				`${targetPlexPath}${targetPlexFileName}`.replace(
+					environment.MOUNT_LIBRARY_PLEX,
+					environment.MOUNT_LIBRARY_ONEPACERR,
+				),
+			)
+
+			Logger.info(
+				`Episode ${arc}-${String(episode).padStart(2, '0')} - File on Plex with wrong format, renaming...`,
+			)
+			mkdirSync(sanitizeWindowsFileName(targetFolder), {
+				recursive: true,
+			})
+
+			copyFileSync(
+				sanitizeWindowsFileName(serverFile),
+				sanitizeWindowsFileName(targetFile),
+			)
+
+			let plexmatch = `show: ${environment.PLEX_SERIES_NAME}`
+			writeFileSync(
+				`${path.resolve(sanitizeWindowsFileName(`${targetFolder}${path.sep}..`))}${path.sep}.plexmatch`,
+				plexmatch,
+			)
+			unlinkSync(sanitizeWindowsFileName(serverFile))
+			await Context.plex.scanLibrary(targetPlexPath, arc)
+			await Context.plex.scanLibrary(
+				`${targetPlexPath}${targetPlexFileName}`,
+				arc,
+				true,
+			)
+		} else {
+			Logger.debug(
+				`Episode ${arc}-${String(episode).padStart(2, '0')} - Correctly formatted...`,
+			)
+		}
+	}
+
 	async updatemetadata(arc: number, episode: number) {
 		Logger.info(
 			`Episode ${arc}-${String(episode).padStart(2, '0')} - Updating Metadata`,
 		)
+
 		let episodeDescription = await Context.metadata.getEpisodeDescription(
 			arc,
 			episode,
 		)
-
-		let plexLibraryPath = await Context.plex.getLibraryFolder()
-
-		let plexSeparator = plexLibraryPath.includes('/') ? '/' : '\\'
-
-		let targetPlexFileName = `${environment.PLEX_SERIES_NAME} - S${String(arc).padStart(2, '0')}E${String(episode).padStart(2, '0')} - ${episodeDescription.title}.mkv`
-		let targetPlexPath = `${plexLibraryPath}${plexSeparator}${environment.PLEX_SERIES_NAME}${plexSeparator}Season ${String(arc).padStart(2, '0')}${plexSeparator}`
+		let { targetPlexPath, targetPlexFileName } =
+			await Context.plex.getTargetPlexFullPath(arc, episode, episodeDescription)
 
 		await Context.plex.scanLibrary(targetPlexPath, arc)
 

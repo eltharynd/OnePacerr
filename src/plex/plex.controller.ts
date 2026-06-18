@@ -1,5 +1,6 @@
 import {
 	Episode,
+	Media,
 	MediaPart,
 	PlexServer,
 	Section,
@@ -10,8 +11,9 @@ import path from 'path'
 import environment from '../environment.js'
 import Logger from '../util/logger.js'
 import { Context } from '../util/context.js'
-import { readFileSync } from 'fs'
+import { readFileSync, writeFileSync } from 'fs'
 import WebSocket from 'ws'
+import { sanitizeWindowsFileName } from '../qbittorrent/qbittorrent.controller.js'
 
 export class PlexController {
 	private ws
@@ -83,37 +85,50 @@ export class PlexController {
 		if (searchResults[0]) this.show = searchResults[0]
 	}
 
-	async getEpisodeFile(season: number, episode: number) {
+	async getEpisodeFile(season: number, episode: number, purePlex?: boolean) {
 		let _episode
 		try {
 			_episode = await this.show.episode({ season: season, episode: episode })
 		} catch (e) {
-			Logger.info(`Episode ${season}-${episode} does not exists on plex...`)
+			Logger.info(
+				`Episode ${season}-${String(episode).padStart(2, '0')} does not exists on plex...`,
+			)
 			return null
 		}
 
 		if (_episode.media.length < 1 || _episode.media[0].parts.length < 1) {
-			Logger.info(`Episode ${season}-${episode} exists on plex with no file...`)
+			Logger.info(
+				`Episode ${season}-${String(episode).padStart(2, '0')} exists on plex with no file...`,
+			)
 			return null
 		}
 
 		let part: MediaPart = _episode.media[0].parts[0]
 
-		let file = path.resolve(
-			part.file.replace(
-				environment.MOUNT_LIBRARY_PLEX,
-				environment.MOUNT_LIBRARY_ONEPACERR,
-			),
-		)
-		return file
+		if (!purePlex)
+			return path.resolve(
+				part.file.replace(
+					environment.MOUNT_LIBRARY_PLEX,
+					environment.MOUNT_LIBRARY_ONEPACERR,
+				),
+			)
+		else return part.file
 	}
 
 	async getLibraryFolder() {
 		return await this.section.locations.map(loc => loc.path)[0]
 	}
 
-	async scanLibrary(folder: string, arc: number) {
+	async scanLibrary(folder: string, arc: number, dontListen?: boolean) {
 		Logger.debug(`Refreshing Library`)
+
+		let plexmatch = `show: ${environment.PLEX_SERIES_NAME}`
+		writeFileSync(
+			`${path.resolve(sanitizeWindowsFileName(`${folder.replace(environment.MOUNT_LIBRARY_PLEX, environment.MOUNT_LIBRARY_ONEPACERR)}${path.sep}..`))}${path.sep}.plexmatch`,
+			plexmatch,
+		)
+
+		if (dontListen) return await this.section.update({ path: folder })
 
 		return new Promise<void>(async (resolve, reject) => {
 			const timeout = 10000
@@ -126,7 +141,7 @@ export class PlexController {
 					if (
 						activity.title.startsWith('Scanning') &&
 						activity.subtitle ==
-							`${environment.PLEX_SERIES_NAME} - Season ${String(arc).padStart(2, '0')}` &&
+							`${environment.PLEX_SERIES_FOLDER_NAME} - Season ${String(arc).padStart(2, '0')}` &&
 						activity.progress >= 100
 					) {
 						Logger.debug(`Plex notified folder update`)
@@ -200,5 +215,29 @@ export class PlexController {
 			file: readFileSync(path.resolve(`./posters/poster.png`)),
 		})
 		Logger.debug(`Metadata and poster for Show updated...`)
+	}
+
+	async getTargetPlexFullPath(
+		arc: number,
+		episode: number,
+		episodeDescription?: { title: string; description: string },
+	): Promise<{ targetPlexFileName: string; targetPlexPath: string }> {
+		if (!episodeDescription) {
+			episodeDescription = await Context.metadata.getEpisodeDescription(
+				arc,
+				episode,
+			)
+		}
+
+		let plexLibraryPath = await Context.plex.getLibraryFolder()
+		let plexSeparator = plexLibraryPath.includes('/') ? '/' : '\\'
+
+		let targetPlexFileName = `${environment.PLEX_SERIES_NAME} - S${String(arc).padStart(2, '0')}E${String(episode).padStart(2, '0')} - ${episodeDescription.title}.mkv`
+		let targetPlexPath = `${plexLibraryPath}${plexSeparator}${environment.PLEX_SERIES_FOLDER_NAME}${plexSeparator}Season ${String(arc).padStart(2, '0')}${plexSeparator}`
+
+		return {
+			targetPlexFileName,
+			targetPlexPath,
+		}
 	}
 }

@@ -101,17 +101,9 @@ export class qBittorrentController {
 				} catch (e) {
 					continue
 				}
-				let episodeDescription = await Context.metadata.getEpisodeDescription(
-					episode.arc,
-					episode.episode,
-				)
 
-				let plexLibraryPath = await Context.plex.getLibraryFolder()
-
-				let plexSeparator = plexLibraryPath.includes('/') ? '/' : '\\'
-
-				let targetPlexFileName = `${environment.PLEX_SERIES_NAME} - S${String(episode.arc).padStart(2, '0')}E${String(episode.episode).padStart(2, '0')} - ${episodeDescription.title}.mkv`
-				let targetPlexPath = `${plexLibraryPath}${plexSeparator}${environment.PLEX_SERIES_NAME}${plexSeparator}Season ${String(episode.arc).padStart(2, '0')}${plexSeparator}`
+				let { targetPlexPath, targetPlexFileName } =
+					await Context.plex.getTargetPlexFullPath(episode.arc, episode.episode)
 
 				let previousPlexFileName
 
@@ -162,7 +154,7 @@ export class qBittorrentController {
 					try {
 						unlinkSync(sanitizeWindowsFileName(toDelete))
 						Logger.debug(
-							`Pre-existing file for ${episode.arc}-${episode.episode} deleted`,
+							`Pre-existing file for ${episode.arc}-${String(episode.episode).padStart(2, '0')} deleted`,
 						)
 					} catch (e) {
 						Logger.error(
@@ -171,7 +163,9 @@ export class qBittorrentController {
 					}
 				}
 
-				Logger.debug(`Copying file for ${episode.arc}-${episode.episode}`)
+				Logger.debug(
+					`Copying file for ${episode.arc}-${String(episode.episode).padStart(2, '0')}`,
+				)
 
 				mkdirSync(sanitizeWindowsFileName(destinationFolder), {
 					recursive: true,
@@ -181,7 +175,7 @@ export class qBittorrentController {
 					sanitizeWindowsFileName(destination),
 				)
 				Logger.info(
-					`File for ${episode.arc}-${episode.episode} imported successfully`,
+					`File for ${episode.arc}-${String(episode.episode).padStart(2, '0')} imported successfully`,
 				)
 
 				await Context.metadata.updatemetadata(episode.arc, episode.episode)
@@ -206,7 +200,7 @@ export class qBittorrentController {
 	}
 }
 
-function sanitizeWindowsFileName(fileName: string): string {
+export function sanitizeWindowsFileName(fileName: string): string {
 	return fileName
 		.replace(/"/g, '“') // Replace straight double quotes with curly ones
 		.replace(/:/g, ' -') // Replace colons with a dash (common for subtitles/arcs)

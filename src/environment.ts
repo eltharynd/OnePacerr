@@ -24,9 +24,13 @@ export default {
 	SKIP_VERIFY_PRESENT_FILES: /true/i.test(
 		process.env.SKIP_VERIFY_PRESENT_FILES || 'true',
 	),
+	SKIP_ORGANIZE_PRESENT_FILES: /true/i.test(
+		process.env.SKIP_ORGANIZE_PRESENT_FILES || 'true',
+	),
 	SKIP_UPDATE_METADATA_PRESENT_FILES: /true/i.test(
 		process.env.SKIP_UPDATE_METADATA_PRESENT_FILES || 'true',
 	),
+	SKIP_DOWNLOADS: /true/i.test(process.env.SKIP_DOWNLOADS || 'false'),
 
 	INCLUDE_SPECIALS: /true/i.test(process.env.INCLUDE_SPECIALS || 'false'),
 	PREFER_EXTENDED: /true/i.test(process.env.PREFER_EXTENDED || 'false'),
@@ -49,6 +53,10 @@ export default {
 
 	PLEX_LIBRARY_NAME: process.env.PLEX_LIBRARY_NAME || 'TV Shows',
 	PLEX_SERIES_NAME: process.env.PLEX_SERIES_NAME || 'One Pace',
+	PLEX_SERIES_FOLDER_NAME:
+		process.env.PLEX_SERIES_FOLDER_NAME ||
+		process.env.PLEX_SERIES_NAME ||
+		'One Pace',
 	PLEX_CREATE_SHOW_IF_NOT_FOUND: /true/i.test(
 		process.env.PLEX_CREATE_SHOW_IF_NOT_FOUND || 'true',
 	),

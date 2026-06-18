@@ -55,6 +55,7 @@ If your files are nicely named and organized and if Plex has all the metadata, y
 
 ```bash
 SKIP_VERIFY_PRESENT_FILES=true
+SKIP_ORGANIZE_PRESENT_FILES=true
 SKIP_UPDATE_METADATA_PRESENT_FILES=true
 ```
 
@@ -97,7 +98,9 @@ services:
 
       # File & Metadata Management
       - SKIP_VERIFY_PRESENT_FILES=false
+      - SKIP_ORGANIZE_PRESENT_FILES=false
       - SKIP_UPDATE_METADATA_PRESENT_FILES=false
+      - SKIP_DOWNLOADS=false
       #- INCLUDE_SPECIALS=false
       - PREFER_EXTENDED=true
 
@@ -117,6 +120,7 @@ services:
       - PLEX_TOKEN=<your-token-here>
       - PLEX_LIBRARY_NAME=TV Shows
       - PLEX_SERIES_NAME=One Pace
+      #- PLEX_SERIES_FOLDER_NAME=One Pace
       #- PLEX_CREATE_SHOW_IF_NOT_FOUND=true
 
     volumes:
@@ -133,10 +137,14 @@ Here is a breakdown of key optional variables you can adjust in your
 | Variable | Default | Description |
 | :--- | :--- | :--- |
 | `SKIP_VERIFY_PRESENT_FILES` | `true` | If `false`, hashes files present in Plex upon metadata updates to ensure they are the latest/wanted versions. |
+| `SKIP_ORGANIZE_PRESENT_FILES` | `true` | If `false`, makes sure the files existing on plex are in the correct folder and named correctly. |
 | `SKIP_UPDATE_METADATA_PRESENT_FILES` | `true` | If `false`, automatically updates metadata for files already in your Plex library, otherwise only does so for new downloads. |
+| `SKIP_DOWNLOADS` | `true` | If `false`, skips download. Use if you only want to organize your current files |
 | `PREFER_EXTENDED` | `false` | Set to `true` to prioritize extended cuts over standard releases. |
 | `PLEX_CREATE_SHOW_IF_NOT_FOUND` | `true` | If `false`, the app crashes if "One Pace" isn't already on Plex (useful for catching typos on first setup). Set to `true` to auto-create the show. |
 | `MOUNT_*` Variables | _None_ | Use these mapping variables if Plex or qBittorrent use different mount paths than the OnePacerr container. |
+| `PLEX_SERIES_NAME` | `One Pace` | Name of the Series in Plex. |
+| `PLEX_SERIES_FOLDER_NAME` | `PLEX_SERIES_NAME` | Override when the Plex folder needs to be called differently from `PLEX_SERIES_NAME`. |
 
 ## ️🗺️ Roadmap
 
