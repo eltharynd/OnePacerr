@@ -15,6 +15,7 @@
 		"rootDir": "src",
 		"skipLibCheck": true,
 		"sourceMap": true,
+		"inlineSources": true,
 		"strict": true,
 		"strictNullChecks": false,
 		"strictPropertyInitialization": false,

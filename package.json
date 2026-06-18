@@ -12,7 +12,7 @@
 		"package": "node docker-build.js"
 	},
 	"author": "eltharynd",
-	"license": "ISC",
+	"license": "MIT",
 	"dependencies": {
 		"@ctrl/plex": "^6.0.0",
 		"@ctrl/qbittorrent": "^9.14.0",

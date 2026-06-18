@@ -6,7 +6,7 @@ import getFileCrc32Hash from '../util/crc32.js'
 import { env } from 'process'
 import path from 'path'
 import { copyFileSync, mkdirSync, unlinkSync, writeFileSync } from 'fs'
-import { sanitizeWindowsFileName } from '../qbittorrent/qbittorrent.controller.js'
+import sanitizeWindowsFileName from '../util/sanitizeWindowsFilename.js'
 
 export class MetadataController {
 	private metadata: {
@@ -66,7 +66,6 @@ export class MetadataController {
 			}
 
 			Logger.info(`Processing Season ${arc.part}...`)
-
 			for (let episode of arc.episodes) {
 				Logger.debug(
 					`Episode ${arc.part}-${String(episode.episode).padStart(2, '0')} - Processing`,
@@ -91,8 +90,7 @@ export class MetadataController {
 								arc.part,
 								Number.parseInt(episode.episode),
 							)
-						}
-						if (!environment.SKIP_UPDATE_METADATA_PRESENT_FILES) {
+						} else if (!environment.SKIP_UPDATE_METADATA_PRESENT_FILES) {
 							await this.updatemetadata(
 								arc.part,
 								Number.parseInt(episode.episode),
@@ -123,8 +121,7 @@ export class MetadataController {
 									arc.part,
 									Number.parseInt(episode.episode),
 								)
-							}
-							if (!environment.SKIP_UPDATE_METADATA_PRESENT_FILES) {
+							} else if (!environment.SKIP_UPDATE_METADATA_PRESENT_FILES) {
 								await this.updatemetadata(
 									arc.part,
 									Number.parseInt(episode.episode),
@@ -132,10 +129,16 @@ export class MetadataController {
 							}
 							continue
 						} else if (CRC32 === episode.standard) {
-							Logger.info(
-								`Episode ${arc.part}-${String(episode.episode).padStart(2, '0')} - Standard downloaded when extended request, adding to download queue...`,
-							)
-							await this.addToDownloadQueue(arc.part, episode.episode, true)
+							if (environment.SKIP_DOWNLOADS) {
+								Logger.info(
+									`Episode ${arc.part}-${String(episode.episode).padStart(2, '0')} - Standard instead of extended [Download skipped]`,
+								)
+							} else {
+								Logger.info(
+									`Episode ${arc.part}-${String(episode.episode).padStart(2, '0')} - Standard instead of extended [Download queued]`,
+								)
+								await this.addToDownloadQueue(arc.part, episode.episode, true)
+							}
 						}
 					} else if (CRC32 === episode.standard) {
 						Logger.info(
@@ -146,8 +149,7 @@ export class MetadataController {
 								arc.part,
 								Number.parseInt(episode.episode),
 							)
-						}
-						if (!environment.SKIP_UPDATE_METADATA_PRESENT_FILES) {
+						} else if (!environment.SKIP_UPDATE_METADATA_PRESENT_FILES) {
 							await this.updatemetadata(
 								arc.part,
 								Number.parseInt(episode.episode),
@@ -155,8 +157,29 @@ export class MetadataController {
 						}
 						continue
 					} else {
+						if (environment.SKIP_DOWNLOADS) {
+							Logger.info(
+								`Episode ${arc.part}-${String(episode.episode).padStart(2, '0')} - CRC32 Mismatch [Download skipped]`,
+							)
+						} else {
+							Logger.info(
+								`Episode ${arc.part}-${String(episode.episode).padStart(2, '0')} - CRC32 Mismatch [Download queued]`,
+							)
+							await this.addToDownloadQueue(
+								arc.part,
+								episode.episode,
+								environment.PREFER_EXTENDED && !!episode.extended,
+							)
+						}
+					}
+				} else {
+					if (environment.SKIP_DOWNLOADS) {
 						Logger.info(
-							`Episode ${arc.part}-${String(episode.episode).padStart(2, '0')} - Missing, adding to download queue...`,
+							`Episode ${arc.part}-${String(episode.episode).padStart(2, '0')} - Missing [Download skipped]`,
+						)
+					} else {
+						Logger.info(
+							`Episode ${arc.part}-${String(episode.episode).padStart(2, '0')} - Missing [Download queued]`,
 						)
 						await this.addToDownloadQueue(
 							arc.part,
@@ -164,12 +187,6 @@ export class MetadataController {
 							environment.PREFER_EXTENDED && !!episode.extended,
 						)
 					}
-				} else {
-					await this.addToDownloadQueue(
-						arc.part,
-						episode.episode,
-						environment.PREFER_EXTENDED && !!episode.extended,
-					)
 				}
 			}
 		}
@@ -181,9 +198,18 @@ export class MetadataController {
 		)
 
 		let plexFile = await Context.plex.getEpisodeFile(arc, episode, true)
+
+		let episodeDescription = await Context.metadata.getEpisodeDescription(
+			arc,
+			episode,
+		)
 		let { targetPlexPath, targetPlexFileName } =
-			await Context.plex.getTargetPlexFullPath(arc, episode)
-		if (plexFile != `${targetPlexPath}${targetPlexFileName}`) {
+			await Context.plex.getTargetPlexFullPath(arc, episode, episodeDescription)
+
+		if (
+			plexFile !=
+			sanitizeWindowsFileName(`${targetPlexPath}${targetPlexFileName}`)
+		) {
 			let serverFile = await Context.plex.getEpisodeFile(arc, episode)
 			let targetFolder = path.resolve(
 				`${targetPlexPath}`.replace(
@@ -215,23 +241,34 @@ export class MetadataController {
 				`${path.resolve(sanitizeWindowsFileName(`${targetFolder}${path.sep}..`))}${path.sep}.plexmatch`,
 				plexmatch,
 			)
-			unlinkSync(sanitizeWindowsFileName(serverFile))
+
 			await Context.plex.scanLibrary(targetPlexPath, arc)
+
+			unlinkSync(sanitizeWindowsFileName(serverFile))
+
 			await Context.plex.scanLibrary(
-				`${targetPlexPath}${targetPlexFileName}`,
+				plexFile.replace(/[\\/]+[^\\/]+$/, ''),
 				arc,
-				true,
+			)
+			await Context.plex.updateEpisodeMetadata(
+				arc,
+				episode,
+				episodeDescription.title,
+				episodeDescription.description,
 			)
 		} else {
 			Logger.debug(
 				`Episode ${arc}-${String(episode).padStart(2, '0')} - Correctly formatted...`,
 			)
+			if (!environment.SKIP_UPDATE_METADATA_PRESENT_FILES) {
+				await this.updatemetadata(arc, episode)
+			}
 		}
 	}
 
 	async updatemetadata(arc: number, episode: number) {
-		Logger.info(
-			`Episode ${arc}-${String(episode).padStart(2, '0')} - Updating Metadata`,
+		Logger.debug(
+			`Episode ${arc}-${String(episode).padStart(2, '0')} - Attempting Metadata Update`,
 		)
 
 		let episodeDescription = await Context.metadata.getEpisodeDescription(

@@ -4,25 +4,37 @@ import Logger from '../util/logger.js'
 import path from 'node:path'
 import { copyFileSync, mkdirSync, readdirSync, unlinkSync } from 'node:fs'
 import { Context } from '../util/context.js'
+import sanitizeWindowsFileName from '../util/sanitizeWindowsFilename.js'
 
 export class qBittorrentController {
 	private client: QBittorrent
+	private __watching: boolean = false
 
 	constructor() {
+		if (environment.SKIP_DOWNLOADS) return
 		this.client = new QBittorrent({
 			baseUrl: environment.TORRENT_URL,
 			username: environment.TORRENT_USER,
 			password: environment.TORRENT_PASSWORD,
 		})
-		setTimeout(() => {
-			this.processCompleted()
-		}, environment.TORRENT_CHECK_INTERVAL)
+	}
+
+	public async startWatching() {
+		if (!this.__watching) {
+			this.__watching = true
+			await this.processCompleted()
+		}
 	}
 
 	public async queueDownload(torrentInfo: {
 		magnetURI: string
 		infoHash: string
 	}) {
+		if (environment.SKIP_DOWNLOADS) {
+			Logger.info(`Downloads skipped by env vars`)
+			return
+		}
+
 		Logger.info(`Adding magnetURI to qBittorrent...`)
 		let torrents = await this.client.listTorrents()
 		let present = torrents.find(t => t.hash === torrentInfo.infoHash)
@@ -35,7 +47,7 @@ export class qBittorrentController {
 			})
 	}
 
-	public async processCompleted() {
+	private async processCompleted() {
 		Logger.info(`Checking completed torrents`)
 
 		try {
@@ -58,7 +70,7 @@ export class qBittorrentController {
 		}
 	}
 
-	public async import(torrent: Torrent) {
+	private async import(torrent: Torrent) {
 		let _path = path.resolve(
 			torrent.content_path.replace(
 				environment.MOUNT_DOWNLOADS_QBITTORRENT,
@@ -174,6 +186,7 @@ export class qBittorrentController {
 					sanitizeWindowsFileName(source),
 					sanitizeWindowsFileName(destination),
 				)
+
 				Logger.info(
 					`File for ${episode.arc}-${String(episode.episode).padStart(2, '0')} imported successfully`,
 				)
@@ -198,11 +211,4 @@ export class qBittorrentController {
 			environment.TORRENT_CATEGORY_ONCE_COMPLETED,
 		)
 	}
-}
-
-export function sanitizeWindowsFileName(fileName: string): string {
-	return fileName
-		.replace(/"/g, '“') // Replace straight double quotes with curly ones
-		.replace(/:/g, ' -') // Replace colons with a dash (common for subtitles/arcs)
-		.replace(/[*?<>|]/g, '') // Remove other illegal characters completely
 }

@@ -13,7 +13,7 @@ import Logger from '../util/logger.js'
 import { Context } from '../util/context.js'
 import { readFileSync, writeFileSync } from 'fs'
 import WebSocket from 'ws'
-import { sanitizeWindowsFileName } from '../qbittorrent/qbittorrent.controller.js'
+import sanitizeWindowsFileName from '../util/sanitizeWindowsFilename.js'
 
 export class PlexController {
 	private ws
@@ -96,6 +96,15 @@ export class PlexController {
 			return null
 		}
 
+		if (_episode.media.length > 1) {
+			Logger.error(
+				`Episode ${season}-${String(episode).padStart(2, '0')} has multiple files in Plex, you should probably manually scan the library, delete the trash then relaunch...`,
+			)
+			//TODO handle automatic resolution perhaps
+			throw new Error(
+				`Multiple files on plex for Episode ${season}-${String(episode).padStart(2, '0')}`,
+			)
+		}
 		if (_episode.media.length < 1 || _episode.media[0].parts.length < 1) {
 			Logger.info(
 				`Episode ${season}-${String(episode).padStart(2, '0')} exists on plex with no file...`,
@@ -119,7 +128,7 @@ export class PlexController {
 		return await this.section.locations.map(loc => loc.path)[0]
 	}
 
-	async scanLibrary(folder: string, arc: number, dontListen?: boolean) {
+	async scanLibrary(folder: string, arc: number) {
 		Logger.debug(`Refreshing Library`)
 
 		let plexmatch = `show: ${environment.PLEX_SERIES_NAME}`
@@ -127,8 +136,6 @@ export class PlexController {
 			`${path.resolve(sanitizeWindowsFileName(`${folder.replace(environment.MOUNT_LIBRARY_PLEX, environment.MOUNT_LIBRARY_ONEPACERR)}${path.sep}..`))}${path.sep}.plexmatch`,
 			plexmatch,
 		)
-
-		if (dontListen) return await this.section.update({ path: folder })
 
 		return new Promise<void>(async (resolve, reject) => {
 			const timeout = 10000
@@ -170,7 +177,9 @@ export class PlexController {
 		title: string,
 		description: string,
 	) {
-		Logger.debug(`Updating Medatada for episode ${arc}-${episodeNumber}`)
+		Logger.info(
+			`Episode ${arc}-${String(episodeNumber).padStart(2, '0')} - Updating Metadata`,
+		)
 		let episode = await this.show.episode({
 			season: arc,
 			episode: episodeNumber,
@@ -232,7 +241,21 @@ export class PlexController {
 		let plexLibraryPath = await Context.plex.getLibraryFolder()
 		let plexSeparator = plexLibraryPath.includes('/') ? '/' : '\\'
 
-		let targetPlexFileName = `${environment.PLEX_SERIES_NAME} - S${String(arc).padStart(2, '0')}E${String(episode).padStart(2, '0')} - ${episodeDescription.title}.mkv`
+		const format = environment.PLEX_FILENAME_FORMAT
+		const variables: Record<string, string> = {
+			SERIES_NAME: environment.PLEX_SERIES_NAME,
+			ARC: String(arc).padStart(2, '0'),
+			EPISODE: String(episode).padStart(2, '0'),
+			TITLE: episodeDescription.title,
+		}
+		//let targetPlexFileName = `${environment.PLEX_SERIES_NAME} - S${String(arc).padStart(2, '0')}E${String(episode).padStart(2, '0')} - ${episodeDescription.title}.mkv`
+		let targetPlexFileName = format.replace(/\{(\w+)\}/g, (match, key) => {
+			if (!(key in variables)) {
+				throw new Error(`Unknown placeholder in PLEX_FILENAME_FORMAT: {${key}}`)
+			}
+			return variables[key]
+		})
+		targetPlexFileName = targetPlexFileName.replace(/(\.mkv)*$/, '.mkv')
 		let targetPlexPath = `${plexLibraryPath}${plexSeparator}${environment.PLEX_SERIES_FOLDER_NAME}${plexSeparator}Season ${String(arc).padStart(2, '0')}${plexSeparator}`
 
 		return {

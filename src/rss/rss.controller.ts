@@ -1,5 +1,8 @@
 import Parser from 'rss-parser'
 import Logger from '../util/logger.js'
+import { readFileSync, writeFileSync } from 'node:fs'
+import path from 'node:path'
+import { stat } from 'node:fs/promises'
 
 const RSS_FEED_URL = `https://onepace.net/en/releases/rss.xml`
 
@@ -27,9 +30,25 @@ export class RSSController {
 
 	private feed: Parser.Output<any>
 
+	constructor() {
+		stat('./rss.json')
+			.then(data => {
+				try {
+					this.feed = JSON.parse(readFileSync('./rss.json').toString())
+					Logger.info('existing rss.json imported')
+				} catch (e) {
+					Logger.error('Badly formed rss.json')
+				}
+			})
+			.catch(e => {
+				Logger.debug('no rss.json found')
+			})
+	}
+
 	public async fetch() {
 		Logger.debug(`Fetching OnePace RSS Feed`)
 		this.feed = await this.parser.parseURL(RSS_FEED_URL)
+		writeFileSync(path.resolve('./rss.json'), JSON.stringify(this.feed))
 	}
 
 	public async getTorrentInfo(title: string): Promise<{

@@ -39,11 +39,18 @@ const startApp = async () => {
 		Context.torrent = new qBittorrentController()
 
 		Logger.info('APPLICATION STARTED SUCCESSFULLY...')
-
-		await Context.plex.init()
-		await Context.metadata.refreshMetadata()
 	} catch (e) {
 		Logger.error('APPLICATION COULD NOT BE STARTED...')
+		Logger.error(e)
+		return gracefulClose()
+	}
+
+	try {
+		await Context.plex.init()
+		await Context.metadata.refreshMetadata()
+		await Context.torrent.startWatching()
+	} catch (e) {
+		Logger.error('APPLICATION CRASHED UNEXPECTEDLY...')
 		Logger.error(e)
 		gracefulClose()
 	}

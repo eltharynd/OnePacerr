@@ -57,6 +57,9 @@ export default {
 		process.env.PLEX_SERIES_FOLDER_NAME ||
 		process.env.PLEX_SERIES_NAME ||
 		'One Pace',
+	PLEX_FILENAME_FORMAT:
+		process.env.PLEX_FILENAME_FORMAT ||
+		'{SERIES_NAME} - S{ARC}E{EPISODE} - {TITLE}.mkv',
 	PLEX_CREATE_SHOW_IF_NOT_FOUND: /true/i.test(
 		process.env.PLEX_CREATE_SHOW_IF_NOT_FOUND || 'true',
 	),

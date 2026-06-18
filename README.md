@@ -29,11 +29,11 @@ episodes fully up to date.
   - Updates the metadata directly on Plex.
   - Assigns a custom (`completed`) category to the processed torrents in qBittorrent.
 
-## 📃 Workflow
+## 📃 Pipeline
 
 The following diagram tries to explain the process in a simple way
 
-![workflow](docs/workflow.png)
+![pipeline](docs/pipeline.png)
 
 The RSS only refreshes when trying to get a magnetURI and it's not in RSS. This is possible because metadata is only updated after RSS is, so there's no need to refresh both periodically.
 
@@ -100,7 +100,8 @@ services:
       - SKIP_VERIFY_PRESENT_FILES=false
       - SKIP_ORGANIZE_PRESENT_FILES=false
       - SKIP_UPDATE_METADATA_PRESENT_FILES=false
-      - SKIP_DOWNLOADS=false
+      #- SKIP_DOWNLOADS=false
+
       #- INCLUDE_SPECIALS=false
       - PREFER_EXTENDED=true
 
@@ -134,23 +135,58 @@ services:
 Here is a breakdown of key optional variables you can adjust in your
 `docker-compose.yml`:
 
-| Variable | Default | Description |
+- ⭐ Mandatory
+- 🍏 Useful
+
+| Pipeline Variables | Default | Description |
 | :--- | :--- | :--- |
-| `SKIP_VERIFY_PRESENT_FILES` | `true` | If `false`, hashes files present in Plex upon metadata updates to ensure they are the latest/wanted versions. |
-| `SKIP_ORGANIZE_PRESENT_FILES` | `true` | If `false`, makes sure the files existing on plex are in the correct folder and named correctly. |
-| `SKIP_UPDATE_METADATA_PRESENT_FILES` | `true` | If `false`, automatically updates metadata for files already in your Plex library, otherwise only does so for new downloads. |
-| `SKIP_DOWNLOADS` | `true` | If `false`, skips download. Use if you only want to organize your current files |
+| 🍏 `SKIP_VERIFY_PRESENT_FILES` | `true` | If `false`, hashes files present in Plex upon metadata updates to ensure they are the latest/wanted versions. |
+| 🍏 `SKIP_ORGANIZE_PRESENT_FILES` | `true` | If `false`, makes sure the files existing on plex are in the correct folder and named correctly. |
+| 🍏 `SKIP_UPDATE_METADATA_PRESENT_FILES` | `true` | If `false`, automatically updates metadata for files already in your Plex library, otherwise only does so for new downloads. |
+| 🍏 `SKIP_DOWNLOADS` | `false` | If `false`, skips download. Use if you only want to organize your current files |
+| --- | --- | --- |
+| `INCLUDE_SPECIALS` | `false` | Set to `true` to also process specials. |
 | `PREFER_EXTENDED` | `false` | Set to `true` to prioritize extended cuts over standard releases. |
-| `PLEX_CREATE_SHOW_IF_NOT_FOUND` | `true` | If `false`, the app crashes if "One Pace" isn't already on Plex (useful for catching typos on first setup). Set to `true` to auto-create the show. |
-| `MOUNT_*` Variables | _None_ | Use these mapping variables if Plex or qBittorrent use different mount paths than the OnePacerr container. |
-| `PLEX_SERIES_NAME` | `One Pace` | Name of the Series in Plex. |
+
+| Server Configuration Variables | Default | Description |
+| :--- | :--- | :--- |
+| `MOUNT_LIBRARY_PLEX` | _None_ | Use these mapping variables if **Plex** uses different mount paths than the OnePacerr container. |
+| `MOUNT_LIBRARY_ONEPACERR` | _None_ | Use these mapping variables if **Plex** uses different mount paths than the OnePacerr container. |
+| `MOUNT_DOWNLOADS_QBITTORRENT` | _None_ | Use these mapping variables if **qBittorrent** uses different mount paths than the OnePacerr container. |
+| `MOUNT_DOWNLOADS_ONEPACERR` | _None_ | Use these mapping variables if **qBittorrent** uses different mount paths than the OnePacerr container. |
+
+| Plex Variables | Default | Description |
+| :--- | :--- | :--- |
+| ⭐ `PLEX_URL` | `http://localhost:32400` | Plex URL. |
+| ⭐ `PLEX_TOKEN` | _None_ | Your [Plex Token](https://support.plex.tv/articles/204059436-finding-an-authentication-token-x-plex-token/). |
+| ⭐ `PLEX_LIBRARY_NAME` | `TV Shows` | Name of the Library in Plex. |
+| ⭐ `PLEX_SERIES_NAME` | `One Pace` | Name of the Series in Plex. |
 | `PLEX_SERIES_FOLDER_NAME` | `PLEX_SERIES_NAME` | Override when the Plex folder needs to be called differently from `PLEX_SERIES_NAME`. |
+| `PLEX_FILENAME_FORMAT` | `{SERIES_NAME} - S{ARC}E{EPISODE} - {TITLE}.mkv` | Overrides the filename each file should have, `{SERIES_NAME}`, `{ARC}`, `{EPISODE}` and `{TITLE}` will be replaced with values. `.mkv` automatically added if not specified |
+| `PLEX_CREATE_SHOW_IF_NOT_FOUND` | `true` | If `false`, the app crashes if "One Pace" isn't already on Plex (useful for catching typos on first setup). Set to `true` to auto-create the show. |
+
+| Torrent Variables | Default | Description |
+| :--- | :--- | :--- |
+| ⭐ `TORRENT_URL` | `http://localhost:80` | Your qBittorrent webUI URL. |
+| ⭐ `TORRENT_USER` | _None_ | Your qBittorrent webUI username. |
+| ⭐ `TORRENT_PASSWORD` | _None_ | Your qBittorrent webUI password. |
+| `TORRENT_CATEGORY` | `onepacerr` | Creates downloads with this category, also filters completed torrents using this. |
+| `TORRENT_CATEGORY_ONCE_COMPLETED` | `completed` | After processing completed downloads, changes the torrent category to this one. |
+| `TORRENT_CHECK_INTERVAL` | `30` | Seconds between checking for completed downloads. |
+
+| Metadata Variables | Default | Description |
+| :--- | :--- | :--- |
+| `METADATA_URL` | `https://raw.githubusercontent.com/ladyisatis/one-pace-metadata/refs/heads/v2/metadata/data.json` | Metadata url (untested with different ones). |
+| `METADATA_LANGUAGE` | `en` | Currently only language supported. |
+| `METADATA_CHECK_INTERVAL` | `3600` | Seconds between checking for new metadata. |
 
 ## ️🗺️ Roadmap
 
+- [x] **Custom folder/files names** (since v1.0.11)
+- [x] **Organize Library (rename/move)** (since v1.0.11)
+- [x] **Skip Download** (since v1.0.11)
 - [ ] **Rest API** Manual execution endpoints
 - [ ] **Support alternate torrent clients**
-- [ ] **Custom folder/files names**
 - [ ] **Poster settings to chose either official/alternate or customs**
 - [ ] **Jellyfin Support** _(Requested by Marci)_
 - [Request a new feature](https://github.com/eltharynd/OnePacerr/issues)

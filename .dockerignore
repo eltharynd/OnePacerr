@@ -9,5 +9,6 @@ docker-build.js
 node_modules/
 package-lock.json
 README.md
+rss.json
 sample.env
 sonar-project.properties
