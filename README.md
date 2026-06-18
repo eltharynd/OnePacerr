@@ -1,7 +1,9 @@
 # ‍☠️ OnePacerr
 
-![Docker Pulls](https://img.shields.io/docker/pulls/eltharynd/onepacerr?style=flat-square&color=blue)
-![Docker Image Size](https://img.shields.io/docker/image-size/eltharynd/onepacerr/latest?style=flat-square)
+![GitHub Packages](https://img.shields.io/badge/ghcr.io-eltharynd%2Fonepacerr-blue?style=flat-square&logo=github)
+![GitHub Release](https://img.shields.io/github/v/release/eltharynd/onepacerr?style=flat-square)
+![GitHub Issues](https://img.shields.io/github/issues/eltharynd/onepacerr?style=flat-square)
+![GitHub Last Commit](https://img.shields.io/github/last-commit/eltharynd/onepacerr?style=flat-square)
 ![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)
 
 **OnePacerr** is a standalone, automated deployment tool designed specifically for
