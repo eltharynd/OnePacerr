@@ -73,7 +73,7 @@ services:
 
 ## Requests
 
-- Jellyfin support
+- Jellyfin support (requested by Marci on discord)
 
 ## Credits
 
