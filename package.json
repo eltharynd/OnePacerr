@@ -9,7 +9,7 @@
 		"start": "node --enable-source-maps dist/index.js",
 		"test": "vitest",
 		"test:coverage": "vitest run --coverage",
-		"package": "cross-var docker buildx build --platform linux/amd64,linux/arm64 . -t eltharynd/onepacerr:v$npm_package_version -t eltharynd/onepacerr:latest --push"
+		"package": "node docker-build.js"
 	},
 	"author": "eltharynd",
 	"license": "ISC",
@@ -40,7 +40,6 @@
 		"@types/node": "^20.19.43",
 		"@types/node-json-logger": "^0.0.3",
 		"@vitest/coverage-v8": "^4.1.8",
-		"cross-var": "^1.1.0",
 		"nodemon": "^3.1.14",
 		"typescript": "^5.9.3",
 		"vitest": "^4.1.8"
