@@ -65,7 +65,7 @@ export class MetadataController {
 			Logger.info(`Processing Season ${arc.part}...`)
 
 			for (let episode of arc.episodes) {
-				Logger.info(`Episode ${arc.part}-${episode.episode} - Processing`)
+				Logger.debug(`Episode ${arc.part}-${episode.episode} - Processing`)
 
 				// await this.addToDownloadQueue(arc.part, episode.episode)
 				// break
@@ -75,7 +75,7 @@ export class MetadataController {
 				)
 				if (file) {
 					if (environment.SKIP_VERIFY_PRESENT_FILES) {
-						Logger.info(
+						Logger.debug(
 							`Episode ${arc.part}-${episode.episode} - Exist on plex (Verification skipped)...`,
 						)
 						if (!environment.SKIP_UPDATE_METADATA_PRESENT_FILES) {
