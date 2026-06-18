@@ -1,6 +1,7 @@
 # OnePacerr
 
-Automatically downloads One Pace episodes for Plex.
+Standalone app meant to be deployed on a Sonarr/Plex Home server setup to download One Pace episodes and keep them up to date.
+Sonarr doesn't work with One Pace, so I built this tool to handle it automatically.
 
 - Pulls [One Pace's RSS Release feed](https://onepace.net/en/releases/rss.xml)
 - Pulls [One Pace's metadata](https://raw.githubusercontent.com/ladyisatis/one-pace-metadata/refs/heads/v2/metadata/data.json)
@@ -77,5 +78,10 @@ services:
 
 ## Credits
 
+- [One Pace](https://onepace.net/en) unofficial fan edits
 - Metadata from [one-pace-metadata](https://github.com/ladyisatis/one-pace-metadata) by [Ladyisatis](https://github.com/ladyisatis)
 - Posters by [/u/piratezekk](https://www.reddit.com/user/piratezekk)
+
+## Donate
+
+- 💖 Don't donate to me, support [One Pace](https://www.patreon.com/onepace) on Patreon instead.
