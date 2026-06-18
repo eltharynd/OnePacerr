@@ -7,8 +7,8 @@ on:
     paths:
       - 'src/**'
       - 'package.json'
-      - 'package-lock.json'
       - 'Dockerfile'
+      - '.dockerignore'
   workflow_dispatch:
     inputs:
       version:
