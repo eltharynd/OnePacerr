@@ -4,8 +4,14 @@ on:
   push:
     branches:
       - main
-    #paths:
-    #  - 'src/**'
+    paths:
+      - 'src/**'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to release (e.g. 1.0.0). Leave blank to bump patch.'
+        required: false
+        default: ''
 
 jobs:
   release:
@@ -31,10 +37,14 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
-      - name: Bump patch version
+      - name: Bump version
         id: version
         run: |
-          npm version patch --no-git-tag-version
+          if [ -n "${{ github.event.inputs.version }}" ]; then
+            npm version ${{ github.event.inputs.version }} --no-git-tag-version
+          else
+            npm version patch --no-git-tag-version
+          fi
           VERSION=$(node -p "require('./package.json').version")
           echo "version=$VERSION" >> $GITHUB_OUTPUT
 
