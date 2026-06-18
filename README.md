@@ -118,7 +118,7 @@ Here is a breakdown of key optional variables you can adjust in your
 - [ ] **Custom folder/files names**
 - [ ] **Poster settings to chose either official/alternate or customs**
 - [ ] **Jellyfin Support** _(Requested by Marci)_
-- [Resuest a new feature](https://github.com/eltharynd/OnePacerr/issues)
+- [Request a new feature](https://github.com/eltharynd/OnePacerr/issues)
 
 ## 🤝 Credits & Acknowledgements
 
