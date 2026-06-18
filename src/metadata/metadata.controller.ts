@@ -114,7 +114,7 @@ export class MetadataController {
 							Logger.info(
 								`Episode ${arc.part}-${episode.episode} - Standard downloaded when extended request, adding to download queue...`,
 							)
-							await this.addToDownloadQueue(arc.part, episode.episode)
+							await this.addToDownloadQueue(arc.part, episode.episode, true)
 						}
 					} else if (CRC32 === episode.standard) {
 						Logger.info(
@@ -131,10 +131,18 @@ export class MetadataController {
 						Logger.info(
 							`Episode ${arc.part}-${episode.episode} - Missing, adding to download queue...`,
 						)
-						await this.addToDownloadQueue(arc.part, episode.episode)
+						await this.addToDownloadQueue(
+							arc.part,
+							episode.episode,
+							environment.PREFER_EXTENDED && !!episode.extended,
+						)
 					}
 				} else {
-					await this.addToDownloadQueue(arc.part, episode.episode)
+					await this.addToDownloadQueue(
+						arc.part,
+						episode.episode,
+						environment.PREFER_EXTENDED && !!episode.extended,
+					)
 				}
 			}
 
@@ -189,7 +197,11 @@ export class MetadataController {
 		return this.metadata.tvshow[environment.METADATA_LANGUAGE]
 	}
 
-	async addToDownloadQueue(arc: number, episode: string | number) {
+	async addToDownloadQueue(
+		arc: number,
+		episode: string | number,
+		extended?: boolean,
+	) {
 		let rsstitle = `${
 			this.metadata.arcs[environment.METADATA_LANGUAGE].find(
 				a => a.part === arc,
