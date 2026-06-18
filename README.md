@@ -124,14 +124,14 @@ Here is a breakdown of key optional variables you can adjust in your
 
 This project wouldn't be possible without the incredible work of the community:
 
-- **[One Pace](onepace.net/en):** The incredible team behind the unofficial fan edits.
-- **[Ladyisatis](github.com/ladyisatis):** For maintaining the
-  [one-pace-metadata](github.com/ladyisatis/one-pace-metadata) repository.
-- **[/u/piratezekk](reddit.com/user/piratezekk):** For the custom poster artwork.
+- **[One Pace](https://onepace.net/en):** The incredible team behind the unofficial fan edits.
+- **[Ladyisatis](https://github.com/ladyisatis):** For maintaining the
+  [one-pace-metadata](https://github.com/ladyisatis/one-pace-metadata) repository.
+- **[/u/piratezekk](https://reddit.com/user/piratezekk):** For the custom poster artwork.
 
 ## ❤️ Support
 
 Please **do not** donate to me for this tool.
 
 Instead, please show your support for the team
-doing the heavy lifting by backing **[One Pace on Patreon](patreon.com/onepace)**.
+doing the heavy lifting by backing **[One Pace on Patreon](https://patreon.com/onepace)**.
