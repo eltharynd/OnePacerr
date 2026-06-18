@@ -16,18 +16,18 @@ episodes fully up to date, as well as adding metadata and custom posters for the
 
 ## 📃 Table of Contents
 
-- [✨ Features](#-features)
-- [🧪 Pipeline](#-pipeline)
-- [🚀 Getting Started](#-getting-started)
+- ✨ [Features](#-features)
+- 🧪 [Pipeline](#-pipeline)
+- 🚀 [Getting Started](#-getting-started)
   - [Prerequisites](#prerequisites)
-  - [📝 Recommended configs](#-recommended-configs)
-    - [🐔Base Operation](#-base-operation)
-    - [🐣 First Run](#-first-run)
+  - 📝 [Recommended configs](#-recommended-configs)
+    - 🐔 [Base Operation](#-base-operation)
+    - 🐣 [First Run](#-first-run)
   - [Installation](#installation)
-- [⚙️ Environment Variables Explained](#️-environment-variables-explained)
-- [📅 Roadmap](#-roadmap)
-- [🤝 Credits & Acknowledgements](#-credits--acknowledgements)
-- [💗 Support (One Pace, not me)](#-support-one-pace-not-me)
+- ⚙️ [Environment Variables Explained](#️-environment-variables-explained)
+- 📅 [Roadmap](#-roadmap)
+- 🤝 [Credits & Acknowledgements](#-credits--acknowledgements)
+- 💗 [Support (One Pace, not me)](#-support-one-pace-not-me)
 
 ## ✨ Features
 
