@@ -1,4 +1,4 @@
-# <img src="docs/logo.png" alt="pipeline">
+# ![OnePacerr](docs/logo.png)
 
 ![GitHub Packages](https://img.shields.io/badge/ghcr.io-eltharynd%2Fonepacerr-blue?style=flat-square&logo=github)
 ![GitHub Release](https://img.shields.io/github/v/release/eltharynd/onepacerr?style=flat-square)
