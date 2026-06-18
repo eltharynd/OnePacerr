@@ -7,6 +7,7 @@ dist/
 docs/
 docker-build.js
 node_modules/
+package-lock.json
 README.md
 sample.env
 sonar-project.properties
