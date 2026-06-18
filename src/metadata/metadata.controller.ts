@@ -206,7 +206,7 @@ export class MetadataController {
 			this.metadata.arcs[environment.METADATA_LANGUAGE].find(
 				a => a.part === arc,
 			).title
-		} ${String(episode).padStart(2, '0')}`
+		} ${String(episode).padStart(2, '0')}${extended ? ` Extended Cut` : ''}`
 
 		let torrentInfo
 		try {
