@@ -67,8 +67,11 @@ export class MetadataController {
 			for (let episode of arc.episodes) {
 				Logger.debug(`Episode ${arc.part}-${episode.episode} - Processing`)
 
-				// await this.addToDownloadQueue(arc.part, episode.episode)
-				// break
+				if (episode.standard == '702231E9') {
+					Logger.debug(`Skypiea 14 manual correction`)
+					episode.standard = '704F68EA'
+				}
+
 				let file = await Context.plex.getEpisodeFile(
 					arc.part,
 					Number.parseInt(episode.episode),
@@ -84,7 +87,6 @@ export class MetadataController {
 								Number.parseInt(episode.episode),
 							)
 						}
-						//break
 						continue
 					}
 
@@ -145,8 +147,6 @@ export class MetadataController {
 					)
 				}
 			}
-
-			//break
 		}
 	}
 
@@ -207,6 +207,11 @@ export class MetadataController {
 				a => a.part === arc,
 			).title
 		} ${String(episode).padStart(2, '0')}${extended ? ` Extended Cut` : ''}`
+
+		if (rsstitle == 'Skypiea 25') {
+			Logger.debug('Manual correction for Alternate G-8')
+			rsstitle = 'Skypiea 25 Alternate Cut (G-8)'
+		}
 
 		let torrentInfo
 		try {
