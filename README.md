@@ -1,20 +1,50 @@
-# OnePacerr
+# ‍☠️ OnePacerr
 
-Standalone app meant to be deployed on a Sonarr/Plex Home server setup to download One Pace episodes and keep them up to date.
-Sonarr doesn't work with One Pace, so I built this tool to handle it automatically.
+![Docker Pulls](https://img.shields.io/docker/pulls/eltharynd/onepacerr?style=flat-square&color=blue)
+![Docker Image Size](https://img.shields.io/docker/image-size/eltharynd/onepacerr/latest?style=flat-square)
+![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)
 
-- Pulls [One Pace's RSS Release feed](https://onepace.net/en/releases/rss.xml)
-- Pulls [One Pace's metadata](https://raw.githubusercontent.com/ladyisatis/one-pace-metadata/refs/heads/v2/metadata/data.json)
-- Scans all available episodes and compares them to files on Plex
-  - If missing, sends magnetURI to qBittorrent for download
-  - If existing, optionally hashes the existing file to check if it matches the latest release, and re-downloads if out of date
-  - If existing, optionally updates metadata
-- Monitors downloads in qBittorrent to process completed
-  - Copies file to Plex Library folder
-  - Updates Metadata on plex
-  - Sets new category for processed torrents
+**OnePacerr** is a standalone, automated deployment tool designed specifically for
+Sonarr/Plex Home Server setups.
 
-## Installation with docker-compose
+Because Sonarr does not natively support [One
+Pace](https://onepace.net/) (the fan-edited, manga-accurate version of One Piece), this app
+bridges the gap by automatically downloading, organizing, and keeping your One Pace
+episodes fully up to date.
+
+## ✨ Features
+
+- **Automated Discovery:** Continuously pulls One Pace's RSS Release feed and
+  metadata to detect new episodes.
+- **Smart Library Scanning:** Scans your existing Plex library to compare available
+  episodes against your local files.
+- **Seamless Downloading:** Automatically sends `magnetURI` links to qBittorrent for
+  missing episodes.
+- **File Verification (Optional):** Hashes existing files to ensure they match the latest
+  releases and automatically re-downloads outdated versions.
+- **qBittorrent Monitoring:** Tracks download progress. Once completed, it:
+  - Copies the file to your designated Plex Library folder.
+  - Updates the metadata directly on Plex.
+  - Assigns a custom (`completed`) category to the processed torrents in qBittorrent.
+
+## 🚀 Getting Started
+
+### Prerequisites
+
+Before running OnePacerr, ensure you have the following services up and running:
+
+- **Docker & Docker Compose** (or k8s, or custom app in Truenas or equivalent)
+- **Plex Media Server**
+- **qBittorrent** (with WebUI enabled)
+
+### Installation
+
+The recommended way to install and run OnePacerr is via `docker-compose`.
+
+Create a `docker-compose.yml` file and copy the configuration below. Make sure to update
+the environment variables and volume mounts to match your server's setup.
+
+I listed all variables commenting out the defaults for convenience.
 
 ```yaml
 services:
@@ -29,41 +59,36 @@ services:
 
       #- DEBUGGING=false
 
-      - TORRENT_URL=http://localhost:8080
+      # qBittorrent Settings
+      - TORRENT_URL=localhost:8080
       - TORRENT_USER=<your-username-here>
       - TORRENT_PASSWORD=<your-password-here>
-
       #- TORRENT_CATEGORY=onepacerr
       #- TORRENT_CATEGORY_ONCE_COMPLETED=completed
       #- TORRENT_CHECK_INTERVAL=30
 
-      # leave to default(false) to hash files present in plex whenever metadata is updated
-      # to make sure they're up to date 
+      # File & Metadata Management
       - SKIP_VERIFY_PRESENT_FILES=true
-      # leave to default(false) to update metadata for files already present in plex
       - SKIP_UPDATE_METADATA_PRESENT_FILES=true
-
       #- INCLUDE_SPECIALS=false
       - PREFER_EXTENDED=true
 
-      #- METADATA_URL=https://raw.githubusercontent.com/ladyisatis/one-pace-metadata/refs/heads/v2/metadata/data.json
+      # Metadata Settings
+      #-METADATA_URL=raw.githubusercontent.com/ladyisatis/one-pace-metadata/refs/heads/v2metadata/data.json
       #- METADATA_LANGUAGE=en
       #- METADATA_CHECK_INTERVAL=3600
 
-      # Use these when plex/qbittorrent have different mounts than onepacerr
+      # Cross-Mount Mapping (Uncomment if needed, defaults to nothing)
       #- MOUNT_LIBRARY_PLEX=/mnt/Library/Series
       #- MOUNT_LIBRARY_ONEPACERR=\\TRUENAS\series
       #- MOUNT_DOWNLOADS_QBITTORRENT=/mnt/Applications/Downloads
       #- MOUNT_DOWNLOADS_ONEPACERR=\\TRUENAS\downloads
 
-      - PLEX_URL=http://localhost:32400
+      # Plex Settings
+      - PLEX_URL=localhost:32400
       - PLEX_TOKEN=<your-token-here>
-
       - PLEX_LIBRARY_NAME=TV Shows
       - PLEX_SERIES_NAME=One Pace
-
-      # Set this to false if you want the app to crash if the Show doesn't exist on Plex already
-      # Mostly useful on first time setup to make sure you spelled it correctly
       #- PLEX_CREATE_SHOW_IF_NOT_FOUND=true
 
     volumes:
@@ -72,16 +97,39 @@ services:
       - /mnt/Applications/Downloads:/mnt/Applications/Downloads
 ```
 
-## Requests
+### ⚙️ Environment Variables Explained
 
-- Jellyfin support (requested by Marci on discord)
+Here is a breakdown of key optional variables you can adjust in your
+`docker-compose.yml`:
 
-## Credits
+| Variable | Default | Description |
+| :--- | :--- | :--- |
+| `SKIP_VERIFY_PRESENT_FILES` | `false` | If `false`, hashes files present in Plex upon metadata updates to ensure they are the latest/wanted versions. |
+| `SKIP_UPDATE_METADATA_PRESENT_FILES` | `false` | If `false`, automatically updates metadata for files already in your Plex library, otherwise only does so for new downloads. |
+| `PREFER_EXTENDED` | `false` | Set to `true` to prioritize extended cuts over standard releases. |
+| `PLEX_CREATE_SHOW_IF_NOT_FOUND` | `false` | If `false`, the app crashes if "One Pace" isn't already on Plex (useful for catching typos on first setup). Set to `true` to auto-create the show. |
+| `MOUNT_*` Variables | _None_ | Use these mapping variables if Plex or qBittorrent use different mount paths than the OnePacerr container. |
 
-- [One Pace](https://onepace.net/en) unofficial fan edits
-- Metadata from [one-pace-metadata](https://github.com/ladyisatis/one-pace-metadata) by [Ladyisatis](https://github.com/ladyisatis)
-- Posters by [/u/piratezekk](https://www.reddit.com/user/piratezekk)
+## ️ Roadmap
 
-## Donate
+- [ ] **Support alternate torrent clients**
+- [ ] **Custom folder/files names**
+- [ ] **Poster settings to chose either official/alternate or customs**
+- [ ] **Jellyfin Support** _(Requested by Marci)_
+- [Resuest a new feature](https://github.com/eltharynd/OnePacerr/issues)
 
-- 💖 Don't donate to me, support [One Pace](https://www.patreon.com/onepace) on Patreon instead.
+## 🤝 Credits & Acknowledgements
+
+This project wouldn't be possible without the incredible work of the community:
+
+- **[One Pace](onepace.net/en):** The incredible team behind the unofficial fan edits.
+- **[Ladyisatis](github.com/ladyisatis):** For maintaining the
+  [one-pace-metadata](github.com/ladyisatis/one-pace-metadata) repository.
+- **[/u/piratezekk](reddit.com/user/piratezekk):** For the custom poster artwork.
+
+## ❤️ Support
+
+Please **do not** donate to me for this tool.
+
+Instead, please show your support for the team
+doing the heavy lifting by backing **[One Pace on Patreon](patreon.com/onepace)**.
