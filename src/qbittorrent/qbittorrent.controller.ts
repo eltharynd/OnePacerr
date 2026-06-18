@@ -22,6 +22,7 @@ export class qBittorrentController {
 	public async startWatching() {
 		if (!this.__watching) {
 			this.__watching = true
+			Logger.info(`Starting to monitor qBittorrent for completed downloads...`)
 			await this.processCompleted()
 		}
 	}
@@ -35,7 +36,7 @@ export class qBittorrentController {
 			return
 		}
 
-		Logger.info(`Adding magnetURI to qBittorrent...`)
+		Logger.debug(`Adding magnetURI to qBittorrent...`)
 		let torrents = await this.client.listTorrents()
 		let present = torrents.find(t => t.hash === torrentInfo.infoHash)
 		if (present) {
@@ -48,7 +49,7 @@ export class qBittorrentController {
 	}
 
 	private async processCompleted() {
-		Logger.info(`Checking completed torrents`)
+		Logger.debug(`Checking completed torrents`)
 
 		try {
 			let torrents = await this.client.listTorrents()
