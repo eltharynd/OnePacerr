@@ -2,7 +2,7 @@ FROM node:24-slim AS builder
 
 WORKDIR /app
 COPY package.json ./
-RUN npm ci
+RUN npm i
 COPY . .
 RUN npm run build
 
@@ -11,7 +11,7 @@ FROM node:24-slim AS runner
 
 WORKDIR /app
 COPY package.json ./
-RUN npm ci --omit=dev
+RUN npm i --omit=dev
 COPY --from=builder /app/dist ./dist
 
 RUN touch .env
