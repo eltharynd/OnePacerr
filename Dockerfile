@@ -11,6 +11,7 @@ FROM node:24-slim AS runner
 
 WORKDIR /app
 COPY package.json ./
+COPY posters ./posters
 RUN npm i --omit=dev
 COPY --from=builder /app/dist ./dist
 
