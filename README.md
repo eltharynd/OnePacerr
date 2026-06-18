@@ -101,6 +101,7 @@ services:
       - SKIP_ORGANIZE_PRESENT_FILES=false
       - SKIP_UPDATE_METADATA_PRESENT_FILES=false
       #- SKIP_DOWNLOADS=false
+      #- SKIP_POSTERS=false
 
       #- INCLUDE_SPECIALS=false
       - PREFER_EXTENDED=true
@@ -145,7 +146,8 @@ Here is a breakdown of key optional variables you can adjust in your
 | 🍏 `SKIP_VERIFY_PRESENT_FILES` | `true` | If `false`, hashes files present in Plex upon metadata updates to ensure they are the latest/wanted versions. |
 | 🍏 `SKIP_ORGANIZE_PRESENT_FILES` | `true` | If `false`, makes sure the files existing on plex are in the correct folder and named correctly. |
 | 🍏 `SKIP_UPDATE_METADATA_PRESENT_FILES` | `true` | If `false`, automatically updates metadata for files already in your Plex library, otherwise only does so for new downloads. |
-| 🍏 `SKIP_DOWNLOADS` | `false` | If `false`, skips download. Use if you only want to organize your current files |
+| 🍏 `SKIP_DOWNLOADS` | `false` | If `true`, skips download. Use if you only want to organize your current files |
+| 🍏 `SKIP_POSTERS` | `false` | If `true`, skips updating posters when updating metadata. |
 | --- | --- | --- |
 | `INCLUDE_SPECIALS` | `false` | Set to `true` to also process specials. |
 | `PREFER_EXTENDED` | `false` | Set to `true` to prioritize extended cuts over standard releases. |
@@ -187,6 +189,7 @@ Here is a breakdown of key optional variables you can adjust in your
 - [x] **Custom folder/files names** (since v1.0.12)
 - [x] **Organize Library (rename/move)** (since v1.0.12)
 - [x] **Skip Download** (since v1.0.12)
+- [ ] **Handle RSS/Metadata fetch failures** with a delayed retry or something...
 - [ ] **Rest API** Manual execution endpoints
 - [ ] **Support alternate torrent clients**
 - [ ] **Poster settings to chose either official/alternate or customs**

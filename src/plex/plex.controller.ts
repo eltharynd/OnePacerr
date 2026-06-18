@@ -205,11 +205,15 @@ export class PlexController {
 		await season.editTitle(`${arc}. ${description.title}`)
 		await season.editSummary(description.description)
 
-		Logger.debug(`Updating Season ${arc} poster in Plex...`)
-		await season.uploadPoster({
-			file: readFileSync(path.resolve(`./posters/${arc}/poster.png`)),
-		})
-		Logger.debug(`Metadata and poster for Season ${arc} updated...`)
+		if (!environment.SKIP_POSTERS) {
+			Logger.debug(`Updating Season ${arc} poster in Plex...`)
+			await season.uploadPoster({
+				file: readFileSync(path.resolve(`./posters/${arc}/poster.png`)),
+			})
+		}
+		Logger.debug(
+			`Metadata${!environment.SKIP_POSTERS ? ' and posters' : ''} for Season ${arc} updated...`,
+		)
 	}
 
 	async updateShowMetadata() {
@@ -219,11 +223,16 @@ export class PlexController {
 		await this.show.editTitle(environment.PLEX_SERIES_NAME)
 		await this.show.editSummary(description.plot)
 
-		Logger.debug(`Updating Show poster in Plex...`)
-		await this.show.uploadPoster({
-			file: readFileSync(path.resolve(`./posters/poster.png`)),
-		})
-		Logger.debug(`Metadata and poster for Show updated...`)
+		if (!environment.SKIP_POSTERS) {
+			Logger.debug(`Updating Show poster in Plex...`)
+			await this.show.uploadPoster({
+				file: readFileSync(path.resolve(`./posters/poster.png`)),
+			})
+		}
+
+		Logger.debug(
+			`Metadata${!environment.SKIP_POSTERS ? ' and posters' : ''} for Show updated...`,
+		)
 	}
 
 	async getTargetPlexFullPath(
