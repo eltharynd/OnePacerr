@@ -16,7 +16,8 @@ export default {
 	TORRENT_USER: process.env.TORRENT_USER || `user`,
 	TORRENT_PASSWORD: process.env.TORRENT_PASSWORD || `password`,
 	TORRENT_CATEGORY: process.env.TORRENT_CATEGORY || `onepacerr`,
-	TORRENT_CATEGORY_ONCE_COMPLETED: process.env.TORRENT_CATEGORY || `completed`,
+	TORRENT_CATEGORY_ONCE_COMPLETED:
+		process.env.TORRENT_CATEGORY_ONCE_COMPLETED || `completed`,
 	TORRENT_CHECK_INTERVAL:
 		Number.parseInt(process.env.TORRENT_CHECK_INTERVAL || '30') * 1000,
 
