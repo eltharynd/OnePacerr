@@ -6,7 +6,7 @@
 ![GitHub Last Commit](https://img.shields.io/github/last-commit/eltharynd/onepacerr?style=flat-square)
 ![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)
 
-**OnePacerr** is a standalone, automated deployment tool designed specifically for
+**OnePacerr** is a standalone, automated One Pace download tool designed specifically for
 Sonarr/Plex Home Server setups.
 
 Because Sonarr does not natively support [One
