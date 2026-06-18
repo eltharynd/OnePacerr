@@ -114,6 +114,7 @@ Here is a breakdown of key optional variables you can adjust in your
 
 ## ️ Roadmap
 
+- [ ] **Rest API** Health/Ready checks and manual execution endpoints
 - [ ] **Support alternate torrent clients**
 - [ ] **Custom folder/files names**
 - [ ] **Poster settings to chose either official/alternate or customs**
