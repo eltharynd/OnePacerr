@@ -223,6 +223,10 @@ export class MetadataController {
 	async getEpisodeFromCRC32(CRC32: string) {
 		let episode = this.metadata.episodes[CRC32]
 		if (!episode) {
+			if (CRC32 == '704F68EA') {
+				Logger.debug(`Skypiea 14 manual correction`)
+				return { arc: 16, episode: 14 }
+			}
 			Logger.error(`CRC32 ${CRC32} not in metadata...`)
 			throw new Error(`CRC32 ${CRC32} not in metadata...`)
 		}
