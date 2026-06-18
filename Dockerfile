@@ -1,7 +1,8 @@
 FROM node:24-slim AS builder
 
 WORKDIR /app
-COPY package*.json ./
+COPY package.json ./
+COPY package-lock.json ./
 RUN npm ci
 COPY . .
 RUN npm run build
@@ -10,7 +11,8 @@ RUN npm run build
 FROM node:24-slim AS runner
 
 WORKDIR /app
-COPY package*.json ./
+COPY package.json ./
+COPY package-lock.json ./
 RUN npm ci --omit=dev
 COPY --from=builder /app/dist ./dist
 
