@@ -29,7 +29,7 @@ export default {
 	),
 
 	INCLUDE_SPECIALS: /true/i.test(process.env.INCLUDE_SPECIALS || 'false'),
-	PREFER_EXTENDED: /true/i.test(process.env.PREFER_EXTENDED || 'true'),
+	PREFER_EXTENDED: /true/i.test(process.env.PREFER_EXTENDED || 'false'),
 
 	METADATA_URL:
 		process.env.METADATA_URL ||
