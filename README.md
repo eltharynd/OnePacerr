@@ -217,12 +217,9 @@ Here is a breakdown of key optional variables you can adjust in your
 
 ## 📅 Roadmap
 
-- [x] **Custom folder/files names** (since v1.0.12)
-- [x] **Organize Library (rename/move)** (since v1.0.12)
-- [x] **Skip Download** (since v1.0.12)
 - [ ] **Handle RSS/Metadata fetch failures** with a delayed retry or something...
-- [ ] **Rest API** Manual execution endpoints
-- [ ] **Support alternate torrent clients**
+- [ ] **Rest API** Manual execution/status endpoints
+- [ ] **Support alternate torrent clients** (thinking uTorrent and deluge)
 - [ ] **Poster settings to chose either official/alternate or customs**
 - [ ] **Jellyfin Support** _(Requested by Marci)_
 - [Request a new feature](https://github.com/eltharynd/OnePacerr/issues)
