@@ -36,12 +36,8 @@ export class MetadataController {
 				continue
 			}
 
-			if (arc.part != 35) continue
-
 			Logger.info(`Processing Season ${arc.part}...`)
 			for (let episode of arc.episodes) {
-				if (Number.parseInt(episode.episode) > 5) continue
-
 				Logger.debug(
 					`Episode ${arc.part}-${String(episode.episode).padStart(2, '0')} - Processing`,
 				)
