@@ -182,7 +182,7 @@ Here is a breakdown of key optional variables you can adjust in your
 | `INCLUDE_SPECIALS` | `false` | Set to `true` to also process specials. |
 | `PREFER_EXTENDED` | `false` | Set to `true` to prioritize extended cuts over standard releases. |
 
-| Server Configuration Variables | Default | Description |
+| Mount Configuration Variables | Default | Description |
 | :--- | :--- | :--- |
 | `MOUNT_LIBRARY_PLEX` | _None_ | Use these mapping variables if **Plex** uses different mount paths than the OnePacerr container. |
 | `MOUNT_LIBRARY_ONEPACERR` | _None_ | Use these mapping variables if **Plex** uses different mount paths than the OnePacerr container. |
@@ -196,17 +196,18 @@ Here is a breakdown of key optional variables you can adjust in your
 | 🍤 `PLEX_LIBRARY_NAME` | `TV Shows` | Name of the Library in Plex. |
 | 🍤 `PLEX_SERIES_NAME` | `One Pace` | Name of the Series in Plex. |
 | `PLEX_SERIES_FOLDER_NAME` | `PLEX_SERIES_NAME` | Override when the Plex folder needs to be called differently from `PLEX_SERIES_NAME`. |
-| `PLEX_FILENAME_FORMAT` | `{SERIES_NAME} - S{ARC}E{EPISODE} - {TITLE}.mkv` | Overrides the filename each file should have, `{SERIES_NAME}`, `{ARC}`, `{EPISODE}` and `{TITLE}` will be replaced with values. `.mkv` automatically added if not specified |
-| `PLEX_CREATE_SHOW_IF_NOT_FOUND` | `true` | If `false`, the app crashes if "One Pace" isn't already on Plex (useful for catching typos on first setup). Set to `true` to auto-create the show. |
+| `PLEX_FILENAME_FORMAT` | `{SERIES_NAME} - S{ARC}E{EPISODE} - {TITLE}.mkv` | Overrides the filename each file should have, `{SERIES_NAME}`, `{ARC}`, `{EPISODE}` and `{TITLE}` will be replaced with values. `.mkv` automatically added if not specified. |
+| `PLEX_CREATE_SHOW_IF_NOT_FOUND` | `true` | If `false`, the app crashes if "PLEX_SERIES_NAME" isn't already on Plex (useful for catching typos on first setup). Leave `true` to auto-create the show. |
 
 | Torrent Variables | Default | Description |
 | :--- | :--- | :--- |
-| ⭐ `TORRENT_URL` | `http://localhost:80` | Your qBittorrent webUI URL. |
-| ⭐ `TORRENT_USER` | _None_ | Your qBittorrent webUI username. |
-| ⭐ `TORRENT_PASSWORD` | _None_ | Your qBittorrent webUI password. |
+| ⭐ `TORRENT_URL` | `http://localhost:80` | Your torrent API URL. |
+| ⭐ `TORRENT_USER` | _None_ | Your torrent API username. |
+| ⭐ `TORRENT_PASSWORD` | _None_ | Your torrent API password. |
+| `TORRENT_CLIENT` | `qbittorrent` | Your torrent client. Will be used in the future to use different clients rather tnax qBittorrent. |
 | `TORRENT_CATEGORY` | `onepacerr` | Creates downloads with this category, also filters completed torrents using this. |
 | `TORRENT_CATEGORY_ONCE_COMPLETED` | `completed` | After processing completed downloads, changes the torrent category to this one. |
-| `TORRENT_CHECK_INTERVAL` | `30` | Seconds between checking for completed downloads. |
+| `TORRENT_CHECK_INTERVAL` | `60` | Seconds between checking for completed downloads. |
 
 | Metadata Variables | Default | Description |
 | :--- | :--- | :--- |
