@@ -8,6 +8,7 @@ docs/
 docker-build.js
 node_modules/
 package-lock.json
+posters-tool.js
 README.md
 rss.json
 sample.env

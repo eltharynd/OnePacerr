@@ -31,6 +31,8 @@ export default {
 	SKIP_DOWNLOADS: /true/i.test(process.env.SKIP_DOWNLOADS || 'false'),
 	SKIP_POSTERS: /true/i.test(process.env.SKIP_POSTERS || 'false'),
 
+	METADATA_POSTER_SET: process.env.METADATA_POSTER_SET || 'default',
+
 	INCLUDE_SPECIALS: /true/i.test(process.env.INCLUDE_SPECIALS || 'false'),
 	PREFER_EXTENDED: /true/i.test(process.env.PREFER_EXTENDED || 'false'),
 

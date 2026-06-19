@@ -25,6 +25,9 @@ episodes fully up to date, as well as adding metadata and custom posters for the
     - 🐣 [First Run](#-first-run)
   - [Installation](#installation)
 - ⚙️ [Environment Variables Explained](#️-environment-variables-explained)
+- 🖼️ [Poster sets preview](#️-poster-sets)
+  - [Previews](#previews)
+  - [Adding/Updating Sets](#addingupdating-sets)
 - 📅 [Roadmap](#-roadmap)
 - 🤝 [Credits & Acknowledgements](#-credits--acknowledgements)
 - 💗 [Support (One Pace, not me!)](#-support-one-pace-not-me)
@@ -140,6 +143,7 @@ services:
       #- METADATA_URL=raw.githubusercontent.com/ladyisatis/one-pace-metadata/refs/heads/v2metadata/data.json
       #- METADATA_LANGUAGE=en
       #- METADATA_CHECK_INTERVAL=3600
+      #- METADATA_POSTER_SET=default
 
       # Cross-Mount Mapping (Uncomment if needed, defaults to nothing)
       #- MOUNT_LIBRARY_PLEX=/mnt/Library/Series
@@ -213,7 +217,26 @@ Here is a breakdown of key optional variables you can adjust in your
 | :--- | :--- | :--- |
 | `METADATA_URL` | `https://raw.githubusercontent.com/ladyisatis/one-pace-metadata/refs/heads/v2/metadata/data.json` | Metadata url (untested with different ones). |
 | `METADATA_LANGUAGE` | `en` | Currently only language supported. |
+| `METADATA_POSTER_SET` | `default` | Currently `default` equals `piratezekk`. There are also `official` and `mizzoufan523` available. If a set is missing a poster it uses `default`. |
 | `METADATA_CHECK_INTERVAL` | `3600` | Seconds between checking for new metadata. |
+
+## 🖼️ Poster Sets
+
+### Previews
+
+You can preview all of the custom poster sets at the following links:
+
+- [piratezekk (default)](docs/poster%20previews/piratezekk.md#show)
+- [mizzoufan523)](docs/poster%20previews/mizzoufan523.md#show)
+- [official)](docs/poster%20previews/official.md#show)
+
+When a poster is missing from the set, you will se a placeholder in these preview.
+
+When updating metadata, a missing poster results in falling back to default.
+
+### Adding/Updating Sets
+
+If you want to contribute to the posters or create an entire new set, first of all I love you, then please [read this](POSTER-SETS.md#how-to-contribute-to-poster-sets).
 
 ## 📅 Roadmap
 
@@ -231,7 +254,10 @@ This project wouldn't be possible without the incredible work of the community:
 - **[One Pace](https://onepace.net/en):** The incredible team behind the unofficial fan edits.
 - **[Ladyisatis](https://github.com/ladyisatis):** For maintaining the
   [one-pace-metadata](https://github.com/ladyisatis/one-pace-metadata) repository.
-- **[/u/piratezekk](https://reddit.com/user/piratezekk):** For the custom poster artwork.
+- For the custom poster artwork sets:
+  - `piratezekk` (default) by **[/u/piratezekk](https://reddit.com/user/piratezekk):**.
+  - `mizzoufan523` by **[/u/Mizzoufan523](https://reddit.com/user/Mizzoufan523):**.
+  - `official` by **[One Pace's Team](https://onepace.net/en)**
 
 ## 💗 Support (One Pace, not me!)
 

@@ -6,6 +6,7 @@ import environment from '../environment.js'
 import { Context } from '../util/context.js'
 import Logger from '../util/logger.js'
 import sanitizeWindowsFileName from '../util/sanitizeWindowsFilename.js'
+import resolvePosterPath from '../util/resolvePosterPath.js'
 
 export class PlexController {
 	private ws
@@ -220,7 +221,7 @@ export class PlexController {
 		if (!environment.SKIP_POSTERS) {
 			Logger.debug(`Updating Season ${arc} poster in Plex...`)
 			await season.uploadPoster({
-				file: readFileSync(path.resolve(`./posters/${arc}/poster.png`)),
+				file: readFileSync(resolvePosterPath({ arc })),
 			})
 		}
 		Logger.debug(
@@ -238,7 +239,7 @@ export class PlexController {
 		if (!environment.SKIP_POSTERS) {
 			Logger.debug(`Updating Show poster in Plex...`)
 			await this.show.uploadPoster({
-				file: readFileSync(path.resolve(`./posters/poster.png`)),
+				file: readFileSync(resolvePosterPath()),
 			})
 		}
 
