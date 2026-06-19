@@ -85,7 +85,7 @@ Before running OnePacerr, ensure you have the following services up and running:
 
 If your files are nicely named and organized and if Plex has all the metadata, you can safely leave these as true (default) or not declare them at all:
 
-```bash
+```dotenv
 # 🐔 BASE CONFIG WHEN YOUR LIBRARY IS ALREADY WELL ORGANIZED
 SKIP_VERIFY_PRESENT_FILES=true
 SKIP_ORGANIZE_PRESENT_FILES=true
@@ -98,7 +98,7 @@ This will prevent the app to verify hash (CRC32 hashing can take a while dependi
 
 My recommendation **when plex already has some/all of the episodes** is to run it once with the following configs, so that every file is gonna get verified to be up to date and all metadata is gonna be imported.
 
-```bash
+```dotenv
 # 🐣 RECOMMENDED CONFIG FOR FIRST RUN
 SKIP_VERIFY_PRESENT_FILES=false
 SKIP_ORGANIZE_PRESENT_FILES=false
