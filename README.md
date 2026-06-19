@@ -92,9 +92,9 @@ SKIP_ORGANIZE_PRESENT_FILES=false
 SKIP_UPDATE_METADATA_PRESENT_FILES=false
 ```
 
-After the app is done processing all of the present seasons/episodes, its gonna continue monitoring for completed downloads and import as usual.
+After the app is done processing all of the present seasons/episodes, it's gonna continue monitoring for completed downloads and import as usual.
 
-You can also optionally disable downloads for this firet run, theb stop the app once it's done and update the env vars to run it with the basic config.
+You can also optionally disable downloads for this first run, then stop the app once it's done and update the env vars to keep it running with the basic config.
 
 ### Installation
 
