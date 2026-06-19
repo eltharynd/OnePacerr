@@ -9,6 +9,8 @@
 **OnePacerr** is a standalone, automated One Pace download tool designed specifically for
 Sonarr/Plex Home Server setups.
 
+⚠️ It does **require** Plex atm, because it's built specifically to manage it, but maybe in the future I could modify to skip the Plex part (let me know if you're interested).
+
 Because Sonarr does not natively support [One
 Pace](https://onepace.net/) (the fan-edited, manga-accurate version of One Piece), this app
 bridges the gap by automatically downloading, organizing, and keeping your One Pace
@@ -19,15 +21,19 @@ episodes fully up to date, as well as adding metadata and custom posters for the
 - ✨ [Features](#-features)
 - 🧪 [Pipeline](#-pipeline)
 - 🚀 [Getting Started](#-getting-started)
-  - [Prerequisites](#prerequisites)
+  - [🧳Prerequisites](#-prerequisites)
   - 📝 [Recommended configs](#-recommended-configs)
     - 🐔 [Base Operation](#-base-operation)
     - 🐣 [First Run](#-first-run)
-  - [Installation](#installation)
+- [⚡Usage](#-usage)
+  - [🐳 Deploy via Docker](#-deploy-via-docker)
+  - [🟢 Running locally](#-running-locally)
+  - [👩‍💻 Contributing to the development](#-contributing-to-the-development)
+
 - ⚙️ [Environment Variables Explained](#️-environment-variables-explained)
 - 🖼️ [Poster sets preview](#️-poster-sets)
-  - [Previews](#previews)
-  - [Adding/Updating Sets](#addingupdating-sets)
+  - [🔍 Previews](#-previews)
+  - [📥 Adding/Updating Sets](#-addingupdating-sets)
 - 📅 [Roadmap](#-roadmap)
 - 🤝 [Credits & Acknowledgements](#-credits--acknowledgements)
 - 💗 [Support (One Pace, not me!)](#-support-one-pace-not-me)
@@ -61,11 +67,15 @@ tldr: the RSS Feed refresh is triggered by metadata having updates.
 
 ## 🚀 Getting Started
 
-### Prerequisites
+### 🧳 Prerequisites
 
 Before running OnePacerr, ensure you have the following services up and running:
 
 - **Docker & Docker Compose** (or k8s, or custom app in Truenas or equivalent)
+  - Alternatively you can run it locally with node.
+    - create a `.env` file in root (use `sample.env` as example)
+    - `npm install`
+    - `npm start`
 - [**Plex Media Server**](https://hub.docker.com/r/linuxserver/plex)
 - [**qBittorrent**](https://hub.docker.com/r/linuxserver/qbittorrent) (with WebUI enabled)
 
@@ -99,9 +109,11 @@ After the app is done processing all of the present seasons/episodes, it's gonna
 
 You can also optionally disable downloads for this first run, then stop the app once it's done and update the env vars to keep it running with the basic config.
 
-### Installation
+## ⚡ Usage
 
-The recommended way to install and run OnePacerr is via `docker-compose`.
+### 🐳 Deploy via Docker
+
+The recommended way to deploy is via `docker-compose`.
 
 Create a `docker-compose.yml` file and copy the configuration below. Make sure to update
 the environment variables and volume mounts to match your server's setup.
@@ -166,6 +178,33 @@ services:
       - /mnt/Applications/Downloads:/mnt/Applications/Downloads
 ```
 
+### 🟢 Running locally
+
+Install node (>24 tested) on your machine then:
+
+- create a `.env` file in root (use `sample.env` as example)
+- `npm install`
+- `npm start`
+
+### 👩‍💻 Contributing to the development
+
+For developing first install dependencies:
+
+```bash
+npm i
+```
+
+I recommend opening two side-by side tabs in vs code terminal and running one of these in each:
+
+```bash
+#Compiles typescript and watch for changes
+tsc -w
+
+#Shortcut for nodemon --enable-source-maps dist/index.js
+#runs app and reloads any time tsc-w recompiles an edited file
+npm run dev
+```
+
 ## ⚙️ Environment Variables Explained
 
 Here is a breakdown of key optional variables you can adjust in your
@@ -222,7 +261,7 @@ Here is a breakdown of key optional variables you can adjust in your
 
 ## 🖼️ Poster Sets
 
-### Previews
+### 🔍 Previews
 
 You can preview all of the custom poster sets at the following links:
 
@@ -234,7 +273,7 @@ When a poster is missing from the set, you will se a placeholder in these previe
 
 When updating metadata, a missing poster results in falling back to default.
 
-### Adding/Updating Sets
+### 📥 Adding/Updating Sets
 
 If you want to contribute to the posters or create an entire new set, first of all I love you, then please [read this](POSTER-SETS.md#how-to-contribute-to-poster-sets).
 
