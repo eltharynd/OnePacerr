@@ -266,8 +266,8 @@ Here is a breakdown of key optional variables you can adjust in your
 You can preview all of the custom poster sets at the following links:
 
 - [piratezekk (default)](docs/poster%20previews/piratezekk.md#show)
-- [mizzoufan523)](docs/poster%20previews/mizzoufan523.md#show)
-- [official)](docs/poster%20previews/official.md#show)
+- [mizzoufan523](docs/poster%20previews/mizzoufan523.md#show)
+- [official](docs/poster%20previews/official.md#show)
 
 When a poster is missing from the set, you will se a placeholder in these preview.
 
