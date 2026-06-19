@@ -1,18 +1,10 @@
-import {
-	Episode,
-	Media,
-	MediaPart,
-	PlexServer,
-	Section,
-	Show,
-	ShowSection,
-} from '@ctrl/plex'
-import path from 'path'
-import environment from '../environment.js'
-import Logger from '../util/logger.js'
-import { Context } from '../util/context.js'
+import { MediaPart, PlexServer, Show, ShowSection } from '@ctrl/plex'
 import { readFileSync, writeFileSync } from 'fs'
+import path from 'path'
 import WebSocket from 'ws'
+import environment from '../environment.js'
+import { Context } from '../util/context.js'
+import Logger from '../util/logger.js'
 import sanitizeWindowsFileName from '../util/sanitizeWindowsFilename.js'
 
 export class PlexController {
@@ -55,15 +47,13 @@ export class PlexController {
 			await this.server.library()
 		).section<ShowSection>(environment.PLEX_LIBRARY_NAME)
 
-		Logger.info(
-			`Found Plex Library '${this.section.title}' with id '${this.section.uuid}'...`,
-		)
+		Logger.info(`Found Plex Library '${this.section.title}'...`)
 
 		await this.fetchShow()
 	}
 
 	private async fetchShow() {
-		Logger.info(`Searching for Plex Series...`)
+		Logger.info(`Searching for Plex Show...`)
 
 		let searchResults = await this.section.search({
 			title: environment.PLEX_SERIES_NAME,
@@ -82,7 +72,10 @@ export class PlexController {
 			throw new Error('Too many shows found')
 		}
 
-		if (searchResults[0]) this.show = searchResults[0]
+		if (searchResults[0]) {
+			this.show = searchResults[0]
+			Logger.info(`Found Plex Show '${this.show.title}'...`)
+		}
 	}
 
 	async getEpisodeFile(season: number, episode: number, purePlex?: boolean) {
@@ -173,20 +166,39 @@ export class PlexController {
 
 	async updateEpisodeMetadata(
 		arc: number,
-		episodeNumber: number,
+		episode: number,
 		title: string,
 		description: string,
 	) {
 		Logger.info(
-			`Episode ${arc}-${String(episodeNumber).padStart(2, '0')} - Updating Metadata`,
+			`Episode ${arc}-${String(episode).padStart(2, '0')} - Updating Metadata`,
 		)
-		let episode = await this.show.episode({
-			season: arc,
-			episode: episodeNumber,
-		})
 
-		await episode.editTitle(title)
-		await episode.editSummary(description)
+		const attempt = async (attemptsLeft: number) => {
+			try {
+				Logger.debug(`Metadata update attempt`)
+				let _episode = await this.show.episode({
+					season: arc,
+					episode: episode,
+				})
+
+				await _episode.editTitle(title)
+				await _episode.editSummary(description)
+				return true
+			} catch (e) {
+				if (attemptsLeft > 1) {
+					Logger.debug(
+						`Metadata update attempt failed, this could just be due to how plex reports being done scanning (it sucks). Attempting ${attemptsLeft} more times...`,
+					)
+					return false
+				} else throw new Error(`Episode could not be found on plex...`)
+			}
+		}
+
+		let attemptsLeft = 5
+		while (attemptsLeft-- > 0) {
+			if (await attempt(attemptsLeft)) attemptsLeft = 0
+		}
 	}
 
 	async updateSeasonMetadata(arc: number) {

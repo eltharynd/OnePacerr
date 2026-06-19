@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { LoggerMiddleware } from './logger.middleware.ts'
-import Logger from '../../util/logger.ts'
 import environment from '../../environment.ts'
+import Logger from '../../util/logger.ts'
+import { LoggerMiddleware } from './logger.middleware.ts'
 
 //Gemini generated, check
 

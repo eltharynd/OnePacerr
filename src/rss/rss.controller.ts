@@ -1,8 +1,8 @@
+import { readFileSync, writeFileSync } from 'node:fs'
+import { stat } from 'node:fs/promises'
+import path from 'node:path'
 import Parser from 'rss-parser'
 import Logger from '../util/logger.js'
-import { readFileSync, writeFileSync } from 'node:fs'
-import path from 'node:path'
-import { stat } from 'node:fs/promises'
 
 const RSS_FEED_URL = `https://onepace.net/en/releases/rss.xml`
 

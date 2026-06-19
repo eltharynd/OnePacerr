@@ -1,8 +1,8 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { HttpError } from 'routing-controllers'
-import { HttpErrorHandler } from './error.middleware.ts'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import Logger from '../../util/logger.ts'
 import { InternalServerErrorResponse } from '../interceptors/default.interceptor.ts'
+import { HttpErrorHandler } from './error.middleware.ts'
 
 //Gemini generated, check
 

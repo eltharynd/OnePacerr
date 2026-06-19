@@ -1,9 +1,9 @@
+import fs from 'fs'
 import { createRequire } from 'module'
 const require = createRequire(import.meta.url)
 
 // This will be perfectly typed as a callable function!
 const crc32 = require('buffer-crc32')
-import fs from 'fs'
 
 /**
  * Calculates the CRC32 hash of a file and returns it as an uppercase hex string.

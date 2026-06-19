@@ -2,12 +2,11 @@ import 'reflect-metadata'
 import { Express } from './api/express.js'
 import { Context } from './util/context.js'
 
-import Logger from './util/logger.js'
-import Parser from 'rss-parser'
-import { RSSController } from './rss/rss.controller.js'
-import { PlexController } from './plex/plex.controller.js'
 import { MetadataController } from './metadata/metadata.controller.js'
-import { qBittorrentController } from './qbittorrent/qbittorrent.controller.js'
+import { PlexController } from './plex/plex.controller.js'
+import { RSSController } from './rss/rss.controller.js'
+import { TorrentController } from './torrent/torrent.controller.js'
+import Logger from './util/logger.js'
 
 const startApp = async () => {
 	let gracefulClose = async () => {
@@ -36,7 +35,7 @@ const startApp = async () => {
 		Context.metadata = new MetadataController()
 		Context.rss = new RSSController()
 		Context.plex = new PlexController()
-		Context.torrent = new qBittorrentController()
+		Context.torrent = new TorrentController()
 
 		Logger.info('APPLICATION STARTED SUCCESSFULLY...')
 	} catch (e) {

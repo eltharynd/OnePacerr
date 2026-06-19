@@ -1,77 +1,89 @@
-import { QBittorrent, Torrent, TorrentCategories } from '@ctrl/qbittorrent'
-import environment from '../environment.js'
-import Logger from '../util/logger.js'
-import path from 'node:path'
 import { copyFileSync, mkdirSync, readdirSync, unlinkSync } from 'node:fs'
+import path from 'node:path'
+import environment from '../environment.js'
+import { TorrentInfo } from '../metadata/metada.model.js'
 import { Context } from '../util/context.js'
+import Logger from '../util/logger.js'
 import sanitizeWindowsFileName from '../util/sanitizeWindowsFilename.js'
+import { qBittorrentController } from './clients/qbittorrent.controller.js'
+import { ITorrentClient, Torrent, TorrentClient } from './torrent.model.js'
 
-export class qBittorrentController {
-	private client: QBittorrent
+export class TorrentController {
+	private client: ITorrentClient
 	private __watching: boolean = false
 
 	constructor() {
 		if (environment.SKIP_DOWNLOADS) return
-		this.client = new QBittorrent({
-			baseUrl: environment.TORRENT_URL,
-			username: environment.TORRENT_USER,
-			password: environment.TORRENT_PASSWORD,
-		})
+
+		switch (environment.TORRENT_CLIENT as TorrentClient) {
+			case 'qbittorrent':
+				this.client = new qBittorrentController({
+					baseUrl: environment.TORRENT_URL,
+					username: environment.TORRENT_USER,
+					password: environment.TORRENT_PASSWORD,
+				})
+				break
+			case 'utorrent':
+			case 'deluge':
+			default:
+				Logger.error(
+					`Torrent client '${environment.TORRENT_CLIENT}' not implemented yet...`,
+				)
+				throw new Error()
+		}
 	}
 
 	public async startWatching() {
+		if (environment.SKIP_DOWNLOADS) return
+
 		if (!this.__watching) {
 			this.__watching = true
-			Logger.info(`Starting to monitor qBittorrent for completed downloads...`)
-			await this.processCompleted()
+			Logger.info(
+				`Starting to monitor ${this.client.torrentClient} for completed downloads...`,
+			)
+			await this.processCompletedTorrents()
 		}
 	}
 
-	public async queueDownload(torrentInfo: {
-		magnetURI: string
-		infoHash: string
-	}) {
+	public async queueDownload(torrentInfo: TorrentInfo) {
 		if (environment.SKIP_DOWNLOADS) {
-			Logger.info(`Downloads skipped by env vars`)
+			Logger.info(`Downloads disabled by env vars`)
 			return
 		}
 
-		Logger.debug(`Adding magnetURI to qBittorrent...`)
-		let torrents = await this.client.listTorrents()
-		let present = torrents.find(t => t.hash === torrentInfo.infoHash)
-		if (present) {
-			Logger.debug(`MagnetURI already in qBittorrent...`)
+		Logger.debug(`Adding magnetURI to ${this.client.torrentClient}...`)
+		let torrents = await this.client.getAllTorrents()
+		if (torrents.find(t => t.hash === torrentInfo.infoHash)) {
+			Logger.debug(`Torrent already in ${this.client.torrentClient}...`)
 			return
 		} else
-			await this.client.addMagnet(torrentInfo.magnetURI, {
-				category: environment.TORRENT_CATEGORY,
-			})
+			await this.client.addTorrent(torrentInfo, environment.TORRENT_CATEGORY)
 	}
 
-	private async processCompleted() {
+	private async processCompletedTorrents() {
 		Logger.debug(`Checking completed torrents`)
 
 		try {
-			let torrents = await this.client.listTorrents()
-			let completed = torrents.filter(
-				t => t.category === environment.TORRENT_CATEGORY && t.progress >= 1,
+			let completed = await this.client.getCompletedTorrents(
+				environment.TORRENT_CATEGORY,
 			)
 			if (completed.length > 0)
 				Logger.info(`Importing ${completed.length} completed torrents...`)
 			for (let torrent of completed) {
-				await this.import(torrent)
+				await this.importTorrentFiles(torrent as Torrent)
 			}
 		} catch (e) {
 			Logger.error(`Error processing completed downloads`)
 			Logger.error(e)
 		} finally {
 			setTimeout(async () => {
-				await this.processCompleted()
+				await this.processCompletedTorrents()
 			}, environment.TORRENT_CHECK_INTERVAL)
 		}
 	}
 
-	private async import(torrent: Torrent) {
+	//TODO refactor this method to be more maintainable
+	private async importTorrentFiles(torrent: Torrent) {
 		let _path = path.resolve(
 			torrent.content_path.replace(
 				environment.MOUNT_DOWNLOADS_QBITTORRENT,
@@ -108,10 +120,26 @@ export class qBittorrentController {
 			if (match) {
 				const CRC32 = match[1].toUpperCase()
 				Logger.debug(`Parsed CRC32: ${CRC32}`)
+
 				let episode
 				try {
 					episode = await Context.metadata.getEpisodeFromCRC32(CRC32)
 				} catch (e) {
+					Logger.debug(
+						`File '${file}' is not most up to date (probably part of an outdated batch)... Skipping import`,
+					)
+					continue
+				}
+
+				let targetCRC32 = await Context.metadata.getEpisodeUpdatedCRC32(
+					episode.arc,
+					episode.episode,
+				)
+
+				if (targetCRC32 != CRC32) {
+					Logger.debug(
+						`File '${file}' is not most up to date (probably part of an outdated batch)... Skipping import`,
+					)
 					continue
 				}
 
@@ -198,17 +226,8 @@ export class qBittorrentController {
 			}
 		}
 
-		let categories: TorrentCategories = await this.client.getCategories()
-		if (!categories[environment.TORRENT_CATEGORY_ONCE_COMPLETED]) {
-			Logger.info(
-				`Creating '${environment.TORRENT_CATEGORY_ONCE_COMPLETED}' qBittorrent category`,
-			)
-			await this.client.createCategory(
-				environment.TORRENT_CATEGORY_ONCE_COMPLETED,
-			)
-		}
-		await this.client.setTorrentCategory(
-			torrent.hash,
+		await this.client.updateTorrentCategory(
+			torrent,
 			environment.TORRENT_CATEGORY_ONCE_COMPLETED,
 		)
 	}

@@ -1,0 +1,41 @@
+export type TorrentInfo = {
+	magnetURI: string
+	infoHash: string
+}
+
+export type Metadata = {
+	status: {
+		last_update: string
+		last_update_ts: number
+	}
+	tvshow: any
+	arcs: {
+		[key: string]: {
+			part: number
+			saga: string
+			title: string
+			description: string
+			episodes: {
+				episode: string
+				standard: string
+				extended: string
+			}[]
+		}[]
+	}
+	descriptions: {
+		[key: string]: {
+			arc: number
+			episode: number
+			title: string
+			description: string
+		}[]
+	}
+	episodes: {
+		[key: string]: {
+			arc: number
+			episode: number
+			extended: boolean
+		}
+	}
+	other_edits: any
+}

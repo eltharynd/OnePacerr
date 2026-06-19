@@ -1,44 +1,15 @@
 import axios from 'axios'
+import { copyFileSync, mkdirSync, unlinkSync, writeFileSync } from 'fs'
+import path from 'path'
 import environment from '../environment.js'
-import Logger from '../util/logger.js'
 import { Context } from '../util/context.js'
 import getFileCrc32Hash from '../util/crc32.js'
-import { env } from 'process'
-import path from 'path'
-import { copyFileSync, mkdirSync, unlinkSync, writeFileSync } from 'fs'
+import Logger from '../util/logger.js'
 import sanitizeWindowsFileName from '../util/sanitizeWindowsFilename.js'
+import { Metadata, TorrentInfo } from './metada.model.js'
 
 export class MetadataController {
-	private metadata: {
-		status: {
-			last_update: string
-			last_update_ts: number
-		}
-		tvshow: any
-		arcs: {
-			[key: string]: {
-				part: number
-				saga: string
-				title: string
-				description: string
-				episodes: {
-					episode: string
-					standard: string
-					extended: string
-				}[]
-			}[]
-		}
-		descriptions: {
-			[key: string]: {
-				arc: number
-				episode: number
-				title: string
-				description: string
-			}[]
-		}
-		episodes: any
-		other_edits: any
-	}
+	private metadata: Metadata
 
 	async refreshMetadata() {
 		Logger.info(`Refreshing Metadata...`)
@@ -49,7 +20,7 @@ export class MetadataController {
 		) {
 			Logger.info(`Newer Metadata found!`)
 			this.metadata = (await axios.get(environment.METADATA_URL)).data
-			await this.processEpisodes()
+			await this.processMetadataEpisodes()
 		}
 
 		setTimeout(async () => {
@@ -57,7 +28,7 @@ export class MetadataController {
 		}, environment.METADATA_CHECK_INTERVAL)
 	}
 
-	async processEpisodes() {
+	async processMetadataEpisodes() {
 		Logger.info(`Processing episodes from metadata...`)
 		for (let arc of this.metadata.arcs[environment.METADATA_LANGUAGE]) {
 			if (arc.part === 0 && !environment.INCLUDE_SPECIALS) {
@@ -65,8 +36,12 @@ export class MetadataController {
 				continue
 			}
 
+			if (arc.part != 35) continue
+
 			Logger.info(`Processing Season ${arc.part}...`)
 			for (let episode of arc.episodes) {
+				if (Number.parseInt(episode.episode) > 5) continue
+
 				Logger.debug(
 					`Episode ${arc.part}-${String(episode.episode).padStart(2, '0')} - Processing`,
 				)
@@ -325,7 +300,7 @@ export class MetadataController {
 			rsstitle = 'Skypiea 25 Alternate Cut (G-8)'
 		}
 
-		let torrentInfo
+		let torrentInfo: TorrentInfo
 		try {
 			torrentInfo = await Context.rss.getTorrentInfo(rsstitle)
 		} catch (e) {
@@ -337,14 +312,25 @@ export class MetadataController {
 		await Context.torrent.queueDownload(torrentInfo)
 	}
 
-	async getEpisodeFromCRC32(CRC32: string) {
+	getEpisodeUpdatedCRC32(arc: number, episode: number): string {
+		let target = this.metadata.arcs[environment.METADATA_LANGUAGE]
+			.find(a => a.part === arc)
+			.episodes.find(e => Number.parseInt(e.episode) == episode)
+		return environment.PREFER_EXTENDED && !!target.extended
+			? target.extended
+			: target.standard
+	}
+
+	getEpisodeFromCRC32(CRC32: string) {
 		let episode = this.metadata.episodes[CRC32]
 		if (!episode) {
 			if (CRC32 == '704F68EA') {
 				Logger.debug(`Skypiea 14 manual correction`)
 				return { arc: 16, episode: 14 }
 			}
-			Logger.error(`CRC32 ${CRC32} not in metadata...`)
+			Logger.warn(
+				`CRC32 ${CRC32} not in metadata... Could just be an out of date release in a batch...`,
+			)
 			throw new Error(`CRC32 ${CRC32} not in metadata...`)
 		}
 		return episode
