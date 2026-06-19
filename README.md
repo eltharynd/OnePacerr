@@ -280,7 +280,7 @@ If you want to contribute to the posters or create an entire new set, first of a
 ## 📅 Roadmap
 
 - [x] **Poster settings to chose either official/alternate or customs** (since v1.1.1)
-- [ ] **Remove Plex requirement** for when someone just wants to organize a standakone folder
+- [ ] **Remove Plex requirement** for when someone just wants to organize a standalone folder
 - [ ] **Handle RSS/Metadata fetch failures** with a delayed retry or something...
 - [ ] **Rest API** Manual execution/status endpoints
 - [ ] **Support alternate torrent clients** (thinking uTorrent and deluge)
