@@ -240,10 +240,10 @@ If you want to contribute to the posters or create an entire new set, first of a
 
 ## 📅 Roadmap
 
+- [x] **Poster settings to chose either official/alternate or customs** (since v1.1.1)
 - [ ] **Handle RSS/Metadata fetch failures** with a delayed retry or something...
 - [ ] **Rest API** Manual execution/status endpoints
 - [ ] **Support alternate torrent clients** (thinking uTorrent and deluge)
-- [ ] **Poster settings to chose either official/alternate or customs**
 - [ ] **Jellyfin Support** _(Requested by Marci)_
 - [Request a new feature](https://github.com/eltharynd/OnePacerr/issues)
 
