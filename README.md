@@ -352,6 +352,7 @@ If you want to contribute to the posters or create an entire new set, first of a
   - Do so by refactoring PlexController with Factory style so new LibraryControllers can be more easily implemented. This would speed up Jellyfin/Kodi/Emby implementation considerally. Treat no media server the same way just organizing a folder and creating .plexmatch .nfo and such
 - [X] **Local Folder Metadata** files creation so that they can later be moved to any Media Server (since v1.3.0)
 - [X] **Jellyfin Support** _(Requested by Marci on Discord)_ (since v1.3.0)
+- [ ] **Jellyfin alternate Auth methods**
 - [ ] **Emby Support** _(Requested by u/RealJustMe on r/Servarr)_
 - [ ] **Add posters via path** to reduce plex metadata update time...
 - [ ] **Filters** to skip seasons/episodes
