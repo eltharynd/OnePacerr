@@ -1,11 +1,19 @@
 export type LibraryClient = 'none' | 'plex' | 'jellyfin' | 'emby'
+export type TargetLibraryFile = {
+	readonly path: string
+	readonly filename: string
+}
 
 export interface ILibraryController {
 	readonly libraryClient: LibraryClient
 
 	init()
 
-	getEpisodeFile(season: number, episode: number, purePlex?: boolean)
+	getEpisodeFilePath(
+		season: number,
+		episode: number,
+		pathAccordingToMediaServer?: boolean,
+	)
 	getLibraryFolder()
 	scanLibrary(folder: string, arc: number)
 	updateEpisodeMetadata(
@@ -16,7 +24,7 @@ export interface ILibraryController {
 	)
 	updateSeasonMetadata(arc: number)
 	updateShowMetadata()
-	getTargetPlexFullPath(
+	getTargetLibraryPath(
 		arc: number,
 		episode: number,
 		episodeDescription?: { title: string; description: string },

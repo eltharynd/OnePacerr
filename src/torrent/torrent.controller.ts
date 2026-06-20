@@ -7,6 +7,7 @@ import Logger from '../util/logger.js'
 import sanitizeWindowsFileName from '../util/sanitizeWindowsFilename.js'
 import { qBittorrentController } from './clients/qbittorrent.controller.js'
 import { ITorrentController, Torrent, TorrentClient } from './torrent.model.js'
+import { TargetLibraryFile } from '../library/library.model.js'
 
 export class TorrentController {
 	private client: ITorrentController
@@ -143,15 +144,18 @@ export class TorrentController {
 					continue
 				}
 
-				let { targetPlexPath, targetPlexFileName } =
-					await Context.plex.getTargetPlexFullPath(episode.arc, episode.episode)
+				let targetLibraryFile: TargetLibraryFile =
+					await Context.library.getTargetLibraryPath(
+						episode.arc,
+						episode.episode,
+					)
 
-				let previousPlexFileName
+				let previousLibraryFileName
 
 				try {
 					let existingPlexFiles = readdirSync(
 						path.resolve(
-							targetPlexPath.replace(
+							targetLibraryFile.path.replace(
 								environment.MOUNT_LIBRARY_MEDIA_SERVER,
 								environment.MOUNT_LIBRARY_ONEPACERR,
 							),
@@ -164,7 +168,7 @@ export class TorrentController {
 							.replace(/^.+S[0-9][0-9]E/, '')
 							.replace(/\ .+$/, '')
 						if (episodeNumber == episode.episode) {
-							previousPlexFileName = existingFile
+							previousLibraryFileName = existingFile
 						}
 					}
 				} catch (e) {
@@ -173,21 +177,21 @@ export class TorrentController {
 
 				const source = file
 				const destinationFolder = path.resolve(
-					`${targetPlexPath}`.replaceAll(
+					`${targetLibraryFile.path}`.replaceAll(
 						environment.MOUNT_LIBRARY_MEDIA_SERVER,
 						environment.MOUNT_LIBRARY_ONEPACERR,
 					),
 				)
 				const destination = path.resolve(
-					`${targetPlexPath}${targetPlexFileName}`.replaceAll(
+					`${targetLibraryFile.path}${targetLibraryFile.path}`.replaceAll(
 						environment.MOUNT_LIBRARY_MEDIA_SERVER,
 						environment.MOUNT_LIBRARY_ONEPACERR,
 					),
 				)
 
-				if (previousPlexFileName) {
+				if (previousLibraryFileName) {
 					const toDelete = path.resolve(
-						`${targetPlexPath}${previousPlexFileName}`.replaceAll(
+						`${targetLibraryFile.path}${previousLibraryFileName}`.replaceAll(
 							environment.MOUNT_LIBRARY_MEDIA_SERVER,
 							environment.MOUNT_LIBRARY_ONEPACERR,
 						),
@@ -199,7 +203,7 @@ export class TorrentController {
 						)
 					} catch (e) {
 						Logger.error(
-							`Couldn't delete '${previousPlexFileName}', it probably has been deleted already but plex didn't scan the library...`,
+							`Couldn't delete '${previousLibraryFileName}', it probably has been deleted already but plex didn't scan the library...`,
 						)
 					}
 				}

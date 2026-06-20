@@ -8,7 +8,7 @@ class ContextContainer {
 	express: Express
 	metadata: MetadataController
 	rss: RSSController
-	plex: LibraryController
+	library: LibraryController
 	torrent: TorrentController
 }
 
@@ -18,6 +18,6 @@ export default {
 	express: Express,
 	metadata: MetadataController,
 	rss: RSSController,
-	plex: LibraryController,
+	library: LibraryController,
 	torrent: TorrentController,
 }

@@ -7,6 +7,7 @@ import getFileCrc32Hash from '../util/crc32.js'
 import Logger from '../util/logger.js'
 import sanitizeWindowsFileName from '../util/sanitizeWindowsFilename.js'
 import { Metadata, TorrentInfo } from './metada.model.js'
+import { TargetLibraryFile as TargetLibraryFile } from '../library/library.model.js'
 
 export class MetadataController {
 	private metadata: Metadata
@@ -47,7 +48,7 @@ export class MetadataController {
 					episode.standard = '704F68EA'
 				}
 
-				let file = await Context.plex.getEpisodeFile(
+				let file = await Context.library.getEpisodeFile(
 					arc.part,
 					Number.parseInt(episode.episode),
 				)
@@ -168,28 +169,34 @@ export class MetadataController {
 			`Episode ${arc}-${String(episode).padStart(2, '0')} - Verifying path format...`,
 		)
 
-		let plexFile = await Context.plex.getEpisodeFile(arc, episode, true)
+		let plexFile = await Context.library.getEpisodeFile(arc, episode, true)
 
 		let episodeDescription = await Context.metadata.getEpisodeDescription(
 			arc,
 			episode,
 		)
-		let { targetPlexPath, targetPlexFileName } =
-			await Context.plex.getTargetPlexFullPath(arc, episode, episodeDescription)
+		let targetLibraryFile: TargetLibraryFile =
+			await Context.library.getTargetLibraryPath(
+				arc,
+				episode,
+				episodeDescription,
+			)
 
 		if (
 			plexFile !=
-			sanitizeWindowsFileName(`${targetPlexPath}${targetPlexFileName}`)
+			sanitizeWindowsFileName(
+				`${targetLibraryFile.path}${targetLibraryFile.filename}`,
+			)
 		) {
-			let serverFile = await Context.plex.getEpisodeFile(arc, episode)
+			let serverFile = await Context.library.getEpisodeFile(arc, episode)
 			let targetFolder = path.resolve(
-				`${targetPlexPath}`.replace(
+				`${targetLibraryFile.path}`.replace(
 					environment.MOUNT_LIBRARY_MEDIA_SERVER,
 					environment.MOUNT_LIBRARY_ONEPACERR,
 				),
 			)
 			let targetFile = path.resolve(
-				`${targetPlexPath}${targetPlexFileName}`.replace(
+				`${targetLibraryFile.path}${targetLibraryFile.filename}`.replace(
 					environment.MOUNT_LIBRARY_MEDIA_SERVER,
 					environment.MOUNT_LIBRARY_ONEPACERR,
 				),
@@ -213,15 +220,15 @@ export class MetadataController {
 				plexmatch,
 			)
 
-			await Context.plex.scanLibrary(targetPlexPath, arc)
+			await Context.library.scanLibrary(targetLibraryFile.path, arc)
 
 			unlinkSync(sanitizeWindowsFileName(serverFile))
 
-			await Context.plex.scanLibrary(
+			await Context.library.scanLibrary(
 				plexFile.replace(/[\\/]+[^\\/]+$/, ''),
 				arc,
 			)
-			await Context.plex.updateEpisodeMetadata(
+			await Context.library.updateEpisodeMetadata(
 				arc,
 				episode,
 				episodeDescription.title,
@@ -246,19 +253,23 @@ export class MetadataController {
 			arc,
 			episode,
 		)
-		let { targetPlexPath, targetPlexFileName } =
-			await Context.plex.getTargetPlexFullPath(arc, episode, episodeDescription)
+		let targetLibraryFile: TargetLibraryFile =
+			await Context.library.getTargetLibraryPath(
+				arc,
+				episode,
+				episodeDescription,
+			)
 
-		await Context.plex.scanLibrary(targetPlexPath, arc)
+		await Context.library.scanLibrary(targetLibraryFile.path, arc)
 
-		await Context.plex.updateEpisodeMetadata(
+		await Context.library.updateEpisodeMetadata(
 			arc,
 			episode,
 			episodeDescription.title,
 			episodeDescription.description,
 		)
-		await Context.plex.updateSeasonMetadata(arc)
-		await Context.plex.updateShowMetadata()
+		await Context.library.updateSeasonMetadata(arc)
+		await Context.library.updateShowMetadata()
 	}
 
 	getEpisodeDescription(

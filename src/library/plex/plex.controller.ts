@@ -7,7 +7,11 @@ import { Context } from '../../util/context.js'
 import Logger from '../../util/logger.js'
 import sanitizeWindowsFileName from '../../util/sanitizeWindowsFilename.js'
 import resolvePosterPath from '../../util/resolvePosterPath.js'
-import { ILibraryController, LibraryClient } from '../library.model.js'
+import {
+	ILibraryController,
+	LibraryClient,
+	TargetLibraryFile,
+} from '../library.model.js'
 
 export class PlexController implements ILibraryController {
 	libraryClient: LibraryClient = 'plex'
@@ -16,12 +20,12 @@ export class PlexController implements ILibraryController {
 	private section: ShowSection
 	private show: Show
 
-	private ws
+	private ws: WebSocket
 
 	constructor(options: { url: string; token: string }) {
-		this.server = new PlexServer(environment.PLEX_URL, environment.PLEX_TOKEN)
+		this.server = new PlexServer(options.url, options.token)
 		this.ws = new WebSocket(
-			`ws://${environment.PLEX_URL.replace('http://', '')}/:/websockets/notifications?X-Plex-Token=${environment.PLEX_TOKEN}`,
+			`ws://${options.url.replace('http://', '')}/:/websockets/notifications?X-Plex-Token=${options.token}`,
 		)
 		this.ws.on('open', () => {
 			Logger.debug('Connected to Plex Live Event Stream')
@@ -82,7 +86,11 @@ export class PlexController implements ILibraryController {
 		}
 	}
 
-	async getEpisodeFile(season: number, episode: number, purePlex?: boolean) {
+	async getEpisodeFilePath(
+		season: number,
+		episode: number,
+		pathAccordingToMediaServer?: boolean,
+	) {
 		let _episode
 		try {
 			_episode = await this.show.episode({ season: season, episode: episode })
@@ -111,7 +119,7 @@ export class PlexController implements ILibraryController {
 
 		let part: MediaPart = _episode.media[0].parts[0]
 
-		if (!purePlex)
+		if (!pathAccordingToMediaServer)
 			return path.resolve(
 				part.file.replace(
 					environment.MOUNT_LIBRARY_MEDIA_SERVER,
@@ -119,10 +127,6 @@ export class PlexController implements ILibraryController {
 				),
 			)
 		else return part.file
-	}
-
-	async getLibraryFolder() {
-		return await this.section.locations.map(loc => loc.path)[0]
 	}
 
 	async scanLibrary(folder: string, arc: number) {
@@ -251,11 +255,11 @@ export class PlexController implements ILibraryController {
 		)
 	}
 
-	async getTargetPlexFullPath(
+	async getTargetLibraryPath(
 		arc: number,
 		episode: number,
 		episodeDescription?: { title: string; description: string },
-	): Promise<{ targetPlexFileName: string; targetPlexPath: string }> {
+	): Promise<TargetLibraryFile> {
 		if (!episodeDescription) {
 			episodeDescription = await Context.metadata.getEpisodeDescription(
 				arc,
@@ -263,7 +267,7 @@ export class PlexController implements ILibraryController {
 			)
 		}
 
-		let plexLibraryPath = await Context.plex.getLibraryFolder()
+		let plexLibraryPath = await Context.library.getLibraryFolder()
 		let plexSeparator = plexLibraryPath.includes('/') ? '/' : '\\'
 
 		const format = environment.LIBRARY_FILENAME_FORMAT
@@ -286,8 +290,12 @@ export class PlexController implements ILibraryController {
 		let targetPlexPath = `${plexLibraryPath}${plexSeparator}${environment.LIBRARY_SERIES_FOLDER_NAME}${plexSeparator}Season ${String(arc).padStart(2, '0')}${plexSeparator}`
 
 		return {
-			targetPlexFileName,
-			targetPlexPath,
+			path: targetPlexPath,
+			filename: targetPlexFileName,
 		}
+	}
+
+	async getLibraryFolder() {
+		return await this.section.locations.map(loc => loc.path)[0]
 	}
 }

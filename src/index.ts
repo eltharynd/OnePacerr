@@ -37,7 +37,7 @@ const startApp = async () => {
 
 		Context.metadata = new MetadataController()
 		Context.rss = new RSSController()
-		Context.plex = new LibraryController()
+		Context.library = new LibraryController()
 		Context.torrent = new TorrentController()
 
 		Logger.info('APPLICATION STARTED SUCCESSFULLY...')
@@ -48,7 +48,7 @@ const startApp = async () => {
 	}
 
 	try {
-		await Context.plex.init()
+		await Context.library.init()
 		await Context.metadata.refreshMetadata()
 		await Context.torrent.startWatching()
 	} catch (e) {

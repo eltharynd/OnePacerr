@@ -7,16 +7,15 @@ import { Context } from '../util/context.js'
 import Logger from '../util/logger.js'
 import resolvePosterPath from '../util/resolvePosterPath.js'
 import sanitizeWindowsFileName from '../util/sanitizeWindowsFilename.js'
-import { ILibraryController, LibraryClient } from './library.model.js'
+import {
+	ILibraryController,
+	LibraryClient,
+	TargetLibraryFile,
+} from './library.model.js'
 import { PlexController } from './plex/plex.controller.js'
 
 export class LibraryController {
 	private client: ILibraryController
-	// private ws
-
-	// private server: PlexServer
-	// private section: ShowSection
-	// private show: Show
 
 	constructor() {
 		switch (environment.LIBRARY_MEDIA_SERVER as LibraryClient) {
@@ -41,8 +40,16 @@ export class LibraryController {
 		this.client.init()
 	}
 
-	async getEpisodeFile(season: number, episode: number, purePlex?: boolean) {
-		return this.client.getEpisodeFile(season, episode, purePlex)
+	async getEpisodeFile(
+		season: number,
+		episode: number,
+		pathAccordingToMediaServer?: boolean,
+	) {
+		return this.client.getEpisodeFilePath(
+			season,
+			episode,
+			pathAccordingToMediaServer,
+		)
 	}
 
 	async getLibraryFolder() {
@@ -70,11 +77,11 @@ export class LibraryController {
 		return this.client.updateShowMetadata()
 	}
 
-	async getTargetPlexFullPath(
+	async getTargetLibraryPath(
 		arc: number,
 		episode: number,
 		episodeDescription?: { title: string; description: string },
-	): Promise<{ targetPlexFileName: string; targetPlexPath: string }> {
-		return this.client.getTargetPlexFullPath(arc, episode, episodeDescription)
+	): Promise<TargetLibraryFile> {
+		return this.client.getTargetLibraryPath(arc, episode, episodeDescription)
 	}
 }
