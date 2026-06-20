@@ -320,6 +320,7 @@ If you want to contribute to the posters or create an entire new set, first of a
   - Do so by refactoring PlexController with Factory style so new LibraryControllers can be more easily implemented. This would speed up Jellyfin/Kodi/Emby implementation considerally. Treat no media server the same way just organizing a folder and creating .plexmatch .nfo and such
 - [ ] **Jellyfin Support** _(Requested by Marci on Discord)_
 - [ ] **Emby Support** _(Requested by u/RealJustMe on r/Servarr)_
+- [ ] **Add posters via url** to reduce image size...
 - [ ] **Handle Network failures** with a delayed retry or something...
 - [ ] **Rest API** Manual execution/status/configuration endpoints
 - [ ] **Support alternate torrent clients** (thinking uTorrent and deluge)

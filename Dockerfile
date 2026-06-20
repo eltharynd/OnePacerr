@@ -1,18 +1,20 @@
-FROM node:24-slim AS builder
+FROM node:lts-alpine AS builder
 
 WORKDIR /app
 COPY package.json ./
 RUN npm i
-COPY . .
+COPY src /app/src
+COPY tsconfig.json .
 RUN npm run build
+RUN npm prune --omit=dev
 
 
-FROM node:24-slim AS runner
+FROM node:lts-alpine AS runner
 
 WORKDIR /app
 COPY package.json ./
 COPY posters ./posters
-RUN npm i --omit=dev
+COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/dist ./dist
 
 RUN touch .env
