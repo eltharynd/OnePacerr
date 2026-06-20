@@ -15,7 +15,7 @@ episodes fully up to date, as well as adding metadata and custom posters for you
 
 Other than downloading and organizing your episode files, it also updates metadata and posters so that it looks nice and professional on your Media Server setups.
 
-<table>
+<table cellspacing="0" cellpadding="0" style="border: none;">
   <tr>
     <td><img src="./docs/plex.png" alt='plex' width="100"></tc>
     <td><img src="./docs/jellyfin.png" alt='jellyfin' width="100"></tc>
