@@ -9,12 +9,17 @@
 **OnePacerr** is a standalone, automated One Pace download tool designed specifically for
 Sonarr/Plex Home Server setups.
 
-⚠️ It does **require** Plex atm, because it's built specifically to manage it, but maybe in the future I could modify to skip the Plex part (let me know if you're interested).
-
 Because Sonarr does not natively support [One
 Pace](https://onepace.net/) (the fan-edited, manga-accurate version of One Piece), this app
 bridges the gap by automatically downloading, organizing, and keeping your One Pace
-episodes fully up to date, as well as adding metadata and custom posters for them in Plex.
+episodes fully up to date, as well as adding metadata and custom posters for your Media Server.
+
+We plan to support as many Media Severs as possible, the following is the current status of the implementation:
+
+- **Local Folder**: 👷‍♂️ WIP, refactoring of LibraryController is in progress to allow faster/better implementations.
+- **Plex Media Server**: ✅ Import, Metadata, Posters are all working.
+- **Jellyfin**: 🕒 Implementation will start very soon, you can expect an implementation by 21.06.2026
+- **Emby**: ❌ Will implement after jellyfin, don't have a deadline for you
 
 ## 📃 Table of Contents
 
@@ -42,17 +47,16 @@ episodes fully up to date, as well as adding metadata and custom posters for the
 
 - **Automated Discovery:** Continuously pulls One Pace's RSS Release feed and
   metadata to detect new episodes.
-- **Smart Library Scanning:** Scans your existing Plex library to compare available
-  episodes against your local files.
+- **Smart Library Scanning:** Scans your existing Media Server (Plex, Jellyfin, Emby) or Local Folder Library to compare latest episodes against your local files.
 - **File Verification (Optional):** Hashes existing files to ensure they match the latest
   releases and automatically re-downloads outdated versions.
-- **File Organization (Optional):** Scans your existing Plex library and renames files accordingly when needed.
+- **File Organization (Optional):** Scans your existing Media Server (Plex, Jellyfin, Emby) or Local Folder library and renames files accordingly when needed.
 - **Seamless Downloading (Optional):** Automatically sends `magnetURI` links to qBittorrent for
   missing episodes.
 
 - **qBittorrent Monitoring (Optional):** Tracks download progress. Once completed, it:
-  - Copies and renames the file to your designated Plex Library folder.
-  - Updates the metadata directly on Plex.
+  - Copies and renames the file to your designated Library folder.
+  - Updates the metadata either directly on your Media Server (Plex, Jellyfin, Emby) or creates the files on your Local Folder for later imports.
   - Assigns a custom (`completed`) category to the processed torrents in qBittorrent.
 
 ## 🧪 Pipeline
@@ -76,8 +80,12 @@ Before running OnePacerr, ensure you have the following services up and running:
     - create a `.env` file in root (use `sample.env` as example)
     - `npm install`
     - `npm start`
-- [**Plex Media Server**](https://hub.docker.com/r/linuxserver/plex)
 - [**qBittorrent**](https://hub.docker.com/r/linuxserver/qbittorrent) (with WebUI enabled)
+  - More torrenting clients coming
+- You can also just organize a Local Folder, but usually people use this to organize their media server:
+  - [**Plex Media Server**](https://hub.docker.com/r/linuxserver/plex)
+  - [**Jellyfin**](https://hub.docker.com/r/linuxserver/jellyfin)
+  - [**Emby**](https://hub.docker.com/r/linuxserver/emby)
 
 ### 📝 Recommended configs
 
@@ -158,7 +166,7 @@ services:
       #- METADATA_POSTER_SET=default
 
       # Cross-Mount Mapping (Uncomment if needed, defaults to nothing)
-      #- MOUNT_LIBRARY_PLEX=/mnt/Library/Series
+      #- MOUNT_LIBRARY_MEDIA_SERVER=/mnt/Library/Series
       #- MOUNT_LIBRARY_ONEPACERR=\\TRUENAS\series
       #- MOUNT_DOWNLOADS_QBITTORRENT=/mnt/Applications/Downloads
       #- MOUNT_DOWNLOADS_ONEPACERR=\\TRUENAS\downloads
@@ -211,8 +219,11 @@ Here is a breakdown of key optional variables you can adjust in your
 `docker-compose.yml` or in your `.env` file:
 
 - ⭐ Mandatory
-- 🍤 Can leave empty but double check default matches plex
+- 🍤 Can leave empty but double check default works for you
 - 🍏 Useful
+- 💭 These configuration are specific to your chosen Media Server type (`$LIBRARY_MEDIA_SERVER`) so you only need to specify the ones for your case.
+
+### General
 
 | Pipeline Variables | Default | Description |
 | :--- | :--- | :--- |
@@ -227,27 +238,52 @@ Here is a breakdown of key optional variables you can adjust in your
 
 | Mount Configuration Variables | Default | Description |
 | :--- | :--- | :--- |
-| `MOUNT_LIBRARY_PLEX` | _None_ | Use these mapping variables if **Plex** uses different mount paths than the OnePacerr container. |
-| `MOUNT_LIBRARY_ONEPACERR` | _None_ | Use these mapping variables if **Plex** uses different mount paths than the OnePacerr container. |
+| `MOUNT_LIBRARY_MEDIA_SERVER` | _None_ | Use these mapping variables if your **Media Server** uses different mount paths than the OnePacerr container. |
+| `MOUNT_LIBRARY_ONEPACERR` | _None_ | Use these mapping variables if your **Media Server** uses different mount paths than the OnePacerr container. |
 | `MOUNT_DOWNLOADS_QBITTORRENT` | _None_ | Use these mapping variables if **qBittorrent** uses different mount paths than the OnePacerr container. |
 | `MOUNT_DOWNLOADS_ONEPACERR` | _None_ | Use these mapping variables if **qBittorrent** uses different mount paths than the OnePacerr container. |
 
-| Plex Variables | Default | Description |
+### Library (Common)
+
+> [!IMPORTANT]  
+> Configure the Library (Media Server) type here.
+>
+> `none` just organizes files in a folder, when metadata is updated it creates `.plexmatch`, `.nfo` and all of the files that can be then used to automatically add metadata if imported to a Media Server at a later time.
+>
+> `plex` currently working.
+>
+> `jellyfin` coming soon.
+>
+> `emby` coming soon.
+
+| Library Variables | Default | Description |
+| :--- | :--- | :--- |
+| ⭐ `LIBRARY_MEDIA_SERVER` | `plex` | Media server, can be either `plex`, `jellyfin`, `emby` or `none` if you just want to organize files in a folder. |
+| 🍤 `LIBRARY_SERIES_NAME` | `One Pace` | Name of the Series in Plex. |
+| `LIBRARY_SERIES_FOLDER_NAME` | `$LIBRARY_SERIES_NAME` | Override when the Plex folder needs to be called differently from `LIBRARY_SERIES_NAME`. |
+| `LIBRARY_FILENAME_FORMAT` | `{SERIES_NAME} - S{ARC}E{EPISODE} - {TITLE}.mkv` | Overrides the filename each file should have, `{SERIES_NAME}`, `{ARC}`, `{EPISODE}` and `{TITLE}` will be replaced with values. `.mkv` automatically added if not specified. |
+
+### Library (Local Folder)
+
+| 💭 Library - None | Default | Description |
+| :--- | :--- | :--- |
+| 🍤 `LIBRARY_NONE_ROOT_FOLDER` | `%UserProfile%\Downloads\OnePacerr` | The root folder where your Library should be saved (Do not Include LIBRARY_SERIES_FOLDER_NAME). |
+
+### Library (Plex Media Server)
+
+| 💭 Library - Plex Variables | Default | Description |
 | :--- | :--- | :--- |
 | ⭐ `PLEX_URL` | `http://localhost:32400` | Plex URL. |
 | ⭐ `PLEX_TOKEN` | _None_ | Your [Plex Token](https://support.plex.tv/articles/204059436-finding-an-authentication-token-x-plex-token/). |
 | 🍤 `PLEX_LIBRARY_NAME` | `TV Shows` | Name of the Library in Plex. |
-| 🍤 `PLEX_SERIES_NAME` | `One Pace` | Name of the Series in Plex. |
-| `PLEX_SERIES_FOLDER_NAME` | `PLEX_SERIES_NAME` | Override when the Plex folder needs to be called differently from `PLEX_SERIES_NAME`. |
-| `PLEX_FILENAME_FORMAT` | `{SERIES_NAME} - S{ARC}E{EPISODE} - {TITLE}.mkv` | Overrides the filename each file should have, `{SERIES_NAME}`, `{ARC}`, `{EPISODE}` and `{TITLE}` will be replaced with values. `.mkv` automatically added if not specified. |
 | `PLEX_CREATE_SHOW_IF_NOT_FOUND` | `true` | If `false`, the app crashes if "PLEX_SERIES_NAME" isn't already on Plex (useful for catching typos on first setup). Leave `true` to auto-create the show. |
 
 | Torrent Variables | Default | Description |
 | :--- | :--- | :--- |
+| 🍤 `TORRENT_CLIENT` | `qbittorrent` | Your torrent client. Will be used in the future to use different clients rather tnax qBittorrent. |
 | ⭐ `TORRENT_URL` | `http://localhost:80` | Your torrent API URL. |
 | ⭐ `TORRENT_USER` | _None_ | Your torrent API username. |
 | ⭐ `TORRENT_PASSWORD` | _None_ | Your torrent API password. |
-| `TORRENT_CLIENT` | `qbittorrent` | Your torrent client. Will be used in the future to use different clients rather tnax qBittorrent. |
 | `TORRENT_CATEGORY` | `onepacerr` | Creates downloads with this category, also filters completed torrents using this. |
 | `TORRENT_CATEGORY_ONCE_COMPLETED` | `completed` | After processing completed downloads, changes the torrent category to this one. |
 | `TORRENT_CHECK_INTERVAL` | `60` | Seconds between checking for completed downloads. |

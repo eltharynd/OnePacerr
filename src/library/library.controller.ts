@@ -5,10 +5,10 @@ import WebSocket from 'ws'
 import environment from '../environment.js'
 import { Context } from '../util/context.js'
 import Logger from '../util/logger.js'
-import sanitizeWindowsFileName from '../util/sanitizeWindowsFilename.js'
 import resolvePosterPath from '../util/resolvePosterPath.js'
+import sanitizeWindowsFileName from '../util/sanitizeWindowsFilename.js'
 
-export class PlexController {
+export class LibraryController {
 	private ws
 
 	private server: PlexServer
@@ -57,18 +57,18 @@ export class PlexController {
 		Logger.info(`Searching for Plex Show...`)
 
 		let searchResults = await this.section.search({
-			title: environment.PLEX_SERIES_NAME,
+			title: environment.LIBRARY_SERIES_NAME,
 		})
 		if (searchResults.length < 1) {
 			if (!environment.PLEX_CREATE_SHOW_IF_NOT_FOUND) {
 				Logger.error(
-					`Could not find show '${environment.PLEX_SERIES_NAME}' in library '${environment.PLEX_LIBRARY_NAME}'...`,
+					`Could not find show '${environment.LIBRARY_SERIES_NAME}' in library '${environment.PLEX_LIBRARY_NAME}'...`,
 				)
 				throw new Error('Show not found')
 			}
 		} else if (searchResults.length > 1) {
 			Logger.error(
-				`Could not find show '${environment.PLEX_SERIES_NAME}' in library '${environment.PLEX_LIBRARY_NAME}'...`,
+				`Could not find show '${environment.LIBRARY_SERIES_NAME}' in library '${environment.PLEX_LIBRARY_NAME}'...`,
 			)
 			throw new Error('Too many shows found')
 		}
@@ -111,7 +111,7 @@ export class PlexController {
 		if (!purePlex)
 			return path.resolve(
 				part.file.replace(
-					environment.MOUNT_LIBRARY_PLEX,
+					environment.MOUNT_LIBRARY_MEDIA_SERVER,
 					environment.MOUNT_LIBRARY_ONEPACERR,
 				),
 			)
@@ -125,9 +125,9 @@ export class PlexController {
 	async scanLibrary(folder: string, arc: number) {
 		Logger.debug(`Refreshing Library`)
 
-		let plexmatch = `show: ${environment.PLEX_SERIES_NAME}`
+		let plexmatch = `show: ${environment.LIBRARY_SERIES_NAME}`
 		writeFileSync(
-			`${path.resolve(sanitizeWindowsFileName(`${folder.replace(environment.MOUNT_LIBRARY_PLEX, environment.MOUNT_LIBRARY_ONEPACERR)}${path.sep}..`))}${path.sep}.plexmatch`,
+			`${path.resolve(sanitizeWindowsFileName(`${folder.replace(environment.MOUNT_LIBRARY_MEDIA_SERVER, environment.MOUNT_LIBRARY_ONEPACERR)}${path.sep}..`))}${path.sep}.plexmatch`,
 			plexmatch,
 		)
 
@@ -142,7 +142,7 @@ export class PlexController {
 					if (
 						activity.title.startsWith('Scanning') &&
 						activity.subtitle ==
-							`${environment.PLEX_SERIES_FOLDER_NAME} - Season ${String(arc).padStart(2, '0')}` &&
+							`${environment.LIBRARY_SERIES_FOLDER_NAME} - Season ${String(arc).padStart(2, '0')}` &&
 						activity.progress >= 100
 					) {
 						Logger.debug(`Plex notified folder update`)
@@ -233,7 +233,7 @@ export class PlexController {
 		Logger.debug(`Updating Show Metadata in Plex...`)
 		let description = await Context.metadata.getShowDescription()
 
-		await this.show.editTitle(environment.PLEX_SERIES_NAME)
+		await this.show.editTitle(environment.LIBRARY_SERIES_NAME)
 		await this.show.editSummary(description.plot)
 
 		if (!environment.SKIP_POSTERS) {
@@ -263,9 +263,9 @@ export class PlexController {
 		let plexLibraryPath = await Context.plex.getLibraryFolder()
 		let plexSeparator = plexLibraryPath.includes('/') ? '/' : '\\'
 
-		const format = environment.PLEX_FILENAME_FORMAT
+		const format = environment.LIBRARY_FILENAME_FORMAT
 		const variables: Record<string, string> = {
-			SERIES_NAME: environment.PLEX_SERIES_NAME,
+			SERIES_NAME: environment.LIBRARY_SERIES_NAME,
 			ARC: String(arc).padStart(2, '0'),
 			EPISODE: String(episode).padStart(2, '0'),
 			TITLE: episodeDescription.title,
@@ -273,12 +273,14 @@ export class PlexController {
 		//let targetPlexFileName = `${environment.PLEX_SERIES_NAME} - S${String(arc).padStart(2, '0')}E${String(episode).padStart(2, '0')} - ${episodeDescription.title}.mkv`
 		let targetPlexFileName = format.replace(/\{(\w+)\}/g, (match, key) => {
 			if (!(key in variables)) {
-				throw new Error(`Unknown placeholder in PLEX_FILENAME_FORMAT: {${key}}`)
+				throw new Error(
+					`Unknown placeholder in LIBRARY_FILENAME_FORMAT: {${key}}`,
+				)
 			}
 			return variables[key]
 		})
 		targetPlexFileName = targetPlexFileName.replace(/(\.mkv)*$/, '.mkv')
-		let targetPlexPath = `${plexLibraryPath}${plexSeparator}${environment.PLEX_SERIES_FOLDER_NAME}${plexSeparator}Season ${String(arc).padStart(2, '0')}${plexSeparator}`
+		let targetPlexPath = `${plexLibraryPath}${plexSeparator}${environment.LIBRARY_SERIES_FOLDER_NAME}${plexSeparator}Season ${String(arc).padStart(2, '0')}${plexSeparator}`
 
 		return {
 			targetPlexFileName,

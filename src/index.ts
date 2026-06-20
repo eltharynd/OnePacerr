@@ -3,10 +3,11 @@ import { Express } from './api/express.js'
 import { Context } from './util/context.js'
 
 import { MetadataController } from './metadata/metadata.controller.js'
-import { PlexController } from './plex/plex.controller.js'
+import { LibraryController } from './library/library.controller.js'
 import { RSSController } from './rss/rss.controller.js'
 import { TorrentController } from './torrent/torrent.controller.js'
 import Logger from './util/logger.js'
+import deprecatedWarnings from './util/deprecatedWarnings.js'
 
 const startApp = async () => {
 	let gracefulClose = async () => {
@@ -28,13 +29,15 @@ const startApp = async () => {
 	try {
 		Logger.info('STARTING APPLICATION...')
 
+		deprecatedWarnings()
+
 		Logger.info('INITIALIZING EXPRESS SERVER...')
 		Context.express = new Express()
 		await Context.express.start()
 
 		Context.metadata = new MetadataController()
 		Context.rss = new RSSController()
-		Context.plex = new PlexController()
+		Context.plex = new LibraryController()
 		Context.torrent = new TorrentController()
 
 		Logger.info('APPLICATION STARTED SUCCESSFULLY...')

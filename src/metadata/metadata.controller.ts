@@ -184,13 +184,13 @@ export class MetadataController {
 			let serverFile = await Context.plex.getEpisodeFile(arc, episode)
 			let targetFolder = path.resolve(
 				`${targetPlexPath}`.replace(
-					environment.MOUNT_LIBRARY_PLEX,
+					environment.MOUNT_LIBRARY_MEDIA_SERVER,
 					environment.MOUNT_LIBRARY_ONEPACERR,
 				),
 			)
 			let targetFile = path.resolve(
 				`${targetPlexPath}${targetPlexFileName}`.replace(
-					environment.MOUNT_LIBRARY_PLEX,
+					environment.MOUNT_LIBRARY_MEDIA_SERVER,
 					environment.MOUNT_LIBRARY_ONEPACERR,
 				),
 			)
@@ -207,7 +207,7 @@ export class MetadataController {
 				sanitizeWindowsFileName(targetFile),
 			)
 
-			let plexmatch = `show: ${environment.PLEX_SERIES_NAME}`
+			let plexmatch = `show: ${environment.LIBRARY_SERIES_NAME}`
 			writeFileSync(
 				`${path.resolve(sanitizeWindowsFileName(`${targetFolder}${path.sep}..`))}${path.sep}.plexmatch`,
 				plexmatch,

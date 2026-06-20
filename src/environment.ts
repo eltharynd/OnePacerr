@@ -5,7 +5,6 @@ export default {
 	/**
 	 * GENERAL
 	 */
-
 	LOG_OUTPUT: process.env.LOG_OUTPUT || 'text',
 	DEBUGGING: /true/i.test(process.env.DEBUGGING || 'false'),
 	TESTING:
@@ -18,7 +17,6 @@ export default {
 	/**
 	 * PIPELINE
 	 */
-
 	SKIP_VERIFY_PRESENT_FILES: /true/i.test(
 		process.env.SKIP_VERIFY_PRESENT_FILES || 'true',
 	),
@@ -39,28 +37,49 @@ export default {
 	/**
 	 * MOUNT
 	 */
-	MOUNT_LIBRARY_PLEX: process.env.MOUNT_LIBRARY_PLEX || '',
+	MOUNT_LIBRARY_MEDIA_SERVER:
+		process.env.MOUNT_LIBRARY_MEDIA_SERVER ||
+		process.env.MOUNT_LIBRARY_PLEX ||
+		'',
 	MOUNT_LIBRARY_ONEPACERR: process.env.MOUNT_LIBRARY_ONEPACERR || '',
 
 	MOUNT_DOWNLOADS_QBITTORRENT: process.env.MOUNT_DOWNLOADS_QBITTORRENT || '',
 	MOUNT_DOWNLOADS_ONEPACERR: process.env.MOUNT_DOWNLOADS_ONEPACERR || '',
 
 	/**
-	 * PLEX
+	 * LIBRARY
+	 */
+	//TODO revert after implementing different media library servers
+	LIBRARY_MEDIA_SERVER: `plex`,
+	//LIBRARY_MEDIA_SERVER: process.env.LIBRARY_MEDIA_SERVER || `plex`,
+
+	LIBRARY_SERIES_NAME:
+		process.env.LIBRARY_SERIES_NAME ||
+		process.env.PLEX_SERIES_NAME ||
+		'One Pace',
+	LIBRARY_SERIES_FOLDER_NAME:
+		process.env.LIBRARY_SERIES_FOLDER_NAME ||
+		process.env.PLEX_SERIES_FOLDER_NAME ||
+		process.env.LIBRARY_SERIES_NAME ||
+		process.env.PLEX_SERIES_NAME ||
+		'One Pace',
+	LIBRARY_FILENAME_FORMAT:
+		process.env.LIBRARY_FILENAME_FORMAT ||
+		process.env.PLEX_FILENAME_FORMAT ||
+		'{SERIES_NAME} - S{ARC}E{EPISODE} - {TITLE}.mkv',
+
+	/**
+	 * LIBRARY - NONE
+	 */
+	LIBRARY_NONE_ROOT_FOLDER:
+		process.env.LIBRARY_NONE_ROOT_FOLDER || '%UserProfile%\Downloads\OnePacerr',
+
+	/**
+	 * LIBRARY - PLEX
 	 */
 	PLEX_URL: process.env.PLEX_URL || 'http://localhost:32400',
 	PLEX_TOKEN: process.env.PLEX_TOKEN || null,
-
 	PLEX_LIBRARY_NAME: process.env.PLEX_LIBRARY_NAME || 'TV Shows',
-	PLEX_SERIES_NAME: process.env.PLEX_SERIES_NAME || 'One Pace',
-	PLEX_SERIES_FOLDER_NAME:
-		process.env.PLEX_SERIES_FOLDER_NAME ||
-		process.env.PLEX_SERIES_NAME ||
-		'One Pace',
-
-	PLEX_FILENAME_FORMAT:
-		process.env.PLEX_FILENAME_FORMAT ||
-		'{SERIES_NAME} - S{ARC}E{EPISODE} - {TITLE}.mkv',
 
 	PLEX_CREATE_SHOW_IF_NOT_FOUND: /true/i.test(
 		process.env.PLEX_CREATE_SHOW_IF_NOT_FOUND || 'true',

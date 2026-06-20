@@ -152,7 +152,7 @@ export class TorrentController {
 					let existingPlexFiles = readdirSync(
 						path.resolve(
 							targetPlexPath.replace(
-								environment.MOUNT_LIBRARY_PLEX,
+								environment.MOUNT_LIBRARY_MEDIA_SERVER,
 								environment.MOUNT_LIBRARY_ONEPACERR,
 							),
 						),
@@ -174,13 +174,13 @@ export class TorrentController {
 				const source = file
 				const destinationFolder = path.resolve(
 					`${targetPlexPath}`.replaceAll(
-						environment.MOUNT_LIBRARY_PLEX,
+						environment.MOUNT_LIBRARY_MEDIA_SERVER,
 						environment.MOUNT_LIBRARY_ONEPACERR,
 					),
 				)
 				const destination = path.resolve(
 					`${targetPlexPath}${targetPlexFileName}`.replaceAll(
-						environment.MOUNT_LIBRARY_PLEX,
+						environment.MOUNT_LIBRARY_MEDIA_SERVER,
 						environment.MOUNT_LIBRARY_ONEPACERR,
 					),
 				)
@@ -188,7 +188,7 @@ export class TorrentController {
 				if (previousPlexFileName) {
 					const toDelete = path.resolve(
 						`${targetPlexPath}${previousPlexFileName}`.replaceAll(
-							environment.MOUNT_LIBRARY_PLEX,
+							environment.MOUNT_LIBRARY_MEDIA_SERVER,
 							environment.MOUNT_LIBRARY_ONEPACERR,
 						),
 					)
