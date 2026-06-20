@@ -2,12 +2,12 @@ import 'reflect-metadata'
 import { Express } from './api/express.js'
 import { Context } from './util/context.js'
 
-import { MetadataController } from './metadata/metadata.controller.js'
 import { LibraryController } from './library/library.controller.js'
+import { MetadataController } from './metadata/metadata.controller.js'
 import { RSSController } from './rss/rss.controller.js'
 import { TorrentController } from './torrent/torrent.controller.js'
+import deprecatedWarnings from './util/deprecated-warnings.js'
 import Logger from './util/logger.js'
-import deprecatedWarnings from './util/deprecatedWarnings.js'
 
 const startApp = async () => {
 	let gracefulClose = async () => {

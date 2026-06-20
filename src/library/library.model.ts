@@ -9,24 +9,30 @@ export interface ILibraryController {
 
 	init()
 
-	getEpisodeFilePath(
+	getLibraryFolder()
+
+	getExistingLibraryEpisodeFile(
 		season: number,
 		episode: number,
 		pathAccordingToMediaServer?: boolean,
-	)
-	getLibraryFolder()
+	): Promise<string> | string
+
+	getTargetLibraryEpisodeFile(
+		arc: number,
+		episode: number,
+		episodeDescription?: { title: string; description: string },
+	): Promise<TargetLibraryFile> | TargetLibraryFile
+
 	scanLibrary(folder: string, arc: number)
+
 	updateEpisodeMetadata(
 		arc: number,
 		episode: number,
 		title: string,
 		description: string,
 	)
+
 	updateSeasonMetadata(arc: number)
+
 	updateShowMetadata()
-	getTargetLibraryPath(
-		arc: number,
-		episode: number,
-		episodeDescription?: { title: string; description: string },
-	)
 }

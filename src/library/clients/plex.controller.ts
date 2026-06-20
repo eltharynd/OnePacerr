@@ -5,8 +5,9 @@ import WebSocket from 'ws'
 import environment from '../../environment.js'
 import { Context } from '../../util/context.js'
 import Logger from '../../util/logger.js'
-import sanitizeWindowsFileName from '../../util/sanitizeWindowsFilename.js'
-import resolvePosterPath from '../../util/resolvePosterPath.js'
+import resolvePosterPath from '../../util/resolve-poster-path.js'
+import sanitizeWindowsFileName from '../../util/sanitize-windows-filename.js'
+import { LibraryController } from '../library.controller.js'
 import {
 	ILibraryController,
 	LibraryClient,
@@ -23,6 +24,9 @@ export class PlexController implements ILibraryController {
 	private ws: WebSocket
 
 	constructor(options: { url: string; token: string }) {
+		if (!options.url || !options.token) {
+			throw new Error(`Plex misconfigured`)
+		}
 		this.server = new PlexServer(options.url, options.token)
 		this.ws = new WebSocket(
 			`ws://${options.url.replace('http://', '')}/:/websockets/notifications?X-Plex-Token=${options.token}`,
@@ -60,43 +64,21 @@ export class PlexController implements ILibraryController {
 		await this.fetchShow()
 	}
 
-	private async fetchShow() {
-		Logger.info(`Searching for Plex Show...`)
-
-		let searchResults = await this.section.search({
-			title: environment.LIBRARY_SERIES_NAME,
-		})
-		if (searchResults.length < 1) {
-			if (!environment.PLEX_CREATE_SHOW_IF_NOT_FOUND) {
-				Logger.error(
-					`Could not find show '${environment.LIBRARY_SERIES_NAME}' in library '${environment.PLEX_LIBRARY_NAME}'...`,
-				)
-				throw new Error('Show not found')
-			}
-		} else if (searchResults.length > 1) {
-			Logger.error(
-				`Could not find show '${environment.LIBRARY_SERIES_NAME}' in library '${environment.PLEX_LIBRARY_NAME}'...`,
-			)
-			throw new Error('Too many shows found')
-		}
-
-		if (searchResults[0]) {
-			this.show = searchResults[0]
-			Logger.info(`Found Plex Show '${this.show.title}'...`)
-		}
+	async getLibraryFolder() {
+		return await this.section.locations.map(loc => loc.path)[0]
 	}
 
-	async getEpisodeFilePath(
+	async getExistingLibraryEpisodeFile(
 		season: number,
 		episode: number,
 		pathAccordingToMediaServer?: boolean,
-	) {
+	): Promise<string> {
 		let _episode
 		try {
 			_episode = await this.show.episode({ season: season, episode: episode })
 		} catch (e) {
 			Logger.info(
-				`Episode ${season}-${String(episode).padStart(2, '0')} does not exists on plex...`,
+				`Episode ${season}-${String(episode).padStart(2, '0')} does not exists on Plex...`,
 			)
 			return null
 		}
@@ -129,12 +111,40 @@ export class PlexController implements ILibraryController {
 		else return part.file
 	}
 
+	async getTargetLibraryEpisodeFile(
+		arc: number,
+		episode: number,
+		episodeDescription?: { title: string; description: string },
+	): Promise<TargetLibraryFile> {
+		if (!episodeDescription) {
+			episodeDescription = await Context.metadata.getEpisodeDescription(
+				arc,
+				episode,
+			)
+		}
+
+		let plexLibraryPath = await Context.library.getLibraryFolder()
+		let plexSeparator = plexLibraryPath.includes('/') ? '/' : '\\'
+
+		let targetPlexFileName = LibraryController.resolveEpisodeTargetFileName(
+			arc,
+			episode,
+			episodeDescription.title,
+		)
+		let targetPlexPath = `${plexLibraryPath}${plexSeparator}${environment.LIBRARY_SERIES_FOLDER_NAME}${plexSeparator}Season ${String(arc).padStart(2, '0')}${plexSeparator}`
+
+		return {
+			path: targetPlexPath,
+			filename: sanitizeWindowsFileName(targetPlexFileName),
+		}
+	}
+
 	async scanLibrary(folder: string, arc: number) {
 		Logger.debug(`Refreshing Library`)
 
 		let plexmatch = `show: ${environment.LIBRARY_SERIES_NAME}`
 		writeFileSync(
-			`${path.resolve(sanitizeWindowsFileName(`${folder.replace(environment.MOUNT_LIBRARY_MEDIA_SERVER, environment.MOUNT_LIBRARY_ONEPACERR)}${path.sep}..`))}${path.sep}.plexmatch`,
+			`${path.resolve(`${folder.replace(environment.MOUNT_LIBRARY_MEDIA_SERVER, environment.MOUNT_LIBRARY_ONEPACERR)}${path.sep}..`)}${path.sep}.plexmatch`,
 			plexmatch,
 		)
 
@@ -255,47 +265,29 @@ export class PlexController implements ILibraryController {
 		)
 	}
 
-	async getTargetLibraryPath(
-		arc: number,
-		episode: number,
-		episodeDescription?: { title: string; description: string },
-	): Promise<TargetLibraryFile> {
-		if (!episodeDescription) {
-			episodeDescription = await Context.metadata.getEpisodeDescription(
-				arc,
-				episode,
-			)
-		}
+	private async fetchShow() {
+		Logger.info(`Searching for Plex Show...`)
 
-		let plexLibraryPath = await Context.library.getLibraryFolder()
-		let plexSeparator = plexLibraryPath.includes('/') ? '/' : '\\'
-
-		const format = environment.LIBRARY_FILENAME_FORMAT
-		const variables: Record<string, string> = {
-			SERIES_NAME: environment.LIBRARY_SERIES_NAME,
-			ARC: String(arc).padStart(2, '0'),
-			EPISODE: String(episode).padStart(2, '0'),
-			TITLE: episodeDescription.title,
-		}
-		//let targetPlexFileName = `${environment.LIBRARY_SERIES_NAME} - S${String(arc).padStart(2, '0')}E${String(episode).padStart(2, '0')} - ${episodeDescription.title}.mkv`
-		let targetPlexFileName = format.replace(/\{(\w+)\}/g, (match, key) => {
-			if (!(key in variables)) {
-				throw new Error(
-					`Unknown placeholder in LIBRARY_FILENAME_FORMAT: {${key}}`,
-				)
-			}
-			return variables[key]
+		let searchResults = await this.section.search({
+			title: environment.LIBRARY_SERIES_NAME,
 		})
-		targetPlexFileName = targetPlexFileName.replace(/(\.mkv)*$/, '.mkv')
-		let targetPlexPath = `${plexLibraryPath}${plexSeparator}${environment.LIBRARY_SERIES_FOLDER_NAME}${plexSeparator}Season ${String(arc).padStart(2, '0')}${plexSeparator}`
-
-		return {
-			path: targetPlexPath,
-			filename: targetPlexFileName,
+		if (searchResults.length < 1) {
+			if (!environment.PLEX_CREATE_SHOW_IF_NOT_FOUND) {
+				Logger.error(
+					`Could not find show '${environment.LIBRARY_SERIES_NAME}' in library '${environment.PLEX_LIBRARY_NAME}'...`,
+				)
+				throw new Error('Show not found')
+			}
+		} else if (searchResults.length > 1) {
+			Logger.error(
+				`Could not find show '${environment.LIBRARY_SERIES_NAME}' in library '${environment.PLEX_LIBRARY_NAME}'...`,
+			)
+			throw new Error('Too many shows found')
 		}
-	}
 
-	async getLibraryFolder() {
-		return await this.section.locations.map(loc => loc.path)[0]
+		if (searchResults[0]) {
+			this.show = searchResults[0]
+			Logger.info(`Found Plex Show '${this.show.title}'...`)
+		}
 	}
 }

@@ -49,9 +49,7 @@ export default {
 	/**
 	 * LIBRARY
 	 */
-	//TODO revert after implementing different media library servers
-	LIBRARY_MEDIA_SERVER: `plex`,
-	//LIBRARY_MEDIA_SERVER: process.env.LIBRARY_MEDIA_SERVER || `plex`,
+	LIBRARY_MEDIA_SERVER: process.env.LIBRARY_MEDIA_SERVER || `plex`,
 
 	LIBRARY_SERIES_NAME:
 		process.env.LIBRARY_SERIES_NAME ||

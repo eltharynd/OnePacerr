@@ -174,7 +174,7 @@ services:
 
 
       # Library - None
-      #- LIBRARY_NONE_ROOT_FOLDER=%UserProfile%\Downloads\OnePacerr
+      #- LIBRARY_NONE_ROOT_FOLDER=C:\\OnePacerr
 
       # Library - Plex
       - PLEX_URL=localhost:32400
@@ -288,7 +288,7 @@ Here is a breakdown of key optional variables you can adjust in your
 
 | 💭 Library - None | Default | Description |
 | :--- | :--- | :--- |
-| 🍤 `LIBRARY_NONE_ROOT_FOLDER` | `%UserProfile%\Downloads\OnePacerr` | The root folder where your Library should be saved (Do not Include LIBRARY_SERIES_FOLDER_NAME). |
+| 🍤 `LIBRARY_NONE_ROOT_FOLDER` | `C:\\OnePacerr` | The root folder where your Library should be saved (Do not Include LIBRARY_SERIES_FOLDER_NAME). |
 
 ### Library (Plex Media Server)
 
@@ -337,12 +337,14 @@ If you want to contribute to the posters or create an entire new set, first of a
 ## 📅 Roadmap
 
 - [x] **Poster settings to chose either official/alternate or customs** (since v1.1.1)
-- [ ] **Remove Plex requirement** for when someone just wants to organize a standalone folder
+- [x] **Handle Network failures** with a delayed retry or something... (since v1.2.0)
+- [X] **Remove Plex requirement** for when someone just wants to organize a standalone folder (since v1.2.0)
   - Do so by refactoring PlexController with Factory style so new LibraryControllers can be more easily implemented. This would speed up Jellyfin/Kodi/Emby implementation considerally. Treat no media server the same way just organizing a folder and creating .plexmatch .nfo and such
+- [ ] **Local Folder Metadata** files creation so that they can later be moved to any Media Server
+- [ ] **Filters** to skip seasons/episodes
 - [ ] **Jellyfin Support** _(Requested by Marci on Discord)_
 - [ ] **Emby Support** _(Requested by u/RealJustMe on r/Servarr)_
 - [ ] **Add posters via url** to reduce image size...
-- [ ] **Handle Network failures** with a delayed retry or something...
 - [ ] **Rest API** Manual execution/status/configuration endpoints
 - [ ] **Support alternate torrent clients** (thinking uTorrent and deluge)
 

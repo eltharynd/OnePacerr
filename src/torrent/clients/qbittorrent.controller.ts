@@ -5,11 +5,7 @@ import {
 } from '@ctrl/qbittorrent'
 import { TorrentInfo } from '../../metadata/metada.model.js'
 import Logger from '../../util/logger.js'
-import {
-	ITorrentController as ITorrentController,
-	Torrent,
-	TorrentClient,
-} from '../torrent.model.js'
+import { ITorrentController, Torrent, TorrentClient } from '../torrent.model.js'
 
 export class qBittorrentController implements ITorrentController {
 	readonly torrentClient: TorrentClient = 'qbittorrent'
@@ -52,11 +48,16 @@ export class qBittorrentController implements ITorrentController {
 		torrent: Torrent,
 		category: string,
 	): Promise<void> {
-		let categories: TorrentCategories = await this.client.getCategories()
-		if (!categories[category]) {
-			Logger.debug(`Creating '${category}' qBittorrent category`)
-			await this.client.createCategory(category)
+		try {
+			await this.client.setTorrentCategory(torrent.hash, category)
+		} catch (e) {
+			let categories: TorrentCategories = await this.client.getCategories()
+
+			if (!categories[category]) {
+				Logger.debug(`Creating '${category}' qBittorrent category`)
+				await this.client.createCategory(category)
+			}
+			await this.client.setTorrentCategory(torrent.hash, category)
 		}
-		await this.client.setTorrentCategory(torrent.hash, category)
 	}
 }

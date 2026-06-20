@@ -3,6 +3,15 @@ export type TorrentInfo = {
 	infoHash: string
 }
 
+export type Episode = {
+	arc: number
+	episode: number
+}
+export type EpisodeDescription = {
+	title: string
+	description: string
+}
+
 export type Metadata = {
 	status: {
 		last_update: string
@@ -39,3 +48,5 @@ export type Metadata = {
 	}
 	other_edits: any
 }
+
+export class MetadataAbsentError extends Error {}

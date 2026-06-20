@@ -1,13 +1,16 @@
 import { copyFileSync, mkdirSync, readdirSync, unlinkSync } from 'node:fs'
 import path from 'node:path'
 import environment from '../environment.js'
-import { TorrentInfo } from '../metadata/metada.model.js'
+import { TargetLibraryFile } from '../library/library.model.js'
+import {
+	Episode,
+	MetadataAbsentError,
+	TorrentInfo,
+} from '../metadata/metada.model.js'
 import { Context } from '../util/context.js'
 import Logger from '../util/logger.js'
-import sanitizeWindowsFileName from '../util/sanitizeWindowsFilename.js'
 import { qBittorrentController } from './clients/qbittorrent.controller.js'
 import { ITorrentController, Torrent, TorrentClient } from './torrent.model.js'
-import { TargetLibraryFile } from '../library/library.model.js'
 
 export class TorrentController {
 	private client: ITorrentController
@@ -74,8 +77,14 @@ export class TorrentController {
 				await this.importTorrentFiles(torrent as Torrent)
 			}
 		} catch (e) {
-			Logger.error(`Error processing completed downloads`)
-			Logger.error(e)
+			if (e instanceof MetadataAbsentError) {
+				Logger.warn(
+					`Metadata still missing, cannot process completed torrents...`,
+				)
+			} else {
+				Logger.error(`Error processing completed downloads`)
+				Logger.error(e)
+			}
 		} finally {
 			setTimeout(async () => {
 				await this.processCompletedTorrents()
@@ -94,8 +103,13 @@ export class TorrentController {
 
 		let files: string[] = []
 
-		if (_path.endsWith('.mkv')) files = [_path]
-		else {
+		if (_path.endsWith('.mkv')) {
+			files = [_path]
+			Logger.debug(`Importing 1 file from torrent...`)
+		} else {
+			let mkvs = readdirSync(_path).filter(f => f.endsWith('.mkv'))
+			if (mkvs.length > 0)
+				Logger.debug(`Importing ${mkvs.length} files from torrent...`)
 			for (let f of readdirSync(_path).filter(f => f.endsWith('.mkv'))) {
 				let fullPath = `${torrent.content_path}${torrent.content_path.includes('/') ? '/' : '\\'}${f}`
 				files.push(
@@ -122,15 +136,20 @@ export class TorrentController {
 				const CRC32 = match[1].toUpperCase()
 				Logger.debug(`Parsed CRC32: ${CRC32}`)
 
-				let episode
+				let episode: Episode
 				try {
 					episode = await Context.metadata.getEpisodeFromCRC32(CRC32)
 				} catch (e) {
+					if (e instanceof MetadataAbsentError) {
+						throw e
+					}
 					Logger.debug(
 						`File '${file}' is not most up to date (probably part of an outdated batch)... Skipping import`,
 					)
 					continue
 				}
+
+				if (episode.arc != 3 || episode.episode != 7) continue
 
 				let targetCRC32 = await Context.metadata.getEpisodeUpdatedCRC32(
 					episode.arc,
@@ -145,7 +164,7 @@ export class TorrentController {
 				}
 
 				let targetLibraryFile: TargetLibraryFile =
-					await Context.library.getTargetLibraryPath(
+					await Context.library.getTargetLibraryEpisodeFile(
 						episode.arc,
 						episode.episode,
 					)
@@ -167,7 +186,7 @@ export class TorrentController {
 						let episodeNumber = existingFile
 							.replace(/^.+S[0-9][0-9]E/, '')
 							.replace(/\ .+$/, '')
-						if (episodeNumber == episode.episode) {
+						if (Number.parseInt(episodeNumber) == episode.episode) {
 							previousLibraryFileName = existingFile
 						}
 					}
@@ -176,17 +195,13 @@ export class TorrentController {
 				}
 
 				const source = file
-				const destinationFolder = path.resolve(
-					`${targetLibraryFile.path}`.replaceAll(
-						environment.MOUNT_LIBRARY_MEDIA_SERVER,
-						environment.MOUNT_LIBRARY_ONEPACERR,
-					),
+				const destinationFolder = targetLibraryFile.path.replace(
+					environment.MOUNT_LIBRARY_MEDIA_SERVER,
+					environment.MOUNT_LIBRARY_ONEPACERR,
 				)
 				const destination = path.resolve(
-					`${targetLibraryFile.path}${targetLibraryFile.path}`.replaceAll(
-						environment.MOUNT_LIBRARY_MEDIA_SERVER,
-						environment.MOUNT_LIBRARY_ONEPACERR,
-					),
+					destinationFolder,
+					targetLibraryFile.filename,
 				)
 
 				if (previousLibraryFileName) {
@@ -197,7 +212,7 @@ export class TorrentController {
 						),
 					)
 					try {
-						unlinkSync(sanitizeWindowsFileName(toDelete))
+						unlinkSync(toDelete)
 						Logger.debug(
 							`Pre-existing file for ${episode.arc}-${String(episode.episode).padStart(2, '0')} deleted`,
 						)
@@ -212,13 +227,11 @@ export class TorrentController {
 					`Copying file for ${episode.arc}-${String(episode.episode).padStart(2, '0')}`,
 				)
 
-				mkdirSync(sanitizeWindowsFileName(destinationFolder), {
+				mkdirSync(destinationFolder, {
 					recursive: true,
 				})
-				copyFileSync(
-					sanitizeWindowsFileName(source),
-					sanitizeWindowsFileName(destination),
-				)
+
+				copyFileSync(source, destination)
 
 				Logger.info(
 					`File for ${episode.arc}-${String(episode.episode).padStart(2, '0')} imported successfully`,

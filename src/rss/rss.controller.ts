@@ -3,23 +3,9 @@ import { stat } from 'node:fs/promises'
 import path from 'node:path'
 import Parser from 'rss-parser'
 import Logger from '../util/logger.js'
+import { Feed, Item } from './rss.model.js'
 
 const RSS_FEED_URL = `https://onepace.net/en/releases/rss.xml`
-
-interface Item {
-	'torrent:magnetURI'?: string
-	'torrent:infoHash'?: string
-	categories?: Array<{
-		_: string
-		$?: { domain: string }
-	}>
-	guid: string
-	title: string
-	link: string
-}
-interface Feed {
-	items: Item[]
-}
 
 export class RSSController {
 	private readonly parser: Parser<Feed, Item> = new Parser({
@@ -47,8 +33,13 @@ export class RSSController {
 
 	public async fetch() {
 		Logger.debug(`Fetching OnePace RSS Feed`)
-		this.feed = await this.parser.parseURL(RSS_FEED_URL)
-		writeFileSync(path.resolve('./rss.json'), JSON.stringify(this.feed))
+		try {
+			this.feed = await this.parser.parseURL(RSS_FEED_URL)
+			writeFileSync(path.resolve('./rss.json'), JSON.stringify(this.feed))
+		} catch (e) {
+			Logger.error(`Error while fetching RSS feed...`)
+			throw e
+		}
 	}
 
 	public async getTorrentInfo(title: string): Promise<{

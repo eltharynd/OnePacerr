@@ -2,26 +2,37 @@ import axios from 'axios'
 import { copyFileSync, mkdirSync, unlinkSync, writeFileSync } from 'fs'
 import path from 'path'
 import environment from '../environment.js'
+import { TargetLibraryFile } from '../library/library.model.js'
 import { Context } from '../util/context.js'
 import getFileCrc32Hash from '../util/crc32.js'
 import Logger from '../util/logger.js'
-import sanitizeWindowsFileName from '../util/sanitizeWindowsFilename.js'
-import { Metadata, TorrentInfo } from './metada.model.js'
-import { TargetLibraryFile as TargetLibraryFile } from '../library/library.model.js'
+import {
+	Episode,
+	EpisodeDescription,
+	Metadata,
+	MetadataAbsentError,
+	TorrentInfo,
+} from './metada.model.js'
 
 export class MetadataController {
 	private metadata: Metadata
 
 	async refreshMetadata() {
 		Logger.info(`Refreshing Metadata...`)
-		let metadata = (await axios.get(environment.METADATA_URL)).data
-		if (
-			!this.metadata ||
-			metadata.status.last_update > this.metadata.status.last_update
-		) {
-			Logger.info(`Newer Metadata found!`)
-			this.metadata = (await axios.get(environment.METADATA_URL)).data
-			await this.processMetadataEpisodes()
+		try {
+			let metadata = (await axios.get(environment.METADATA_URL)).data
+
+			if (
+				!this.metadata ||
+				metadata.status.last_update > this.metadata.status.last_update
+			) {
+				Logger.info(`Newer Metadata found!`)
+				this.metadata = metadata
+				await this.processMetadataEpisodes()
+			}
+		} catch (e) {
+			Logger.error(`Error refreshing Metadata, will retry...`)
+			Logger.error(e)
 		}
 
 		setTimeout(async () => {
@@ -30,6 +41,7 @@ export class MetadataController {
 	}
 
 	async processMetadataEpisodes() {
+		this.checkMetadataDownloaded()
 		Logger.info(`Processing episodes from metadata...`)
 		for (let arc of this.metadata.arcs[environment.METADATA_LANGUAGE]) {
 			if (arc.part === 0 && !environment.INCLUDE_SPECIALS) {
@@ -39,6 +51,7 @@ export class MetadataController {
 
 			Logger.info(`Processing Season ${arc.part}...`)
 			for (let episode of arc.episodes) {
+				if (arc.part != 3 || Number.parseInt(episode.episode) != 7) continue
 				Logger.debug(
 					`Episode ${arc.part}-${String(episode.episode).padStart(2, '0')} - Processing`,
 				)
@@ -48,14 +61,14 @@ export class MetadataController {
 					episode.standard = '704F68EA'
 				}
 
-				let file = await Context.library.getEpisodeFile(
+				let file = await Context.library.getExistingLibraryEpisodeFile(
 					arc.part,
 					Number.parseInt(episode.episode),
 				)
 				if (file) {
 					if (environment.SKIP_VERIFY_PRESENT_FILES) {
 						Logger.debug(
-							`Episode ${arc.part}-${String(episode.episode).padStart(2, '0')} - Exist on plex (Verification skipped)...`,
+							`Episode ${arc.part}-${String(episode.episode).padStart(2, '0')} - Exist on Media Server (Verification skipped)...`,
 						)
 						if (!environment.SKIP_ORGANIZE_PRESENT_FILES) {
 							await this.organizeFile(
@@ -72,7 +85,7 @@ export class MetadataController {
 					}
 
 					Logger.debug(
-						`Episode ${arc.part}-${String(episode.episode).padStart(2, '0')} - Exists on plex (Verifying)`,
+						`Episode ${arc.part}-${String(episode.episode).padStart(2, '0')} - Exists on Media Server (Verifying)`,
 					)
 
 					Logger.debug(
@@ -84,7 +97,7 @@ export class MetadataController {
 					)
 
 					if (environment.PREFER_EXTENDED && !!episode.extended) {
-						if (CRC32 === episode.extended) {
+						if (CRC32 == episode.extended) {
 							Logger.info(
 								`Episode ${arc.part}-${String(episode.episode).padStart(2, '0')} - Already present`,
 							)
@@ -100,7 +113,7 @@ export class MetadataController {
 								)
 							}
 							continue
-						} else if (CRC32 === episode.standard) {
+						} else if (CRC32 == episode.standard) {
 							if (environment.SKIP_DOWNLOADS) {
 								Logger.info(
 									`Episode ${arc.part}-${String(episode.episode).padStart(2, '0')} - Standard instead of extended [Download skipped]`,
@@ -112,7 +125,7 @@ export class MetadataController {
 								await this.addToDownloadQueue(arc.part, episode.episode, true)
 							}
 						}
-					} else if (CRC32 === episode.standard) {
+					} else if (CRC32 == episode.standard) {
 						Logger.info(
 							`Episode ${arc.part}-${String(episode.episode).padStart(2, '0')} - Already present`,
 						)
@@ -165,30 +178,35 @@ export class MetadataController {
 	}
 
 	async organizeFile(arc: number, episode: number) {
+		this.checkMetadataDownloaded()
 		Logger.debug(
 			`Episode ${arc}-${String(episode).padStart(2, '0')} - Verifying path format...`,
 		)
 
-		let plexFile = await Context.library.getEpisodeFile(arc, episode, true)
+		let libraryFile = await Context.library.getExistingLibraryEpisodeFile(
+			arc,
+			episode,
+			true,
+		)
 
 		let episodeDescription = await Context.metadata.getEpisodeDescription(
 			arc,
 			episode,
 		)
 		let targetLibraryFile: TargetLibraryFile =
-			await Context.library.getTargetLibraryPath(
+			await Context.library.getTargetLibraryEpisodeFile(
 				arc,
 				episode,
 				episodeDescription,
 			)
 
 		if (
-			plexFile !=
-			sanitizeWindowsFileName(
-				`${targetLibraryFile.path}${targetLibraryFile.filename}`,
-			)
+			libraryFile != `${targetLibraryFile.path}${targetLibraryFile.filename}`
 		) {
-			let serverFile = await Context.library.getEpisodeFile(arc, episode)
+			let serverFile = await Context.library.getExistingLibraryEpisodeFile(
+				arc,
+				episode,
+			)
 			let targetFolder = path.resolve(
 				`${targetLibraryFile.path}`.replace(
 					environment.MOUNT_LIBRARY_MEDIA_SERVER,
@@ -203,29 +221,27 @@ export class MetadataController {
 			)
 
 			Logger.info(
-				`Episode ${arc}-${String(episode).padStart(2, '0')} - File on Plex with wrong format, renaming...`,
+				`Episode ${arc}-${String(episode).padStart(2, '0')} - File on Media Server with wrong format, renaming...`,
 			)
-			mkdirSync(sanitizeWindowsFileName(targetFolder), {
+			mkdirSync(targetFolder, {
 				recursive: true,
 			})
 
-			copyFileSync(
-				sanitizeWindowsFileName(serverFile),
-				sanitizeWindowsFileName(targetFile),
-			)
+			copyFileSync(serverFile, targetFile)
 
 			let plexmatch = `show: ${environment.LIBRARY_SERIES_NAME}`
+			//TODO check
 			writeFileSync(
-				`${path.resolve(sanitizeWindowsFileName(`${targetFolder}${path.sep}..`))}${path.sep}.plexmatch`,
+				`${path.resolve(`${targetFolder}${path.sep}..`)}${path.sep}.plexmatch`,
 				plexmatch,
 			)
 
 			await Context.library.scanLibrary(targetLibraryFile.path, arc)
 
-			unlinkSync(sanitizeWindowsFileName(serverFile))
+			unlinkSync(serverFile)
 
 			await Context.library.scanLibrary(
-				plexFile.replace(/[\\/]+[^\\/]+$/, ''),
+				libraryFile.replace(/[\\/]+[^\\/]+$/, ''),
 				arc,
 			)
 			await Context.library.updateEpisodeMetadata(
@@ -245,6 +261,7 @@ export class MetadataController {
 	}
 
 	async updatemetadata(arc: number, episode: number) {
+		this.checkMetadataDownloaded()
 		Logger.debug(
 			`Episode ${arc}-${String(episode).padStart(2, '0')} - Attempting Metadata Update`,
 		)
@@ -254,7 +271,7 @@ export class MetadataController {
 			episode,
 		)
 		let targetLibraryFile: TargetLibraryFile =
-			await Context.library.getTargetLibraryPath(
+			await Context.library.getTargetLibraryEpisodeFile(
 				arc,
 				episode,
 				episodeDescription,
@@ -272,22 +289,22 @@ export class MetadataController {
 		await Context.library.updateShowMetadata()
 	}
 
-	getEpisodeDescription(
-		arc: number,
-		episode: number,
-	): { title: string; description: string } {
+	getEpisodeDescription(arc: number, episode: number): EpisodeDescription {
+		this.checkMetadataDownloaded()
 		return this.metadata.descriptions[environment.METADATA_LANGUAGE].find(
-			d => d.arc === arc && d.episode === episode,
+			d => d.arc == arc && d.episode == episode,
 		)
 	}
 
 	getSeasonDescription(arc: number) {
+		this.checkMetadataDownloaded()
 		return this.metadata.arcs[environment.METADATA_LANGUAGE].find(
 			a => a.part === arc,
 		)
 	}
 
 	getShowDescription() {
+		this.checkMetadataDownloaded()
 		return this.metadata.tvshow[environment.METADATA_LANGUAGE]
 	}
 
@@ -296,6 +313,8 @@ export class MetadataController {
 		episode: string | number,
 		extended?: boolean,
 	) {
+		this.checkMetadataDownloaded()
+
 		let rsstitle = `${
 			this.metadata.arcs[environment.METADATA_LANGUAGE].find(
 				a => a.part === arc,
@@ -320,6 +339,8 @@ export class MetadataController {
 	}
 
 	getEpisodeUpdatedCRC32(arc: number, episode: number): string {
+		this.checkMetadataDownloaded()
+
 		let target = this.metadata.arcs[environment.METADATA_LANGUAGE]
 			.find(a => a.part === arc)
 			.episodes.find(e => Number.parseInt(e.episode) == episode)
@@ -328,7 +349,9 @@ export class MetadataController {
 			: target.standard
 	}
 
-	getEpisodeFromCRC32(CRC32: string) {
+	getEpisodeFromCRC32(CRC32: string): Episode {
+		this.checkMetadataDownloaded()
+
 		let episode = this.metadata.episodes[CRC32]
 		if (!episode) {
 			if (CRC32 == '704F68EA') {
@@ -341,5 +364,12 @@ export class MetadataController {
 			throw new Error(`CRC32 ${CRC32} not in metadata...`)
 		}
 		return episode
+	}
+
+	private checkMetadataDownloaded() {
+		if (!this.metadata) {
+			Logger.warn(`Metadata missing, something went wrong with import...`)
+			throw new MetadataAbsentError()
+		}
 	}
 }

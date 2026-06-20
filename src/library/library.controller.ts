@@ -1,31 +1,29 @@
-import { MediaPart, PlexServer, Show, ShowSection } from '@ctrl/plex'
-import { readFileSync, writeFileSync } from 'fs'
-import path from 'path'
-import WebSocket from 'ws'
 import environment from '../environment.js'
-import { Context } from '../util/context.js'
 import Logger from '../util/logger.js'
-import resolvePosterPath from '../util/resolvePosterPath.js'
-import sanitizeWindowsFileName from '../util/sanitizeWindowsFilename.js'
+import { LocalFolderController } from './clients/local-folder.controller.js'
+import { PlexController } from './clients/plex.controller.js'
 import {
 	ILibraryController,
 	LibraryClient,
 	TargetLibraryFile,
 } from './library.model.js'
-import { PlexController } from './plex/plex.controller.js'
 
 export class LibraryController {
 	private client: ILibraryController
 
 	constructor() {
 		switch (environment.LIBRARY_MEDIA_SERVER as LibraryClient) {
+			case 'none':
+				this.client = new LocalFolderController({
+					root: environment.LIBRARY_NONE_ROOT_FOLDER,
+				})
+				break
 			case 'plex':
 				this.client = new PlexController({
 					url: environment.PLEX_URL,
 					token: environment.PLEX_TOKEN,
 				})
 				break
-			case 'none':
 			case 'jellyfin':
 			case 'emby':
 			default:
@@ -40,26 +38,37 @@ export class LibraryController {
 		this.client.init()
 	}
 
-	async getEpisodeFile(
+	async getLibraryFolder() {
+		return this.client.getLibraryFolder()
+	}
+
+	async getExistingLibraryEpisodeFile(
 		season: number,
 		episode: number,
 		pathAccordingToMediaServer?: boolean,
-	) {
-		return this.client.getEpisodeFilePath(
+	): Promise<string> {
+		return await this.client.getExistingLibraryEpisodeFile(
 			season,
 			episode,
 			pathAccordingToMediaServer,
 		)
 	}
 
-	async getLibraryFolder() {
-		return this.client.getLibraryFolder()
+	async getTargetLibraryEpisodeFile(
+		arc: number,
+		episode: number,
+		episodeDescription?: { title: string; description: string },
+	): Promise<TargetLibraryFile> {
+		return this.client.getTargetLibraryEpisodeFile(
+			arc,
+			episode,
+			episodeDescription,
+		)
 	}
 
 	async scanLibrary(folder: string, arc: number) {
 		return this.client.scanLibrary(folder, arc)
 	}
-
 	async updateEpisodeMetadata(
 		arc: number,
 		episode: number,
@@ -77,11 +86,28 @@ export class LibraryController {
 		return this.client.updateShowMetadata()
 	}
 
-	async getTargetLibraryPath(
+	static resolveEpisodeTargetFileName(
 		arc: number,
 		episode: number,
-		episodeDescription?: { title: string; description: string },
-	): Promise<TargetLibraryFile> {
-		return this.client.getTargetLibraryPath(arc, episode, episodeDescription)
+		title: string,
+	) {
+		const format = environment.LIBRARY_FILENAME_FORMAT
+		const variables: Record<string, string> = {
+			SERIES_NAME: environment.LIBRARY_SERIES_NAME,
+			ARC: String(arc).padStart(2, '0'),
+			EPISODE: String(episode).padStart(2, '0'),
+			TITLE: title,
+		}
+
+		let targetFileName = format.replace(/\{(\w+)\}/g, (match, key) => {
+			if (!(key in variables)) {
+				throw new Error(
+					`Unknown placeholder in LIBRARY_FILENAME_FORMAT: {${key}}`,
+				)
+			}
+			return variables[key]
+		})
+		targetFileName = targetFileName.replace(/(\.mkv)*$/, '.mkv')
+		return targetFileName
 	}
 }
