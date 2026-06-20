@@ -270,11 +270,11 @@ Here is a breakdown of key optional variables you can adjust in your
 > [!IMPORTANT]  
 > Configure the Library (Media Server) type here.
 >
-> `none` just organizes files in a folder, when metadata is updated it creates `.plexmatch`, `.nfo` and all of the files that can be then used to automatically add metadata if imported to a Media Server at a later time.
+> `none` just organizes files in a folder, when metadata is updated it creates `.plexmatch`, `.nfo`, `poster.png` and all of the files that can be then used to automatically add metadata if imported to a Media Server at a later time.
 >
-> `plex` currently working.
+> `plex` Plex Media Server.
 >
-> `jellyfin` coming soon.
+> `jellyfin` Jellyfin Media Server.
 >
 > `emby` coming soon.
 
