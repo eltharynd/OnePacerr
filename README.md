@@ -208,7 +208,7 @@ npm run dev
 ## ⚙️ Environment Variables Explained
 
 Here is a breakdown of key optional variables you can adjust in your
-`docker-compose.yml`:
+`docker-compose.yml` or in your `.env` file:
 
 - ⭐ Mandatory
 - 🍤 Can leave empty but double check default matches plex
