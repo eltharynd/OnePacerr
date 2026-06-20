@@ -15,7 +15,7 @@ episodes fully up to date.
 
 Other than downloading and organizing your episode files, it also updates metadata and posters so that it looks nice and professional on your Media Server setups.
 
-![Plex](docs/plex.png) ![Jellyfin](docs/jellyfin.png)
+![Plex](./docs/plex.png) ![Jellyfin](./docs/jellyfin.png)
 
 We plan to support as many Media Severs as possible, the following is the current status of the implementation:
 
