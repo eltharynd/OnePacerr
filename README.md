@@ -15,8 +15,12 @@ episodes fully up to date, as well as adding metadata and custom posters for you
 
 Other than downloading and organizing your episode files, it also updates metadata and posters so that it looks nice and professional on your Media Server setups.
 
-<img src="./docs/plex.png" alt='plex' width="100">
-<img src="./docs/jellyfin.png" alt='jellyfin' width="100">
+<table>
+  <tr>
+    <td><img src="./docs/plex.png" alt='plex' width="100"></tc>
+    <td><img src="./docs/jellyfin.png" alt='jellyfin' width="100"></tc>
+  </tr>
+</table>
 
 We plan to support as many Media Severs as possible, the following is the current status of the implementation:
 
