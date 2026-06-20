@@ -139,17 +139,12 @@ services:
       - PUID=568
       - PGID=568
 
+      # General
       #- DEBUGGING=false
 
-      # qBittorrent Settings
-      - TORRENT_URL=localhost:8080
-      - TORRENT_USER=<your-username-here>
-      - TORRENT_PASSWORD=<your-password-here>
-      #- TORRENT_CATEGORY=onepacerr
-      #- TORRENT_CATEGORY_ONCE_COMPLETED=completed
-      #- TORRENT_CHECK_INTERVAL=30
 
-      # File & Metadata Management
+
+      # Pipeline
       - SKIP_VERIFY_PRESENT_FILES=false
       - SKIP_ORGANIZE_PRESENT_FILES=false
       - SKIP_UPDATE_METADATA_PRESENT_FILES=false
@@ -159,27 +154,53 @@ services:
       #- INCLUDE_SPECIALS=false
       - PREFER_EXTENDED=true
 
-      # Metadata Settings
-      #- METADATA_URL=raw.githubusercontent.com/ladyisatis/one-pace-metadata/refs/heads/v2metadata/data.json
-      #- METADATA_LANGUAGE=en
-      #- METADATA_CHECK_INTERVAL=3600
-      #- METADATA_POSTER_SET=default
 
-      # Cross-Mount Mapping (Uncomment if needed, defaults to nothing)
+
+      # Cross-Mount Mappings (Uncomment if needed, defaults to nothing)
       #- MOUNT_LIBRARY_MEDIA_SERVER=/mnt/Library/Series
       #- MOUNT_LIBRARY_ONEPACERR=\\TRUENAS\series
       #- MOUNT_DOWNLOADS_QBITTORRENT=/mnt/Applications/Downloads
       #- MOUNT_DOWNLOADS_ONEPACERR=\\TRUENAS\downloads
 
-      # Plex Settings
+
+
+
+      # Library 
+      - LIBRARY_MEDIA_SERVER=plex 
+      - LIBRARY_SERIES_NAME=One Pace
+      #- LIBRARY_SERIES_FOLDER_NAME=One Pace
+
+      #- LIBRARY_FILENAME_FORMAT={SERIES_NAME} - S{ARC}E{EPISODE} - {TITLE}.mkv
+
+
+      # Library - None
+      #- LIBRARY_NONE_ROOT_FOLDER=%UserProfile%\Downloads\OnePacerr
+
+      # Library - Plex
       - PLEX_URL=localhost:32400
       - PLEX_TOKEN=<your-token-here>
       - PLEX_LIBRARY_NAME=TV Shows
-      - PLEX_SERIES_NAME=One Pace
-      #- PLEX_SERIES_FOLDER_NAME=One Pace
-      #- PLEX_FILENAME_FORMAT={SERIES_NAME} - S{ARC}E{EPISODE} - {TITLE}.mkv
+
       #- PLEX_CREATE_SHOW_IF_NOT_FOUND=true
 
+
+
+      # Torrent Settings
+      - TORRENT_URL=localhost:8080
+      - TORRENT_USER=<your-username-here>
+      - TORRENT_PASSWORD=<your-password-here>
+      - TORRENT_CLIENT=qbittorrent
+      #- TORRENT_CATEGORY=onepacerr
+      #- TORRENT_CATEGORY_ONCE_COMPLETED=completed
+      #- TORRENT_CHECK_INTERVAL=60
+
+
+
+      # Metadata Settings
+      #- METADATA_URL=raw.githubusercontent.com/ladyisatis/one-pace-metadata/refs/heads/v2metadata/data.json
+      #- METADATA_LANGUAGE=en
+      #- METADATA_CHECK_INTERVAL=3600
+      #- METADATA_POSTER_SET=default
     volumes:
       - /mnt/Library/Movies:/mnt/Library/Movies
       - /mnt/Library/Series:/mnt/Library/Series
