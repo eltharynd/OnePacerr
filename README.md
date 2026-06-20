@@ -282,10 +282,12 @@ If you want to contribute to the posters or create an entire new set, first of a
 - [x] **Poster settings to chose either official/alternate or customs** (since v1.1.1)
 - [ ] **Remove Plex requirement** for when someone just wants to organize a standalone folder
   - Do so by refactoring PlexController with Factory style so new LibraryControllers can be more easily implemented. This would speed up Jellyfin/Kodi/Emby implementation considerally. Treat no media server the same way just organizing a folder and creating .plexmatch .nfo and such
-- [ ] **Handle RSS/Metadata fetch failures** with a delayed retry or something...
-- [ ] **Rest API** Manual execution/status endpoints
+- [ ] **Jellyfin Support** _(Requested by Marci on Discord)_
+- [ ] **Emby Support** _(Requested by u/RealJustMe on r/Servarr)_
+- [ ] **Handle Network failures** with a delayed retry or something...
+- [ ] **Rest API** Manual execution/status/configuration endpoints
 - [ ] **Support alternate torrent clients** (thinking uTorrent and deluge)
-- [ ] **Jellyfin Support** _(Requested by Marci)_
+
 - [Request a new feature](https://github.com/eltharynd/OnePacerr/issues)
 
 ## 🤝 Credits & Acknowledgements
