@@ -31,7 +31,7 @@ episodes fully up to date, as well as adding metadata and custom posters for the
   - 👩‍💻 [Contributing to the development](#-contributing-to-the-development)
 
 - ⚙️ [Environment Variables Explained](#️-environment-variables-explained)
-- 🖼️ [Poster sets preview](#️-poster-sets)
+- 🖼️ [Poster Sets](#-poster-sets)
   - 🔍 [Previews](#-previews)
   - 📥 [Adding/Updating Sets](#-addingupdating-sets)
 - 📅 [Roadmap](#-roadmap)
