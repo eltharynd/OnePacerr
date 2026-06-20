@@ -1,6 +1,7 @@
 import axios from 'axios'
 import { copyFileSync, mkdirSync, unlinkSync, writeFileSync } from 'fs'
 import path from 'path'
+import { js2xml } from 'xml-js'
 import environment from '../environment.js'
 import { TargetLibraryFile } from '../library/library.model.js'
 import { Context } from '../util/context.js'
@@ -17,8 +18,14 @@ import {
 export class MetadataController {
 	private metadata: Metadata
 
+	private TVShowNFO
+	private seasonNFOs = {}
+	private episodesNFOs = {}
+
 	async refreshMetadata() {
 		Logger.info(`Refreshing Metadata...`)
+
+		let newMetadata = false
 		try {
 			let metadata = (await axios.get(environment.METADATA_URL)).data
 
@@ -28,12 +35,14 @@ export class MetadataController {
 			) {
 				Logger.info(`Newer Metadata found!`)
 				this.metadata = metadata
-				await this.processMetadataEpisodes()
+				newMetadata = true
 			}
 		} catch (e) {
 			Logger.error(`Error refreshing Metadata, will retry...`)
 			Logger.error(e)
 		}
+
+		if (newMetadata) await this.processMetadataEpisodes()
 
 		setTimeout(async () => {
 			await this.refreshMetadata()
@@ -42,7 +51,14 @@ export class MetadataController {
 
 	async processMetadataEpisodes() {
 		this.checkMetadataDownloaded()
+
+		Logger.info(`Generating .nfo files...`)
+		await this.generateTVShowNFO()
+		await this.generateSeasonNFOs()
+		await this.generateEpisodeNFOs()
+
 		Logger.info(`Processing episodes from metadata...`)
+
 		for (let arc of this.metadata.arcs[environment.METADATA_LANGUAGE]) {
 			if (arc.part === 0 && !environment.INCLUDE_SPECIALS) {
 				Logger.info(`Skipping Specials as per env INCLUDE_SPECIALS...`)
@@ -305,6 +321,141 @@ export class MetadataController {
 	getShowDescription() {
 		this.checkMetadataDownloaded()
 		return this.metadata.tvshow[environment.METADATA_LANGUAGE]
+	}
+
+	private async generateTVShowNFO() {
+		this.checkMetadataDownloaded()
+
+		let tvshow = JSON.parse(
+			JSON.stringify(this.metadata.tvshow[environment.METADATA_LANGUAGE]),
+		)
+		let namedseason = this.metadata.arcs[environment.METADATA_LANGUAGE].map(
+			a => {
+				return {
+					_attributes: {
+						number: a.part,
+					},
+					_text: `${a.part > 0 ? `${a.part}. ` : ''}${a.title}`,
+				}
+			},
+		)
+
+		delete tvshow.customrating
+
+		let path = await Context.library.getLibraryFolder()
+		path += path.includes('/') ? '/' : '\\'
+		path += 'poster.png'
+
+		this.TVShowNFO = `<?xml version='1.0' encoding='utf-8'?>\n${js2xml(
+			{
+				tvshow: {
+					...tvshow,
+					outline: tvshow.plot,
+					customrating:
+						this.metadata.tvshow[environment.METADATA_LANGUAGE].customrating,
+					lockdata: false,
+					namedseason: namedseason,
+					art: {
+						poster: path,
+					},
+				},
+			},
+			{
+				compact: true,
+				ignoreComment: true,
+				spaces: 2,
+			},
+		)}`
+	}
+
+	getTVShowNFO() {
+		this.checkMetadataDownloaded()
+		return this.TVShowNFO
+	}
+
+	private async generateSeasonNFOs() {
+		this.checkMetadataDownloaded()
+
+		let arcs = JSON.parse(
+			JSON.stringify(this.metadata.arcs[environment.METADATA_LANGUAGE]),
+		)
+
+		for (let a of arcs) {
+			let path = await Context.library.getLibraryFolder()
+			path += path.includes('/') ? '/' : '\\'
+			path += environment.LIBRARY_SERIES_FOLDER_NAME
+			path += path.includes('/') ? '/' : '\\'
+			path += `Season ${String(a.part).padStart(2, '0')}`
+			path += path.includes('/') ? '/' : '\\'
+			path += `poster.png`
+
+			let NFO = `<?xml version='1.0' encoding='utf-8'?>\n${js2xml(
+				{
+					season: {
+						title: a.title,
+						seasonnumber: a.part,
+						plot: a.description,
+						outline: a.description,
+						overview: a.description,
+						customrating: 'TV-14',
+						lockdata: false,
+						art: {
+							poster: path,
+						},
+					},
+				},
+				{
+					compact: true,
+					ignoreComment: true,
+					spaces: 2,
+				},
+			)}`
+
+			this.seasonNFOs[`${a.part}`] = NFO
+		}
+	}
+
+	getSeasonNFO(arc: number) {
+		this.checkMetadataDownloaded()
+		return this.seasonNFOs[`${arc}`]
+	}
+
+	private async generateEpisodeNFOs() {
+		this.checkMetadataDownloaded()
+
+		let descriptions = JSON.parse(
+			JSON.stringify(this.metadata.descriptions[environment.METADATA_LANGUAGE]),
+		)
+		this.episodesNFOs = {}
+
+		for (let ed of descriptions) {
+			let NFO = `<?xml version='1.0' encoding='utf-8'?>\n${js2xml(
+				{
+					episodedetails: {
+						title: ed.title,
+						plot: ed.description,
+						showtitle: environment.LIBRARY_SERIES_NAME,
+						season: ed.arc,
+						episode: ed.episode,
+						customrating: 'TV-14',
+						lockdata: false,
+					},
+				},
+				{
+					compact: true,
+					ignoreComment: true,
+					spaces: 2,
+				},
+			)}`
+
+			if (!this.episodesNFOs[`${ed.arc}`]) this.episodesNFOs[`${ed.arc}`] = {}
+			this.episodesNFOs[`${ed.arc}`][`${ed.episode}`] = NFO
+		}
+	}
+
+	getEpisodeNFO(arc: number, episode: number) {
+		this.checkMetadataDownloaded()
+		return this.episodesNFOs[`${arc}`][`${episode}`]
 	}
 
 	async addToDownloadQueue(

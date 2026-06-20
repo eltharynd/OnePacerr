@@ -18,10 +18,10 @@ export class PlexController implements ILibraryController {
 	libraryClient: LibraryClient = 'plex'
 
 	private server: PlexServer
+	private ws: WebSocket
+
 	private section: ShowSection
 	private show: Show
-
-	private ws: WebSocket
 
 	constructor(options: { url: string; token: string }) {
 		if (!options.url || !options.token) {
@@ -40,7 +40,7 @@ export class PlexController implements ILibraryController {
 		})
 
 		this.ws.on('close', (code, reason) => {
-			Logger.debug(
+			Logger.warn(
 				`Plex WebSocket closed (Code: ${code}). Reconnecting in 5 seconds...`,
 			)
 			this.ws = null
@@ -272,7 +272,7 @@ export class PlexController implements ILibraryController {
 			title: environment.LIBRARY_SERIES_NAME,
 		})
 		if (searchResults.length < 1) {
-			if (!environment.PLEX_CREATE_SHOW_IF_NOT_FOUND) {
+			if (!environment.LIBRARY_CREATE_SHOW_IF_NOT_FOUND) {
 				Logger.error(
 					`Could not find show '${environment.LIBRARY_SERIES_NAME}' in library '${environment.PLEX_LIBRARY_NAME}'...`,
 				)

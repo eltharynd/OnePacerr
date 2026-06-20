@@ -7,6 +7,7 @@ export default {
 	 */
 	LOG_OUTPUT: process.env.LOG_OUTPUT || 'text',
 	DEBUGGING: /true/i.test(process.env.DEBUGGING || 'false'),
+
 	TESTING:
 		/test/i.test(process.env.NODE_ENV) || /true/i.test(process.env.TESTING),
 
@@ -65,6 +66,9 @@ export default {
 		process.env.LIBRARY_FILENAME_FORMAT ||
 		process.env.PLEX_FILENAME_FORMAT ||
 		'{SERIES_NAME} - S{ARC}E{EPISODE} - {TITLE}.mkv',
+	LIBRARY_CREATE_SHOW_IF_NOT_FOUND: /true/i.test(
+		process.env.LIBRARY_CREATE_SHOW_IF_NOT_FOUND || 'true',
+	),
 
 	/**
 	 * LIBRARY - NONE
@@ -79,16 +83,12 @@ export default {
 	PLEX_TOKEN: process.env.PLEX_TOKEN || null,
 	PLEX_LIBRARY_NAME: process.env.PLEX_LIBRARY_NAME || 'TV Shows',
 
-	PLEX_CREATE_SHOW_IF_NOT_FOUND: /true/i.test(
-		process.env.PLEX_CREATE_SHOW_IF_NOT_FOUND || 'true',
-	),
-
 	/**
 	 * LIBRARY - JELLYFIN
 	 */
 	JELLYFIN_URL: process.env.JELLYFIN_URL || 'http://localhost:8096',
-	JELLYFIN_USERNAME: process.env.JELLYFIN_USERNAME || 'user',
-	JELLYFIN_PASSWORD: process.env.JELLYFIN_PASSWORD || 'password',
+	JELLYFIN_USERNAME: process.env.JELLYFIN_USERNAME || null,
+	JELLYFIN_PASSWORD: process.env.JELLYFIN_PASSWORD || null,
 	JELLYFIN_LIBRARY_NAME: process.env.JELLYFIN_LIBRARY_NAME || 'Shows',
 
 	/**

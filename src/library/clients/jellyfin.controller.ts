@@ -1,3 +1,19 @@
+import { Api, Jellyfin } from '@jellyfin/sdk'
+import { BaseItemKind } from '@jellyfin/sdk/lib/generated-client/models/base-item-kind.js'
+import { VirtualFolderInfo } from '@jellyfin/sdk/lib/generated-client/models/virtual-folder-info.js'
+import { getItemsApi } from '@jellyfin/sdk/lib/utils/api/items-api.js'
+import { getLibraryApi } from '@jellyfin/sdk/lib/utils/api/library-api.js'
+import { getLibraryStructureApi } from '@jellyfin/sdk/lib/utils/api/library-structure-api.js'
+import { getScheduledTasksApi } from '@jellyfin/sdk/lib/utils/api/scheduled-tasks-api.js'
+import { getTvShowsApi } from '@jellyfin/sdk/lib/utils/api/tv-shows-api.js'
+import { getUserApi } from '@jellyfin/sdk/lib/utils/api/user-api.js'
+import { randomUUID } from 'node:crypto'
+import WebSocket from 'ws'
+import environment from '../../environment.js'
+import { Context } from '../../util/context.js'
+import Logger from '../../util/logger.js'
+import sanitizeWindowsFileName from '../../util/sanitize-windows-filename.js'
+import { LibraryController } from '../library.controller.js'
 import {
 	ILibraryController,
 	LibraryClient,
@@ -5,20 +21,85 @@ import {
 } from '../library.model.js'
 
 export class JellyfinController implements ILibraryController {
-	readonly libraryClient: LibraryClient
+	readonly libraryClient: LibraryClient = 'jellyfin'
 
-	constructor(options: { url: string; username: string; password: string }) {}
+	private jellyfin: Jellyfin
+	private api: Api
+	private ws: WebSocket
+	private credentials: { Username: string; Pw: string }
 
-	async init() {}
+	private library
+	private virtualFolder: VirtualFolderInfo
+	private show
 
-	async getLibraryFolder() {}
+	devideUUID = randomUUID()
+
+	constructor(options: { url: string; username: string; password: string }) {
+		if (!options.url || !options.username || !options.password)
+			throw new Error(`Jellyfin misconfigured`)
+
+		this.jellyfin = new Jellyfin({
+			clientInfo: {
+				name: 'OnePacerr',
+				version: process.env.npm_package_version,
+			},
+			deviceInfo: {
+				name: 'OnePacerr container',
+				id: this.devideUUID,
+			},
+		})
+
+		this.api = this.jellyfin.createApi(options.url)
+
+		this.credentials = {
+			Username: options.username,
+			Pw: options.password,
+		}
+	}
+
+	async init() {
+		Logger.info(`Authenticating to Jellyfin...`)
+		let { data } = await getUserApi(this.api).authenticateUserByName({
+			authenticateUserByName: this.credentials,
+		})
+
+		Logger.info(`Searching for Jellyfin Library...`)
+		this.library = (
+			await getLibraryApi(this.api).getMediaFolders()
+		).data.Items.find(mf => mf.Name == environment.JELLYFIN_LIBRARY_NAME)
+
+		Logger.info(`Searching for Jellyfin Virtual Folder...`)
+		this.virtualFolder = (
+			await getLibraryStructureApi(this.api).getVirtualFolders()
+		).data.find(vf => vf.Name == environment.JELLYFIN_LIBRARY_NAME)
+
+		await this.fetchShow()
+	}
+
+	async getLibraryFolder() {
+		return this.virtualFolder.Locations[0]
+	}
 
 	async getExistingLibraryEpisodeFile(
 		season: number,
 		episode: number,
 		pathAccordingToMediaServer?: boolean,
 	): Promise<string> {
-		return null
+		let _episode
+		try {
+			_episode = (
+				await getTvShowsApi(this.api).getEpisodes({
+					seriesId: this.show.seriesId,
+				})
+			).data
+		} catch (e) {
+			Logger.info(
+				`Episode ${season}-${String(episode).padStart(2, '0')} does not exists on Jellyfin...`,
+			)
+			return null
+		}
+
+		//TODO COMPLETE
 	}
 
 	async getTargetLibraryEpisodeFile(
@@ -26,19 +107,113 @@ export class JellyfinController implements ILibraryController {
 		episode: number,
 		episodeDescription?: { title: string; description: string },
 	): Promise<TargetLibraryFile> {
-		return null
+		if (!episodeDescription) {
+			episodeDescription = await Context.metadata.getEpisodeDescription(
+				arc,
+				episode,
+			)
+		}
+
+		let jellyfinLibraryPath = await Context.library.getLibraryFolder()
+		let jellyfinSeparator = jellyfinLibraryPath.includes('/') ? '/' : '\\'
+
+		let targetJellyfinFileName = LibraryController.resolveEpisodeTargetFileName(
+			arc,
+			episode,
+			episodeDescription.title,
+		)
+		let targetJellyfinPath = `${jellyfinLibraryPath}${jellyfinSeparator}${environment.LIBRARY_SERIES_FOLDER_NAME}${jellyfinSeparator}Season ${String(arc).padStart(2, '0')}${jellyfinSeparator}`
+
+		return {
+			path: targetJellyfinPath,
+			filename: sanitizeWindowsFileName(targetJellyfinFileName),
+		}
 	}
 
-	async scanLibrary(folder: string, arc: number) {}
+	async scanLibrary(folder: string, arc: number) {
+		const tasksApi = getScheduledTasksApi(this.api)
+		const tasks = (await tasksApi.getTasks()).data
+		const scanTask = tasks.find(t => t.Key === 'RefreshLibrary')
+		if (!scanTask) {
+			Logger.error(`Couldn't subscribe to Jellyfin Scan Task`)
+			throw new Error()
+		}
+
+		Logger.debug(`Refreshing Library`)
+		await tasksApi.startTask({ taskId: scanTask.Id })
+
+		await new Promise<void>((resolve, reject) => {
+			const timeoutHandler = setTimeout(() => {
+				Logger.error(
+					`Jellyfin didn't notify folder update before timeout expired...`,
+				)
+				reject()
+			}, 15000)
+
+			const pollInterval = setInterval(async () => {
+				const currentTask = await tasksApi.getTask({ taskId: scanTask.Id })
+
+				if (currentTask.data.State === 'Idle') {
+					Logger.debug(`Jellyfin notified folder update`)
+					clearTimeout(timeoutHandler)
+					clearInterval(pollInterval)
+					resolve()
+				} else {
+					Logger.debug(
+						`Jellyfin Scanning... ${currentTask.data.CurrentProgressPercentage ?? 0}%`,
+					)
+				}
+			}, 1000)
+		})
+	}
 
 	async updateEpisodeMetadata(
 		arc: number,
 		episode: number,
 		title: string,
 		description: string,
-	) {}
+	) {
+		//throw new Error('updateEpisodeMetadata')
+	}
 
-	async updateSeasonMetadata(arc: number) {}
+	async updateSeasonMetadata(arc: number) {
+		//throw new Error('updateSeasonMetadata')
+	}
 
-	async updateShowMetadata() {}
+	async updateShowMetadata() {
+		//throw new Error('updateShowMetadata')
+	}
+
+	private async fetchShow() {
+		Logger.info(`Searching for Jellyfin Show...`)
+
+		let searchResults = (
+			await getItemsApi(this.api).getItems({
+				searchTerm: environment.LIBRARY_SERIES_NAME,
+				includeItemTypes: [BaseItemKind.Series],
+				recursive: true,
+				parentId: this.library.ItemId,
+			})
+		).data.Items
+
+		if (searchResults.length < 1) {
+			if (!environment.LIBRARY_CREATE_SHOW_IF_NOT_FOUND) {
+				Logger.error(
+					`Could not find show '${environment.LIBRARY_SERIES_NAME}' in library '${environment.JELLYFIN_LIBRARY_NAME}'...`,
+				)
+				throw new Error('Show not found')
+			}
+		} else if (searchResults.length > 1) {
+			Logger.error(
+				`Could not find show '${environment.LIBRARY_SERIES_NAME}' in library '${environment.JELLYFIN_LIBRARY_NAME}'...`,
+			)
+			throw new Error('Too many shows found')
+		}
+
+		if (searchResults[0]) {
+			this.show = searchResults[0]
+			//console.log(this.show)
+			Logger.info(`Found Jellyfin Show '${this.show.Name}'...`)
+		}
+	}
 }

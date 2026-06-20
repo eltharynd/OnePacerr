@@ -1,5 +1,10 @@
+import { copyFileSync, mkdirSync, writeFileSync } from 'node:fs'
+import path from 'node:path'
 import environment from '../environment.js'
+import { Context } from '../util/context.js'
 import Logger from '../util/logger.js'
+import resolvePosterPath from '../util/resolve-poster-path.js'
+import sanitizeWindowsFileName from '../util/sanitize-windows-filename.js'
 import { JellyfinController } from './clients/jellyfin.controller.js'
 import { LocalFolderController } from './clients/local-folder.controller.js'
 import { PlexController } from './clients/plex.controller.js'
@@ -42,7 +47,7 @@ export class LibraryController {
 	}
 
 	async init() {
-		this.client.init()
+		await this.client.init()
 	}
 
 	async getLibraryFolder() {
@@ -74,6 +79,23 @@ export class LibraryController {
 	}
 
 	async scanLibrary(folder: string, arc: number) {
+		let libraryFolder = await this.getLibraryFolder()
+		libraryFolder += libraryFolder.includes('/') ? '/' : '\\'
+		libraryFolder += environment.LIBRARY_SERIES_FOLDER_NAME
+
+		let plexmatch = `show: ${environment.LIBRARY_SERIES_NAME}`
+		mkdirSync(
+			`${path.resolve(`${libraryFolder.replace(environment.MOUNT_LIBRARY_MEDIA_SERVER, environment.MOUNT_LIBRARY_ONEPACERR)}`)}${path.sep}`,
+			{ recursive: true },
+		)
+		writeFileSync(
+			`${path.resolve(`${libraryFolder.replace(environment.MOUNT_LIBRARY_MEDIA_SERVER, environment.MOUNT_LIBRARY_ONEPACERR)}`)}${path.sep}.plexmatch`,
+			plexmatch,
+		)
+		writeFileSync(
+			`${path.resolve(`${libraryFolder.replace(environment.MOUNT_LIBRARY_MEDIA_SERVER, environment.MOUNT_LIBRARY_ONEPACERR)}`)}${path.sep}tvshow.nfo`,
+			Context.metadata.getTVShowNFO(),
+		)
 		return this.client.scanLibrary(folder, arc)
 	}
 	async updateEpisodeMetadata(
@@ -82,14 +104,63 @@ export class LibraryController {
 		title: string,
 		description: string,
 	) {
+		let folder = await this.getLibraryFolder()
+		folder += folder.includes('/') ? '/' : '\\'
+		folder += environment.LIBRARY_SERIES_FOLDER_NAME
+		folder += folder.includes('/') ? '/' : '\\'
+		folder += `Season ${String(arc).padStart(2, '0')}`
+
+		mkdirSync(
+			`${path.resolve(`${folder.replace(environment.MOUNT_LIBRARY_MEDIA_SERVER, environment.MOUNT_LIBRARY_ONEPACERR)}`)}${path.sep}`,
+			{ recursive: true },
+		)
+		writeFileSync(
+			`${path.resolve(`${folder.replace(environment.MOUNT_LIBRARY_MEDIA_SERVER, environment.MOUNT_LIBRARY_ONEPACERR)}`)}${path.sep}${sanitizeWindowsFileName(await LibraryController.resolveEpisodeTargetFileName(arc, episode, title)).replace('.mkv', '.nfo')}`,
+			await Context.metadata.getEpisodeNFO(arc, episode),
+		)
 		return this.client.updateEpisodeMetadata(arc, episode, title, description)
 	}
 
 	async updateSeasonMetadata(arc: number) {
+		let folder = await this.getLibraryFolder()
+		folder += folder.includes('/') ? '/' : '\\'
+		folder += environment.LIBRARY_SERIES_FOLDER_NAME
+		folder += folder.includes('/') ? '/' : '\\'
+		folder += `Season ${String(arc).padStart(2, '0')}`
+
+		mkdirSync(
+			`${path.resolve(`${folder.replace(environment.MOUNT_LIBRARY_MEDIA_SERVER, environment.MOUNT_LIBRARY_ONEPACERR)}`)}${path.sep}`,
+			{ recursive: true },
+		)
+		writeFileSync(
+			`${path.resolve(`${folder.replace(environment.MOUNT_LIBRARY_MEDIA_SERVER, environment.MOUNT_LIBRARY_ONEPACERR)}`)}${path.sep}season.nfo`,
+			await Context.metadata.getSeasonNFO(arc),
+		)
+		if (!environment.SKIP_POSTERS) {
+			copyFileSync(
+				resolvePosterPath({ arc }),
+				`${path.resolve(`${folder.replace(environment.MOUNT_LIBRARY_MEDIA_SERVER, environment.MOUNT_LIBRARY_ONEPACERR)}`)}${path.sep}poster.png`,
+			)
+		}
+
 		return this.client.updateSeasonMetadata(arc)
 	}
 
 	async updateShowMetadata() {
+		if (!environment.SKIP_POSTERS) {
+			let libraryFolder = await this.getLibraryFolder()
+			libraryFolder += libraryFolder.includes('/') ? '/' : '\\'
+			libraryFolder += environment.LIBRARY_SERIES_FOLDER_NAME
+
+			mkdirSync(
+				`${path.resolve(`${libraryFolder.replace(environment.MOUNT_LIBRARY_MEDIA_SERVER, environment.MOUNT_LIBRARY_ONEPACERR)}`)}${path.sep}`,
+				{ recursive: true },
+			)
+			copyFileSync(
+				resolvePosterPath(),
+				`${path.resolve(`${libraryFolder.replace(environment.MOUNT_LIBRARY_MEDIA_SERVER, environment.MOUNT_LIBRARY_ONEPACERR)}`)}${path.sep}poster.png`,
+			)
+		}
 		return this.client.updateShowMetadata()
 	}
 
@@ -97,7 +168,7 @@ export class LibraryController {
 		arc: number,
 		episode: number,
 		title: string,
-	) {
+	): string {
 		const format = environment.LIBRARY_FILENAME_FORMAT
 		const variables: Record<string, string> = {
 			SERIES_NAME: environment.LIBRARY_SERIES_NAME,

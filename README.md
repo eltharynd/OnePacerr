@@ -172,6 +172,7 @@ services:
       #- LIBRARY_SERIES_FOLDER_NAME=One Pace
 
       #- LIBRARY_FILENAME_FORMAT={SERIES_NAME} - S{ARC}E{EPISODE} - {TITLE}.mkv
+      #- LIBRARY_CREATE_SHOW_IF_NOT_FOUND=true
 
 
       # Library - None
@@ -182,7 +183,6 @@ services:
       - PLEX_TOKEN=<your-token-here>
       - PLEX_LIBRARY_NAME=TV Shows
 
-      #- PLEX_CREATE_SHOW_IF_NOT_FOUND=true
 
 
 
@@ -284,6 +284,7 @@ Here is a breakdown of key optional variables you can adjust in your
 | 🍤 `LIBRARY_SERIES_NAME` | `One Pace` | Name of the Series in Plex. |
 | `LIBRARY_SERIES_FOLDER_NAME` | `$LIBRARY_SERIES_NAME` | Override when the Plex folder needs to be called differently from `LIBRARY_SERIES_NAME`. |
 | `LIBRARY_FILENAME_FORMAT` | `{SERIES_NAME} - S{ARC}E{EPISODE} - {TITLE}.mkv` | Overrides the filename each file should have, `{SERIES_NAME}`, `{ARC}`, `{EPISODE}` and `{TITLE}` will be replaced with values. `.mkv` automatically added if not specified. |
+| `LIBRARY_CREATE_SHOW_IF_NOT_FOUND` | `true` | If `false`, the app crashes if "LIBRARY_SERIES_NAME" isn't already a Show in your Media Server (useful for catching typos on first setup). Leave `true` to auto-create the show. |
 
 ### Library (Local Folder)
 
@@ -298,7 +299,6 @@ Here is a breakdown of key optional variables you can adjust in your
 | ⭐ `PLEX_URL` | `http://localhost:32400` | Plex URL. |
 | ⭐ `PLEX_TOKEN` | _None_ | Your [Plex Token](https://support.plex.tv/articles/204059436-finding-an-authentication-token-x-plex-token/). |
 | 🍤 `PLEX_LIBRARY_NAME` | `TV Shows` | Name of the Library in Plex. |
-| `PLEX_CREATE_SHOW_IF_NOT_FOUND` | `true` | If `false`, the app crashes if "PLEX_SERIES_NAME" isn't already on Plex (useful for catching typos on first setup). Leave `true` to auto-create the show. |
 
 ### Library (Jellyfin)
 
@@ -357,6 +357,7 @@ If you want to contribute to the posters or create an entire new set, first of a
 - [ ] **Add posters via url** to reduce image size...
 - [ ] **Rest API** Manual execution/status/configuration endpoints
 - [ ] **Support alternate torrent clients** (thinking uTorrent and deluge)
+- [ ] **Support Plex/Jellyfin Libraries with multiple folders** (currently only gets the first result from API)
 
 - [Request a new feature](https://github.com/eltharynd/OnePacerr/issues)
 
