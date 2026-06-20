@@ -16,7 +16,8 @@ episodes fully up to date, as well as adding metadata and custom posters for you
 
 We plan to support as many Media Severs as possible, the following is the current status of the implementation:
 
-- **Local Folder**: 👷‍♂️ WIP, refactoring of LibraryController is in progress to allow faster/better implementations.
+- **Local Folder**: ✅ Implemented.
+  - 🕒 Metadata for Local folder WIP
 - **Plex Media Server**: ✅ Import, Metadata, Posters are all working.
 - **Jellyfin**: 🕒 Implementation will start very soon, you can expect an implementation by 21.06.2026
 - **Emby**: ❌ Will implement after jellyfin, don't have a deadline for you
