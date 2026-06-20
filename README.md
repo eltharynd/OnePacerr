@@ -11,7 +11,7 @@
 Because Sonarr does not natively support [One
 Pace](https://onepace.net/) (the fan-edited, manga-accurate version of One Piece), this app
 bridges the gap by automatically downloading, organizing, and keeping your One Pace
-episodes fully up to date, as well as adding metadata and custom posters for your Media Server.
+episodes fully up to date.
 
 Other than downloading and organizing your episode files, it also updates metadata and posters so that it looks nice and professional on your Media Server setups.
 
