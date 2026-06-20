@@ -29,7 +29,7 @@ export class PlexController implements ILibraryController {
 		}
 		this.server = new PlexServer(options.url, options.token)
 		this.ws = new WebSocket(
-			`ws://${options.url.replace('http://', '')}/:/websockets/notifications?X-Plex-Token=${options.token}`,
+			`${options.url.replace('http://', 'ws://').replace('https://', 'wss://')}/:/websockets/notifications?X-Plex-Token=${options.token}`,
 		)
 		this.ws.on('open', () => {
 			Logger.debug('Connected to Plex Live Event Stream')

@@ -149,8 +149,6 @@ export class TorrentController {
 					continue
 				}
 
-				if (episode.arc != 3 || episode.episode != 7) continue
-
 				let targetCRC32 = await Context.metadata.getEpisodeUpdatedCRC32(
 					episode.arc,
 					episode.episode,
