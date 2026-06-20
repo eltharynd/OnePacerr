@@ -300,6 +300,15 @@ Here is a breakdown of key optional variables you can adjust in your
 | 🍤 `PLEX_LIBRARY_NAME` | `TV Shows` | Name of the Library in Plex. |
 | `PLEX_CREATE_SHOW_IF_NOT_FOUND` | `true` | If `false`, the app crashes if "PLEX_SERIES_NAME" isn't already on Plex (useful for catching typos on first setup). Leave `true` to auto-create the show. |
 
+### Library (Jellyfin)
+
+| 💭 Library - Jellyfin Variables | Default | Description |
+| :--- | :--- | :--- |
+| ⭐ `JELLYFIN_URL` | `http://localhost:8096` | Jellyfin URL. |
+| ⭐ `JELLYFIN_USERNAME` | _None_ | Your Jellyfin username. |
+| ⭐ `JELLYFIN_PASSWORD` | _None_ | Your Jellyfin password. |
+| 🍤 `JELLYFIN_LIBRARY_NAME` | `Shows` | Name of the Library in Jellyfin. |
+
 | Torrent Variables | Default | Description |
 | :--- | :--- | :--- |
 | 🍤 `TORRENT_CLIENT` | `qbittorrent` | Your torrent client. Will be used in the future to use different clients rather tnax qBittorrent. |

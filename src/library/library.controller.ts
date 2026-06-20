@@ -1,5 +1,6 @@
 import environment from '../environment.js'
 import Logger from '../util/logger.js'
+import { JellyfinController } from './clients/jellyfin.controller.js'
 import { LocalFolderController } from './clients/local-folder.controller.js'
 import { PlexController } from './clients/plex.controller.js'
 import {
@@ -25,6 +26,12 @@ export class LibraryController {
 				})
 				break
 			case 'jellyfin':
+				this.client = new JellyfinController({
+					url: environment.JELLYFIN_URL,
+					username: environment.JELLYFIN_USERNAME,
+					password: environment.JELLYFIN_PASSWORD,
+				})
+				break
 			case 'emby':
 			default:
 				Logger.error(

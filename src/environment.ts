@@ -84,6 +84,14 @@ export default {
 	),
 
 	/**
+	 * LIBRARY - JELLYFIN
+	 */
+	JELLYFIN_URL: process.env.JELLYFIN_URL || 'http://localhost:8096',
+	JELLYFIN_USERNAME: process.env.JELLYFIN_USERNAME || 'user',
+	JELLYFIN_PASSWORD: process.env.JELLYFIN_PASSWORD || 'password',
+	JELLYFIN_LIBRARY_NAME: process.env.JELLYFIN_LIBRARY_NAME || 'Shows',
+
+	/**
 	 * TORRENT
 	 */
 	TORRENT_URL: process.env.TORRENT_URL || `http://localhost:80`,
