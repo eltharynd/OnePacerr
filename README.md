@@ -6,20 +6,21 @@
 ![GitHub Last Commit](https://img.shields.io/github/last-commit/eltharynd/onepacerr?style=flat-square)
 ![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)
 
-**OnePacerr** is a standalone, automated One Pace download tool designed specifically for
-Sonarr/Plex Home Server setups.
+**OnePacerr** is a standalone, automated One Pace download tool designed specifically to complement Sonarr in Home Server setups.
 
 Because Sonarr does not natively support [One
 Pace](https://onepace.net/) (the fan-edited, manga-accurate version of One Piece), this app
 bridges the gap by automatically downloading, organizing, and keeping your One Pace
 episodes fully up to date, as well as adding metadata and custom posters for your Media Server.
 
+Other than downloading and organizing your episode files, it also updates metadata and posters so that it looks nice and professional on your Media Server setups.
+
 We plan to support as many Media Severs as possible, the following is the current status of the implementation:
 
 - **Local Folder**: ✅ Implemented.
   - 🕒 Metadata for Local folder WIP
 - **Plex Media Server**: ✅ Import, Metadata, Posters are all working.
-- **Jellyfin**: 🕒 Implementation will start very soon, you can expect an implementation by 21.06.2026
+- **Jellyfin**: 🕒 Implementation is ongoing.. ETA is by EOD 20.06.2026 GMT
 - **Emby**: ❌ Will implement after jellyfin, don't have a deadline for you
 
 ## 📃 Table of Contents
