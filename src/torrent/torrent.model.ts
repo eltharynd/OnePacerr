@@ -6,7 +6,7 @@ export type Torrent = {
 	readonly content_path: string
 }
 
-export interface ITorrentClient {
+export interface ITorrentController {
 	readonly torrentClient: TorrentClient
 
 	addTorrent(torrentInfo: TorrentInfo, category: string): Promise<boolean>

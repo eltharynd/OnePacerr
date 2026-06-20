@@ -6,10 +6,10 @@ import { Context } from '../util/context.js'
 import Logger from '../util/logger.js'
 import sanitizeWindowsFileName from '../util/sanitizeWindowsFilename.js'
 import { qBittorrentController } from './clients/qbittorrent.controller.js'
-import { ITorrentClient, Torrent, TorrentClient } from './torrent.model.js'
+import { ITorrentController, Torrent, TorrentClient } from './torrent.model.js'
 
 export class TorrentController {
-	private client: ITorrentClient
+	private client: ITorrentController
 	private __watching: boolean = false
 
 	constructor() {

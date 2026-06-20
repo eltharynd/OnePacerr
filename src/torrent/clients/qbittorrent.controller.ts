@@ -5,9 +5,13 @@ import {
 } from '@ctrl/qbittorrent'
 import { TorrentInfo } from '../../metadata/metada.model.js'
 import Logger from '../../util/logger.js'
-import { ITorrentClient, Torrent, TorrentClient } from '../torrent.model.js'
+import {
+	ITorrentController as ITorrentController,
+	Torrent,
+	TorrentClient,
+} from '../torrent.model.js'
 
-export class qBittorrentController implements ITorrentClient {
+export class qBittorrentController implements ITorrentController {
 	readonly torrentClient: TorrentClient = 'qbittorrent'
 	private client: QBittorrent
 
