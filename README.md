@@ -18,9 +18,8 @@ Other than downloading and organizing your episode files, it also updates metada
 We plan to support as many Media Severs as possible, the following is the current status of the implementation:
 
 - **Local Folder**: ✅ Implemented.
-  - 🕒 Metadata for Local folder WIP
-- **Plex Media Server**: ✅ Import, Metadata, Posters are all working.
-- **Jellyfin**: 🕒 Implementation is ongoing.. ETA is by EOD 20.06.2026 GMT
+- **Plex Media Server**: ✅ Implemented.
+- **Jellyfin**: ✅ Implemented.
 - **Emby**: ❌ Will implement after jellyfin, don't have a deadline for you
 
 ## 📃 Table of Contents
@@ -351,11 +350,11 @@ If you want to contribute to the posters or create an entire new set, first of a
 - [x] **Handle Network failures** with a delayed retry or something... (since v1.2.0)
 - [X] **Remove Plex requirement** for when someone just wants to organize a standalone folder (since v1.2.0)
   - Do so by refactoring PlexController with Factory style so new LibraryControllers can be more easily implemented. This would speed up Jellyfin/Kodi/Emby implementation considerally. Treat no media server the same way just organizing a folder and creating .plexmatch .nfo and such
-- [ ] **Local Folder Metadata** files creation so that they can later be moved to any Media Server
-- [ ] **Filters** to skip seasons/episodes
-- [ ] **Jellyfin Support** _(Requested by Marci on Discord)_
+- [X] **Local Folder Metadata** files creation so that they can later be moved to any Media Server (since v1.3.0)
+- [X] **Jellyfin Support** _(Requested by Marci on Discord)_ (since v1.3.0)
 - [ ] **Emby Support** _(Requested by u/RealJustMe on r/Servarr)_
-- [ ] **Add posters via url** to reduce image size...
+- [ ] **Add posters via path** to reduce plex metadata update time...
+- [ ] **Filters** to skip seasons/episodes
 - [ ] **Rest API** Manual execution/status/configuration endpoints
 - [ ] **Support alternate torrent clients** (thinking uTorrent and deluge)
 - [ ] **Support Plex/Jellyfin Libraries with multiple folders** (currently only gets the first result from API)
