@@ -20,7 +20,7 @@ We plan to support as many Media Severs as possible, the following is the curren
 - **Local Folder**: ✅ Implemented.
   - 🕒 Metadata for Local folder WIP
 - **Plex Media Server**: ✅ Import, Metadata, Posters are all working.
-- **Jellyfin**: 🕒 Implementation will start very soon, you can expect an implementation by 21.06.2026
+- **Jellyfin**: 🕒 Implementation is ongoing.. ETA is by EOD 20.06.2026 GMT
 - **Emby**: ❌ Will implement after jellyfin, don't have a deadline for you
 
 ## 📃 Table of Contents
