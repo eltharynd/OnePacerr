@@ -295,8 +295,8 @@ This project wouldn't be possible without the incredible work of the community:
 - **[Ladyisatis](https://github.com/ladyisatis):** For maintaining the
   [one-pace-metadata](https://github.com/ladyisatis/one-pace-metadata) repository.
 - For the custom poster artwork sets:
-  - `piratezekk` (default) by **[/u/piratezekk](https://reddit.com/user/piratezekk):**.
-  - `mizzoufan523` by **[/u/Mizzoufan523](https://reddit.com/user/Mizzoufan523):**.
+  - `piratezekk` (default) by **[/u/piratezekk](https://reddit.com/user/piratezekk)**.
+  - `mizzoufan523` by **[/u/Mizzoufan523](https://reddit.com/user/Mizzoufan523)**.
   - `official` by **[One Pace's Team](https://onepace.net/en)**
 
 ## 💗 Support (One Pace, not me!)
