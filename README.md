@@ -183,8 +183,19 @@ services:
       # Library - Plex
       - PLEX_URL=localhost:32400
       - PLEX_TOKEN=<your-token-here>
-      - PLEX_LIBRARY_NAME=TV Shows
+      - PLEX_LIBRARY_NAME=TV 
+      
+      # Library - Jellyfin
+      - JELLYFIN__URL=localhost:8096
+      - JELLYFIN_USERNAME=<your-username-here>
+      - JELLYFIN_PASSWORD=<your-password-here>
+      #- JELLYFIN_LIBRARY_NAME=Shows
 
+      # Library - Emby
+      - EMBY_URL=localhost:8096
+      - EMBY_USERNAME=<your-username-here>
+      - EMBY_PASSWORD=<your-password-here>
+      #- EMBY_LIBRARY_NAME=TV Shows
 
 
 
@@ -310,6 +321,15 @@ Here is a breakdown of key optional variables you can adjust in your
 | ⭐ `JELLYFIN_USERNAME` | _None_ | Your Jellyfin username. |
 | ⭐ `JELLYFIN_PASSWORD` | _None_ | Your Jellyfin password. |
 | 🍤 `JELLYFIN_LIBRARY_NAME` | `Shows` | Name of the Library in Jellyfin. |
+
+### Library (Emby)
+
+| 💭 Library - Emby Variables | Default | Description |
+| :--- | :--- | :--- |
+| ⭐ `EMBY_URL` | `http://localhost:8096` | Emby URL. |
+| ⭐ `EMBY_USERNAME` | _None_ | Your Emby username. |
+| ⭐ `EMBY_PASSWORD` | _None_ | Your Emby password. |
+| 🍤 `EMBY_LIBRARY_NAME` | `TV Shows` | Name of the Library in Emby. |
 
 | Torrent Variables | Default | Description |
 | :--- | :--- | :--- |
