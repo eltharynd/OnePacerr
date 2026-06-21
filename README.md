@@ -377,6 +377,7 @@ If you want to contribute to the posters or create an entire new set, first of a
 - [ ] **Jellyfin alternate Auth methods**
 - [ ] **Emby Support** _(Requested by u/RealJustMe on r/Servarr)_
 - [ ] **Add posters via path** to reduce plex metadata update time...
+- [ ] **Better re-organize** check for leftover files and delete them...
 - [ ] **Filters** to skip seasons/episodes
 - [ ] **Rest API** Manual execution/status/configuration endpoints
 - [ ] **Support alternate torrent clients** (thinking uTorrent and deluge)
