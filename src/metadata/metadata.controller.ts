@@ -346,6 +346,8 @@ export class MetadataController {
 		path += path.includes('/') ? '/' : '\\'
 		path += 'poster.png'
 
+		tvshow.title = tvshow.title.replace('One Piece', 'One Pace')
+		tvshow.originaltitle = tvshow.originaltitle.replace('One Piece', 'One Pace')
 		this.TVShowNFO = `<?xml version='1.0' encoding='utf-8'?>\n${js2xml(
 			{
 				tvshow: {
@@ -353,7 +355,7 @@ export class MetadataController {
 					outline: tvshow.plot,
 					customrating:
 						this.metadata.tvshow[environment.METADATA_LANGUAGE].customrating,
-					lockdata: false,
+					lockdata: true,
 					namedseason: namedseason,
 					art: {
 						poster: path,
