@@ -435,7 +435,6 @@ If you want to contribute to the posters or create an entire new set, first of a
 - [X] **Better re-organize** check for leftover files and delete them... (since v1.3.5)
 - [ ] **Jellyfin alternate Auth methods**
 - [ ] **Emby Support** _(Requested by u/RealJustMe on r/Servarr)_
-- [ ] **Add posters via path** to reduce plex metadata update time...
 - [ ] **Rest API** Manual execution/status/configuration endpoints
 - [ ] **Support alternate torrent clients** (thinking uTorrent and deluge)
 - [ ] **Support Plex/Jellyfin Libraries with multiple folders** (currently only gets the first result from API)
