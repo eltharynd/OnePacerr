@@ -38,6 +38,12 @@ export class LibraryController {
 				})
 				break
 			case 'emby':
+			// this.client = new EmbyController({
+			// 	url: environment.EMBY_URL,
+			// 	username: environment.EMBY_USERNAME,
+			// 	password: environment.EMBY_PASSWORD,
+			// })
+			// break
 			default:
 				Logger.error(
 					`Media Server '${environment.LIBRARY_MEDIA_SERVER}' not implemented yet...`,

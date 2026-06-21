@@ -8,7 +8,7 @@ import { getScheduledTasksApi } from '@jellyfin/sdk/lib/utils/api/scheduled-task
 import { getTvShowsApi } from '@jellyfin/sdk/lib/utils/api/tv-shows-api.js'
 import { getUserApi } from '@jellyfin/sdk/lib/utils/api/user-api.js'
 import { randomUUID } from 'node:crypto'
-import path from 'node:path'
+import WebSocket from 'ws'
 import environment from '../../environment.js'
 import { Context } from '../../util/context.js'
 import Logger from '../../util/logger.js'
@@ -20,16 +20,19 @@ import {
 	TargetLibraryFile,
 } from '../library.model.js'
 
-export class JellyfinController implements ILibraryController {
-	readonly libraryClient: LibraryClient = 'jellyfin'
+export class EmbyController implements ILibraryController {
+	readonly libraryClient: LibraryClient = 'emby'
 
 	private jellyfin: Jellyfin
 	private api: Api
+	private ws: WebSocket
 	private credentials: { Username: string; Pw: string }
 
 	private library
 	private virtualFolder: VirtualFolderInfo
 	private show
+
+	devideUUID = randomUUID()
 
 	constructor(options: { url: string; username: string; password: string }) {
 		if (!options.url || !options.username || !options.password)
@@ -42,7 +45,7 @@ export class JellyfinController implements ILibraryController {
 			},
 			deviceInfo: {
 				name: 'OnePacerr container',
-				id: randomUUID(),
+				id: this.devideUUID,
 			},
 		})
 
@@ -78,7 +81,7 @@ export class JellyfinController implements ILibraryController {
 	}
 
 	async getExistingLibraryEpisodeFile(
-		arc: number,
+		season: number,
 		episode: number,
 		pathAccordingToMediaServer?: boolean,
 	): Promise<string> {
@@ -86,29 +89,17 @@ export class JellyfinController implements ILibraryController {
 		try {
 			_episode = (
 				await getTvShowsApi(this.api).getEpisodes({
-					seriesId: this.show.Id,
-					fields: ['Path' as any],
+					seriesId: this.show.seriesId,
 				})
-			).data.Items.find(e => {
-				return e.IndexNumber == episode && e.ParentIndexNumber == arc
-			})
-
-			if (!_episode) throw new Error('Episode not on Jellyfin')
-
-			if (pathAccordingToMediaServer) return _episode.Path
-			else
-				return path.resolve(
-					_episode.Path.replace(
-						environment.MOUNT_LIBRARY_MEDIA_SERVER,
-						environment.MOUNT_LIBRARY_ONEPACERR,
-					),
-				)
+			).data
 		} catch (e) {
 			Logger.info(
-				`Episode ${arc}-${String(episode).padStart(2, '0')} does not exists on Jellyfin...`,
+				`Episode ${season}-${String(episode).padStart(2, '0')} does not exists on Jellyfin...`,
 			)
 			return null
 		}
+
+		//TODO COMPLETE
 	}
 
 	async getTargetLibraryEpisodeFile(

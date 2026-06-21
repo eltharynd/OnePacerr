@@ -30,6 +30,7 @@
 		"express": "^4.22.2",
 		"multer": "^2.2.0",
 		"node-json-logger": "^0.2.1",
+		"openapi-fetch": "^0.17.0",
 		"reflect-metadata": "^0.2.2",
 		"routing-controllers": "^0.11.3",
 		"rss-parser": "^3.13.0",
@@ -45,6 +46,7 @@
 		"@types/node-json-logger": "^0.0.3",
 		"@vitest/coverage-v8": "^4.1.8",
 		"nodemon": "^3.1.14",
+		"openapi-typescript": "^7.13.0",
 		"typescript": "^5.9.3",
 		"vitest": "^4.1.8"
 	}

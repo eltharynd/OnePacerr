@@ -92,6 +92,14 @@ export default {
 	JELLYFIN_LIBRARY_NAME: process.env.JELLYFIN_LIBRARY_NAME || 'Shows',
 
 	/**
+	 * EMBY - JELLYFIN
+	 */
+	EMBY_URL: process.env.EMBY_URL || 'http://localhost:8096',
+	EMBY_USERNAME: process.env.EMBY_USERNAME || null,
+	EMBY_PASSWORD: process.env.EMBY_PASSWORD || null,
+	EMBY_LIBRARY_NAME: process.env.EMBY_LIBRARY_NAME || 'Shows',
+
+	/**
 	 * TORRENT
 	 */
 	TORRENT_URL: process.env.TORRENT_URL || `http://localhost:80`,
