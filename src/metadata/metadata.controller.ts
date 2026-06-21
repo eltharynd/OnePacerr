@@ -6,6 +6,7 @@ import environment from '../environment.js'
 import { TargetLibraryFile } from '../library/library.model.js'
 import { Context } from '../util/context.js'
 import getFileCrc32Hash from '../util/crc32.js'
+import { Filter } from '../util/filters.js'
 import Logger from '../util/logger.js'
 import {
 	Episode,
@@ -60,13 +61,17 @@ export class MetadataController {
 		Logger.info(`Processing episodes from metadata...`)
 
 		for (let arc of this.metadata.arcs[environment.METADATA_LANGUAGE]) {
-			if (arc.part === 0 && !environment.INCLUDE_SPECIALS) {
+			if (!Filter({ arc: arc.part })) continue
+
+			if (arc.part == 0 && !environment.INCLUDE_SPECIALS) {
 				Logger.info(`Skipping Specials as per env INCLUDE_SPECIALS...`)
 				continue
 			}
 
 			Logger.info(`Processing Season ${arc.part}...`)
 			for (let episode of arc.episodes) {
+				if (!Filter({ arc: arc.part, episode: episode.episode })) continue
+
 				Logger.debug(
 					`Episode ${arc.part}-${String(episode.episode).padStart(2, '0')} - Processing`,
 				)

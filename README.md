@@ -39,6 +39,16 @@ We plan to support as many Media Severs as possible, the following is the curren
   - 👩‍💻 [Contributing to the development](#-contributing-to-the-development)
 
 - ⚙️ [Environment Variables Explained](#️-environment-variables-explained)
+  - 🧪 [Pipeline](#-pipeline)
+  - 🔎 [Filters](#-filters)
+  - 🎬 [Library (common)](#-library-common)
+    - 📂 [Library (Local Folder)](#-library-local-folder)
+    - 🍊 [Library (Plex Media Server)](#-library-plex-media-server)
+    - 🪼 [Library (Jellyfin)](#-library-jellyfin)
+    - ✳️ [Library (Emby)](#️-library-emby)
+    - 💾 [Torrent](#-torrent)
+    - 💿 [Mount Path Mappings](#-mount-path-mappings)
+    - ℹ️ [Metadata](#ℹ️-metadata)
 - 🖼️ [Poster Sets](#️-poster-sets)
   - 🔍 [Previews](#-previews)
   - 📥 [Adding/Updating Sets](#-addingupdating-sets)
@@ -157,6 +167,9 @@ services:
       #- INCLUDE_SPECIALS=false
       - PREFER_EXTENDED=true
 
+      #FILTERS_INCLUDE=S01
+      #FILTERS_EXCLUDE=S35,S36
+
 
 
       # Cross-Mount Mappings (Uncomment if needed, defaults to nothing)
@@ -258,7 +271,7 @@ Here is a breakdown of key optional variables you can adjust in your
 - 🍏 Useful
 - 💭 These configuration are specific to your chosen Media Server type (`$LIBRARY_MEDIA_SERVER`) so you only need to specify the ones for your case.
 
-### General
+### 🧪 Pipeline
 
 | Pipeline Variables | Default | Description |
 | :--- | :--- | :--- |
@@ -270,15 +283,40 @@ Here is a breakdown of key optional variables you can adjust in your
 | --- | --- | --- |
 | `INCLUDE_SPECIALS` | `false` | Set to `true` to also process specials. |
 | `PREFER_EXTENDED` | `false` | Set to `true` to prioritize extended cuts over standard releases. |
+| --- | --- | --- |
+| `FILTERS_INCLUDE` | _None_ | Only process seasons/episodes that match these [filters](#-filters). |
+| `FILTERS_EXCLUDE` | _None_ | Only process seasons/episodes that don't match these [filters](#-filters). |
 
-| Mount Configuration Variables | Default | Description |
-| :--- | :--- | :--- |
-| `MOUNT_LIBRARY_MEDIA_SERVER` | _None_ | Use these mapping variables if your **Media Server** uses different mount paths than the OnePacerr container. |
-| `MOUNT_LIBRARY_ONEPACERR` | _None_ | Use these mapping variables if your **Media Server** uses different mount paths than the OnePacerr container. |
-| `MOUNT_DOWNLOADS_QBITTORRENT` | _None_ | Use these mapping variables if **qBittorrent** uses different mount paths than the OnePacerr container. |
-| `MOUNT_DOWNLOADS_ONEPACERR` | _None_ | Use these mapping variables if **qBittorrent** uses different mount paths than the OnePacerr container. |
+### 🔎 Filters
 
-### Library (Common)
+`FILTERS_INCLUDE` and `FILTERS_EXCLUDE` are lists of 'filters' as a comma separated string. For example: `filter1,filter2,filter3`.
+
+Each filter can either filter for specific season number, episode number or both. Meaning they can either be `Sxx`, `SxxExx` or `Exx`. For example `S01E06` would **match** only S01E06, whilst `S02` would **match** every episode in `S02`, and `E06` would **match** episode 6 of every season (don't ask why).
+
+This should give you flexibility to decide to only process whatever you want instead of the whole thing, here's a couple of setup examples:
+
+#### All seasons before Wano (S35)
+
+```dotenv
+FILTERS_EXCLUDE=S35,S36
+```
+
+#### All first episodes of each Season
+
+```dotenv
+FILTERS_INCLUDE=E01
+```
+
+#### All first episodes of each Season, except Wano and Egghead (35,36)
+
+```dotenv
+FILTERS_INCLUDE=E01
+FILTERS_EXCLUDE=S35,S36
+```
+
+In order for an episode to be processed/downloaded/updated, it has to match BOTH filters.
+
+### 🎬 Library (Common)
 
 > [!IMPORTANT]  
 > Configure the Library (Media Server) type here.
@@ -299,13 +337,13 @@ Here is a breakdown of key optional variables you can adjust in your
 | `LIBRARY_FILENAME_FORMAT` | `{SERIES_NAME} - S{ARC}E{EPISODE} - {TITLE}.mkv` | Overrides the filename each file should have, `{SERIES_NAME}`, `{ARC}`, `{EPISODE}` and `{TITLE}` will be replaced with values. `.mkv` automatically added if not specified. |
 | `LIBRARY_CREATE_SHOW_IF_NOT_FOUND` | `true` | If `false`, the app crashes if "LIBRARY_SERIES_NAME" isn't already a Show in your Media Server (useful for catching typos on first setup). Leave `true` to auto-create the show. |
 
-### Library (Local Folder)
+### 📂 Library (Local Folder)
 
 | 💭 Library - None | Default | Description |
 | :--- | :--- | :--- |
 | 🍤 `LIBRARY_NONE_ROOT_FOLDER` | `C:\\OnePacerr` | The root folder where your Library should be saved (Do not Include LIBRARY_SERIES_FOLDER_NAME). |
 
-### Library (Plex Media Server)
+### 🍊 Library (Plex Media Server)
 
 | 💭 Library - Plex Variables | Default | Description |
 | :--- | :--- | :--- |
@@ -313,7 +351,7 @@ Here is a breakdown of key optional variables you can adjust in your
 | ⭐ `PLEX_TOKEN` | _None_ | Your [Plex Token](https://support.plex.tv/articles/204059436-finding-an-authentication-token-x-plex-token/). |
 | 🍤 `PLEX_LIBRARY_NAME` | `TV Shows` | Name of the Library in Plex. |
 
-### Library (Jellyfin)
+### 🪼 Library (Jellyfin)
 
 | 💭 Library - Jellyfin Variables | Default | Description |
 | :--- | :--- | :--- |
@@ -322,7 +360,7 @@ Here is a breakdown of key optional variables you can adjust in your
 | ⭐ `JELLYFIN_PASSWORD` | _None_ | Your Jellyfin password. |
 | 🍤 `JELLYFIN_LIBRARY_NAME` | `Shows` | Name of the Library in Jellyfin. |
 
-### Library (Emby)
+### ✳️ Library (Emby)
 
 | 💭 Library - Emby Variables | Default | Description |
 | :--- | :--- | :--- |
@@ -330,6 +368,8 @@ Here is a breakdown of key optional variables you can adjust in your
 | ⭐ `EMBY_USERNAME` | _None_ | Your Emby username. |
 | ⭐ `EMBY_PASSWORD` | _None_ | Your Emby password. |
 | 🍤 `EMBY_LIBRARY_NAME` | `TV Shows` | Name of the Library in Emby. |
+
+### 💾 Torrent
 
 | Torrent Variables | Default | Description |
 | :--- | :--- | :--- |
@@ -340,6 +380,17 @@ Here is a breakdown of key optional variables you can adjust in your
 | `TORRENT_CATEGORY` | `onepacerr` | Creates downloads with this category, also filters completed torrents using this. |
 | `TORRENT_CATEGORY_ONCE_COMPLETED` | `completed` | After processing completed downloads, changes the torrent category to this one. |
 | `TORRENT_CHECK_INTERVAL` | `60` | Seconds between checking for completed downloads. |
+
+### 💿 Mount Path Mappings
+
+| Mount Configuration Variables | Default | Description |
+| :--- | :--- | :--- |
+| `MOUNT_LIBRARY_MEDIA_SERVER` | _None_ | Use these mapping variables if your **Media Server** uses different mount paths than the OnePacerr container. |
+| `MOUNT_LIBRARY_ONEPACERR` | _None_ | Use these mapping variables if your **Media Server** uses different mount paths than the OnePacerr container. |
+| `MOUNT_DOWNLOADS_QBITTORRENT` | _None_ | Use these mapping variables if **qBittorrent** uses different mount paths than the OnePacerr container. |
+| `MOUNT_DOWNLOADS_ONEPACERR` | _None_ | Use these mapping variables if **qBittorrent** uses different mount paths than the OnePacerr container. |
+
+### ℹ️ Metadata
 
 | Metadata Variables | Default | Description |
 | :--- | :--- | :--- |
@@ -374,11 +425,11 @@ If you want to contribute to the posters or create an entire new set, first of a
   - Do so by refactoring PlexController with Factory style so new LibraryControllers can be more easily implemented. This would speed up Jellyfin/Kodi/Emby implementation considerally. Treat no media server the same way just organizing a folder and creating .plexmatch .nfo and such
 - [X] **Local Folder Metadata** files creation so that they can later be moved to any Media Server (since v1.3.0)
 - [X] **Jellyfin Support** _(Requested by Marci on Discord)_ (since v1.3.0)
+- [X] **Filters** to skip seasons/episodes (since v1.3.4)
 - [ ] **Jellyfin alternate Auth methods**
 - [ ] **Emby Support** _(Requested by u/RealJustMe on r/Servarr)_
 - [ ] **Add posters via path** to reduce plex metadata update time...
 - [ ] **Better re-organize** check for leftover files and delete them...
-- [ ] **Filters** to skip seasons/episodes
 - [ ] **Rest API** Manual execution/status/configuration endpoints
 - [ ] **Support alternate torrent clients** (thinking uTorrent and deluge)
 - [ ] **Support Plex/Jellyfin Libraries with multiple folders** (currently only gets the first result from API)

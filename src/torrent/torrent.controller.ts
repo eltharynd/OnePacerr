@@ -8,6 +8,7 @@ import {
 	TorrentInfo,
 } from '../metadata/metada.model.js'
 import { Context } from '../util/context.js'
+import { Filter } from '../util/filters.js'
 import Logger from '../util/logger.js'
 import { qBittorrentController } from './clients/qbittorrent.controller.js'
 import { ITorrentController, Torrent, TorrentClient } from './torrent.model.js'
@@ -148,6 +149,8 @@ export class TorrentController {
 					)
 					continue
 				}
+
+				if (!Filter(episode)) continue
 
 				let targetCRC32 = await Context.metadata.getEpisodeUpdatedCRC32(
 					episode.arc,

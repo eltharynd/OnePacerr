@@ -35,6 +35,9 @@ export default {
 	INCLUDE_SPECIALS: /true/i.test(process.env.INCLUDE_SPECIALS || 'false'),
 	PREFER_EXTENDED: /true/i.test(process.env.PREFER_EXTENDED || 'false'),
 
+	FILTERS_INCLUDE: process.env.FILTERS_INCLUDE || '',
+	FILTERS_EXCLUDE: process.env.FILTERS_EXCLUDE || '',
+
 	/**
 	 * MOUNT
 	 */
