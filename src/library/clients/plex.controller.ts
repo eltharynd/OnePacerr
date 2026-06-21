@@ -148,38 +148,48 @@ export class PlexController implements ILibraryController {
 			plexmatch,
 		)
 
-		return new Promise<void>(async (resolve, reject) => {
-			const timeout = 10000
-			let timeoutHandler
-			let callback = async data => {
-				let event = JSON.parse(data).NotificationContainer
-				if (event.type == 'activity') {
-					let notification = event.ActivityNotification[0]
-					let activity = notification.Activity
-					if (
-						activity.title.startsWith('Scanning') &&
-						activity.subtitle ==
-							`${environment.LIBRARY_SERIES_FOLDER_NAME} - Season ${String(arc).padStart(2, '0')}` &&
-						activity.progress >= 100
-					) {
-						Logger.debug(`Plex notified folder update`)
-						if (!this.show) await this.fetchShow()
-						if (timeoutHandler) clearTimeout(timeoutHandler)
-						this.ws.off('message', callback)
-						resolve()
+		try {
+			await new Promise<void>(async (resolve, reject) => {
+				const timeout = 10000
+				let timeoutHandler
+				let callback = async data => {
+					let event = JSON.parse(data).NotificationContainer
+					if (event.type == 'activity') {
+						let notification = event.ActivityNotification[0]
+						let activity = notification.Activity
+						if (
+							activity.title.startsWith('Scanning') &&
+							activity.subtitle ==
+								`${environment.LIBRARY_SERIES_FOLDER_NAME} - Season ${String(arc).padStart(2, '0')}` &&
+							activity.progress >= 100
+						) {
+							Logger.debug(`Plex notified folder update`)
+							if (!this.show) await this.fetchShow()
+							if (timeoutHandler) clearTimeout(timeoutHandler)
+							this.ws.off('message', callback)
+							resolve()
+						}
 					}
 				}
-			}
-			this.ws.on('message', callback)
+				this.ws.on('message', callback)
 
-			timeoutHandler = setTimeout(() => {
-				Logger.error(
-					`Plex didn't notify folder update before timeout expired...`,
+				timeoutHandler = setTimeout(() => {
+					Logger.warn(
+						`Plex didn't notify folder update before timeout expired...`,
+					)
+					reject(new PlexSocketNoResponseError())
+				}, timeout)
+				await this.section.update({ path: folder })
+			})
+		} catch (e) {
+			if (e instanceof PlexSocketNoResponseError) {
+				Logger.warn(
+					`Assuming Plex is just being Plex and that the library got scanned by now`,
 				)
-				reject()
-			}, timeout)
-			await this.section.update({ path: folder })
-		})
+			} else {
+				throw e
+			}
+		}
 	}
 
 	async updateEpisodeMetadata(
@@ -291,3 +301,5 @@ export class PlexController implements ILibraryController {
 		}
 	}
 }
+
+class PlexSocketNoResponseError extends Error {}

@@ -432,10 +432,10 @@ If you want to contribute to the posters or create an entire new set, first of a
 - [X] **Local Folder Metadata** files creation so that they can later be moved to any Media Server (since v1.3.0)
 - [X] **Jellyfin Support** _(Requested by Marci on Discord)_ (since v1.3.0)
 - [X] **Filters** to skip seasons/episodes (since v1.3.4)
+- [X] **Better re-organize** check for leftover files and delete them... (since v1.3.5)
 - [ ] **Jellyfin alternate Auth methods**
 - [ ] **Emby Support** _(Requested by u/RealJustMe on r/Servarr)_
 - [ ] **Add posters via path** to reduce plex metadata update time...
-- [ ] **Better re-organize** check for leftover files and delete them...
 - [ ] **Rest API** Manual execution/status/configuration endpoints
 - [ ] **Support alternate torrent clients** (thinking uTorrent and deluge)
 - [ ] **Support Plex/Jellyfin Libraries with multiple folders** (currently only gets the first result from API)

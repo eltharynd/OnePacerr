@@ -77,7 +77,7 @@ export class LibraryController {
 		episode: number,
 		episodeDescription?: { title: string; description: string },
 	): Promise<TargetLibraryFile> {
-		return this.client.getTargetLibraryEpisodeFile(
+		return await this.client.getTargetLibraryEpisodeFile(
 			arc,
 			episode,
 			episodeDescription,
@@ -102,8 +102,9 @@ export class LibraryController {
 			`${path.resolve(`${libraryFolder.replace(environment.MOUNT_LIBRARY_MEDIA_SERVER, environment.MOUNT_LIBRARY_ONEPACERR)}`)}${path.sep}tvshow.nfo`,
 			Context.metadata.getTVShowNFO(),
 		)
-		return this.client.scanLibrary(folder, arc)
+		await this.client.scanLibrary(folder, arc)
 	}
+
 	async updateEpisodeMetadata(
 		arc: number,
 		episode: number,
@@ -124,7 +125,7 @@ export class LibraryController {
 			`${path.resolve(`${folder.replace(environment.MOUNT_LIBRARY_MEDIA_SERVER, environment.MOUNT_LIBRARY_ONEPACERR)}`)}${path.sep}${sanitizeWindowsFileName(await LibraryController.resolveEpisodeTargetFileName(arc, episode, title)).replace('.mkv', '.nfo')}`,
 			await Context.metadata.getEpisodeNFO(arc, episode),
 		)
-		return this.client.updateEpisodeMetadata(arc, episode, title, description)
+		await this.client.updateEpisodeMetadata(arc, episode, title, description)
 	}
 
 	async updateSeasonMetadata(arc: number) {
@@ -149,7 +150,7 @@ export class LibraryController {
 			)
 		}
 
-		return this.client.updateSeasonMetadata(arc)
+		await this.client.updateSeasonMetadata(arc)
 	}
 
 	async updateShowMetadata() {
@@ -167,7 +168,7 @@ export class LibraryController {
 				`${path.resolve(`${libraryFolder.replace(environment.MOUNT_LIBRARY_MEDIA_SERVER, environment.MOUNT_LIBRARY_ONEPACERR)}`)}${path.sep}poster.png`,
 			)
 		}
-		return this.client.updateShowMetadata()
+		await this.client.updateShowMetadata()
 	}
 
 	static resolveEpisodeTargetFileName(

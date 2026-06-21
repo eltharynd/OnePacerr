@@ -1,5 +1,5 @@
 import axios from 'axios'
-import { copyFileSync, mkdirSync, unlinkSync, writeFileSync } from 'fs'
+import { copyFileSync, mkdirSync, readdirSync, unlinkSync } from 'fs'
 import path from 'path'
 import { js2xml } from 'xml-js'
 import environment from '../environment.js'
@@ -227,6 +227,9 @@ export class MetadataController {
 				arc,
 				episode,
 			)
+			let serverFolder = path.resolve(serverFile, '..')
+			let serverFileName = serverFile.replace(`${serverFolder}${path.sep}`, '')
+
 			let targetFolder = path.resolve(
 				`${targetLibraryFile.path}`.replace(
 					environment.MOUNT_LIBRARY_MEDIA_SERVER,
@@ -247,18 +250,32 @@ export class MetadataController {
 				recursive: true,
 			})
 
-			copyFileSync(serverFile, targetFile)
-
-			let plexmatch = `show: ${environment.LIBRARY_SERIES_NAME}`
-			//TODO check
-			writeFileSync(
-				`${path.resolve(`${targetFolder}${path.sep}..`)}${path.sep}.plexmatch`,
-				plexmatch,
+			let filesInFolder = readdirSync(serverFolder).filter(
+				f => f != serverFileName,
 			)
+			let trashFiles = filesInFolder.filter(f => {
+				return (
+					f.replace(/\.(nfo|mkv)$/, '') ==
+						serverFileName.replace(/\.mkv$/, '') ||
+					(f.includes(environment.LIBRARY_SERIES_NAME) &&
+						f.includes(
+							`S${String(arc).padStart(2, '0')}E${String(episode).padStart(2, '0')}`,
+						))
+				)
+			})
+
+			copyFileSync(serverFile, targetFile)
 
 			await Context.library.scanLibrary(targetLibraryFile.path, arc)
 
 			unlinkSync(serverFile)
+			if (trashFiles.length > 0)
+				Logger.info(
+					`Episode ${arc}-${String(episode).padStart(2, '0')} - Cleaning ${trashFiles.length} trash files...`,
+				)
+			for (let t of trashFiles) {
+				unlinkSync(path.resolve(serverFolder, t))
+			}
 
 			await Context.library.scanLibrary(
 				libraryFile.replace(/[\\/]+[^\\/]+$/, ''),

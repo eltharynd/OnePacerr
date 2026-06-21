@@ -39,18 +39,6 @@ export default {
 	FILTERS_EXCLUDE: process.env.FILTERS_EXCLUDE || '',
 
 	/**
-	 * MOUNT
-	 */
-	MOUNT_LIBRARY_MEDIA_SERVER:
-		process.env.MOUNT_LIBRARY_MEDIA_SERVER ||
-		process.env.MOUNT_LIBRARY_PLEX ||
-		'',
-	MOUNT_LIBRARY_ONEPACERR: process.env.MOUNT_LIBRARY_ONEPACERR || '',
-
-	MOUNT_DOWNLOADS_QBITTORRENT: process.env.MOUNT_DOWNLOADS_QBITTORRENT || '',
-	MOUNT_DOWNLOADS_ONEPACERR: process.env.MOUNT_DOWNLOADS_ONEPACERR || '',
-
-	/**
 	 * LIBRARY
 	 */
 	LIBRARY_MEDIA_SERVER: process.env.LIBRARY_MEDIA_SERVER || `plex`,
@@ -95,7 +83,7 @@ export default {
 	JELLYFIN_LIBRARY_NAME: process.env.JELLYFIN_LIBRARY_NAME || 'Shows',
 
 	/**
-	 * EMBY - JELLYFIN
+	 * LIBRARY - EMBY
 	 */
 	EMBY_URL: process.env.EMBY_URL || 'http://localhost:8096',
 	EMBY_USERNAME: process.env.EMBY_USERNAME || null,
@@ -109,9 +97,7 @@ export default {
 	TORRENT_USER: process.env.TORRENT_USER || `user`,
 	TORRENT_PASSWORD: process.env.TORRENT_PASSWORD || `password`,
 
-	//TODO revert after implementing different torrent clients
-	TORRENT_CLIENT: `qbittorrent`,
-	//TORRENT_CLIENT: process.env.TORRENT_CLIENT || `qbittorrent`,
+	TORRENT_CLIENT: process.env.TORRENT_CLIENT || `qbittorrent`,
 
 	TORRENT_CATEGORY: process.env.TORRENT_CATEGORY || `onepacerr`,
 	TORRENT_CATEGORY_ONCE_COMPLETED:
@@ -119,6 +105,18 @@ export default {
 
 	TORRENT_CHECK_INTERVAL:
 		Number.parseInt(process.env.TORRENT_CHECK_INTERVAL || '60') * 1000,
+
+	/**
+	 * MOUNT
+	 */
+	MOUNT_LIBRARY_MEDIA_SERVER:
+		process.env.MOUNT_LIBRARY_MEDIA_SERVER ||
+		process.env.MOUNT_LIBRARY_PLEX ||
+		'',
+	MOUNT_LIBRARY_ONEPACERR: process.env.MOUNT_LIBRARY_ONEPACERR || '',
+
+	MOUNT_DOWNLOADS_QBITTORRENT: process.env.MOUNT_DOWNLOADS_QBITTORRENT || '',
+	MOUNT_DOWNLOADS_ONEPACERR: process.env.MOUNT_DOWNLOADS_ONEPACERR || '',
 
 	/**
 	 * METADATA
