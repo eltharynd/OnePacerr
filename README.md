@@ -295,6 +295,12 @@ Each filter can either filter for specific season number, episode number or both
 
 This should give you flexibility to decide to only process whatever you want instead of the whole thing, here's a couple of setup examples:
 
+#### Only S16E09 (Probably because you want to re-watch '32:54')
+
+```dotenv
+FILTERS_INCLUDE=S16E09
+```
+
 #### All seasons before Wano (S35)
 
 ```dotenv
