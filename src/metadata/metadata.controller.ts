@@ -344,10 +344,13 @@ export class MetadataController {
 
 		let path = await Context.library.getLibraryFolder()
 		path += path.includes('/') ? '/' : '\\'
+		path += environment.LIBRARY_SERIES_FOLDER_NAME
+		path += path.includes('/') ? '/' : '\\'
 		path += 'poster.png'
 
 		tvshow.title = tvshow.title.replace('One Piece', 'One Pace')
-		tvshow.originaltitle = tvshow.originaltitle.replace('One Piece', 'One Pace')
+		tvshow.originaltitle = tvshow.title
+		tvshow.sorttitle = tvshow.title
 		this.TVShowNFO = `<?xml version='1.0' encoding='utf-8'?>\n${js2xml(
 			{
 				tvshow: {
@@ -355,7 +358,7 @@ export class MetadataController {
 					outline: tvshow.plot,
 					customrating:
 						this.metadata.tvshow[environment.METADATA_LANGUAGE].customrating,
-					lockdata: true,
+					lockdata: false,
 					namedseason: namedseason,
 					art: {
 						poster: path,
@@ -435,10 +438,18 @@ export class MetadataController {
 				{
 					episodedetails: {
 						title: ed.title,
+						originaltitle: ed.title,
+						sorttitle: ed.title,
+
 						plot: ed.description,
+
 						showtitle: environment.LIBRARY_SERIES_NAME,
+
 						season: ed.arc,
+						displayseason: ed.arc,
 						episode: ed.episode,
+						displayepisode: ed.episode,
+
 						customrating: 'TV-14',
 						lockdata: false,
 					},

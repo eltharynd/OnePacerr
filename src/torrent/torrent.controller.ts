@@ -193,9 +193,11 @@ export class TorrentController {
 				}
 
 				const source = file
-				const destinationFolder = targetLibraryFile.path.replace(
-					environment.MOUNT_LIBRARY_MEDIA_SERVER,
-					environment.MOUNT_LIBRARY_ONEPACERR,
+				const destinationFolder = path.resolve(
+					targetLibraryFile.path.replace(
+						environment.MOUNT_LIBRARY_MEDIA_SERVER,
+						environment.MOUNT_LIBRARY_ONEPACERR,
+					),
 				)
 				const destination = path.resolve(
 					destinationFolder,

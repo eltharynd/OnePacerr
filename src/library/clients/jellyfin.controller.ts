@@ -203,7 +203,7 @@ export class JellyfinController implements ILibraryController {
 				recursive: true,
 				parentId: this.library.ItemId,
 			})
-		).data.Items
+		).data.Items.filter(s => s.Name == environment.LIBRARY_SERIES_NAME)
 
 		if (searchResults.length < 1) {
 			if (!environment.LIBRARY_CREATE_SHOW_IF_NOT_FOUND) {
@@ -221,7 +221,6 @@ export class JellyfinController implements ILibraryController {
 
 		if (searchResults[0]) {
 			this.show = searchResults[0]
-			//console.log(this.show)
 			Logger.info(`Found Jellyfin Show '${this.show.Name}'...`)
 		}
 	}
