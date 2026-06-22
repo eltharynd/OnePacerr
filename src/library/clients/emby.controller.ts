@@ -7,6 +7,7 @@ import { LibraryController } from '../library.controller.js'
 import {
 	ILibraryController,
 	LibraryClient,
+	LibraryConnectionError,
 	TargetLibraryFile,
 } from '../library.model.js'
 import EmbyClient, {
@@ -25,33 +26,46 @@ export class EmbyController implements ILibraryController {
 	private virtualFolder: EmbyVirtualFolder
 	private show: EmbyItem
 
-	constructor(config: EmbyConfig) {
+	constructor(private config: EmbyConfig) {
 		if (!config.baseUrl || !config.username || !config.password) {
-			throw new Error(`Emby misconfigured`)
+			throw new LibraryConnectionError(
+				'Could not connect to Emby — check EMBY_URL and credentials. Set EMBY_URL, EMBY_USERNAME, and EMBY_PASSWORD',
+			)
 		}
 		this.emby = new EmbyClient(config)
 	}
 
 	async init() {
-		Logger.info(`Authenticating to Emby...`)
+		Logger.info(`Authenticating to Emby at ${this.config.baseUrl}...`)
 		await this.emby.login()
 
-		Logger.info(`Searching for Emby Library...`)
+		Logger.info(
+			`Searching for Emby Library '${environment.EMBY_LIBRARY_NAME}'...`,
+		)
 		this.library = (await this.emby.getLibraries()).find(
 			l => l.Name == environment.EMBY_LIBRARY_NAME,
 		)
 
 		if (!this.library) {
-			Logger.error(
-				`Library '${environment.EMBY_LIBRARY_NAME}' not found on Emby...`,
+			const available = (await this.emby.getLibraries())
+				.map(l => l.Name)
+				.join(', ')
+			throw new LibraryConnectionError(
+				`Emby library '${environment.EMBY_LIBRARY_NAME}' not found at ${this.config.baseUrl}. Available libraries: ${available || 'none'}`,
 			)
-			throw new Error()
 		}
 
 		Logger.info(`Searching for Emby Virtual Folder...`)
-		this.virtualFolder = (
-			await this.emby.getLibraryLocations(this.library.Name)
-		)[0]
+		const virtualFolders = await this.emby.getLibraryLocations(
+			this.library.Name,
+		)
+		this.virtualFolder = virtualFolders[0]
+
+		if (!this.virtualFolder?.Locations?.[0]) {
+			throw new LibraryConnectionError(
+				`Emby library '${this.library.Name}' has no folder locations configured at ${this.config.baseUrl}`,
+			)
+		}
 
 		await this.fetchShow()
 	}
