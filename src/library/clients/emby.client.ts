@@ -1,4 +1,15 @@
 import { randomUUID } from 'node:crypto'
+import { formatConnectionError } from '../../util/format-connection-error.js'
+
+const EMBY_CONNECT_HELP =
+	'Could not connect to Emby — check EMBY_URL and credentials'
+
+export class EmbyConnectionError extends Error {
+	constructor(message: string, options?: { cause?: unknown }) {
+		super(message, options)
+		this.name = 'EmbyConnectionError'
+	}
+}
 
 export interface EmbyConfig {
 	baseUrl: string
@@ -59,6 +70,25 @@ class EmbyClient {
 
 	constructor(private config: EmbyConfig) {}
 
+	private connectionError(label: string, error: unknown): EmbyConnectionError {
+		return new EmbyConnectionError(
+			`${EMBY_CONNECT_HELP}. ${formatConnectionError(label, this.config.baseUrl, error)}`,
+			{ cause: error },
+		)
+	}
+
+	private async fetchEmby(
+		url: string,
+		label: string,
+		options?: RequestInit,
+	): Promise<Response> {
+		try {
+			return await fetch(url, options)
+		} catch (error) {
+			throw this.connectionError(label, error)
+		}
+	}
+
 	private async request<T>(
 		path: string,
 		options: { method?: string; params?: Record<string, string> } = {},
@@ -71,13 +101,15 @@ class EmbyClient {
 		const headers: Record<string, string> = {}
 		headers['X-Emby-Token'] = this.auth.AccessToken
 
-		const res = await fetch(url.toString(), {
+		const res = await this.fetchEmby(url.toString(), `Emby API ${path}`, {
 			method: options.method ?? 'GET',
 			headers,
 		})
 
 		if (!res.ok) {
-			throw new Error(`Emby request failed: ${res.status} ${res.statusText}`)
+			throw new EmbyConnectionError(
+				`${EMBY_CONNECT_HELP}. Emby request failed (${path}): HTTP ${res.status} ${res.statusText} at ${this.config.baseUrl}`,
+			)
 		}
 
 		const text = await res.text()
@@ -85,8 +117,9 @@ class EmbyClient {
 	}
 
 	async login(deviceId?: string) {
-		const res = await fetch(
+		const res = await this.fetchEmby(
 			`${this.config.baseUrl}/emby/Users/AuthenticateByName`,
+			'Emby login',
 			{
 				method: 'POST',
 				headers: {
@@ -99,7 +132,12 @@ class EmbyClient {
 				}),
 			},
 		)
-		if (!res.ok) throw new Error(`Login failed: ${res.status}`)
+
+		if (!res.ok) {
+			throw new EmbyConnectionError(
+				`${EMBY_CONNECT_HELP}. Emby login failed for user '${this.config.username}' at ${this.config.baseUrl}: HTTP ${res.status} ${res.statusText}`,
+			)
+		}
 
 		this.auth = await res.json()
 	}

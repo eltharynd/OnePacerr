@@ -9,6 +9,7 @@ import { LabelsDisabledInDelugeError } from './torrent/clients/deluge.controller
 import { TorrentController } from './torrent/torrent.controller.js'
 import { TorrentConnectionError } from './torrent/torrent.model.js'
 import deprecatedWarnings from './util/deprecated-warnings.js'
+import { logErrorCause } from './util/format-connection-error.js'
 import Logger from './util/logger.js'
 
 const startApp = async () => {
@@ -55,7 +56,8 @@ const startApp = async () => {
 		Logger.info('APPLICATION STARTED SUCCESSFULLY...')
 	} catch (e) {
 		Logger.error('APPLICATION COULD NOT BE STARTED...')
-		Logger.error(e)
+		Logger.error(e instanceof Error ? e.message : e)
+		logErrorCause(e)
 		return gracefulClose()
 	}
 
@@ -71,7 +73,8 @@ const startApp = async () => {
 			Logger.debug(`Error handled, no need to crash...`)
 		} else {
 			Logger.error('APPLICATION CRASHED UNEXPECTEDLY...')
-			Logger.error(e)
+			Logger.error(e instanceof Error ? e.message : e)
+			logErrorCause(e)
 			gracefulClose()
 		}
 	}
