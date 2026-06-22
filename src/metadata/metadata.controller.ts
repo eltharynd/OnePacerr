@@ -468,6 +468,11 @@ export class MetadataController {
 				{
 					episodedetails: {
 						title: ed.title,
+						//////////////////
+						//Implement when Jellyfin updates to allow for multiple versions of an episode
+						//Not sure if it's gonna be called displayversion, that's the one for movies
+						//displayversion: Standard/Extended/G-8
+						////////////////
 						originaltitle: ed.title,
 						sorttitle: ed.title,
 
