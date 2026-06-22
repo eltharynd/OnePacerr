@@ -17,11 +17,11 @@ Other than downloading and organizing your episode files, it also updates metada
 
 ## Supported Media Servers
 
-![Plex](docs/media_servers/plex.png) ![Jellyfin](docs/media_servers/jellyfin.png) ![Emby](docs/media_servers/emby.png)
+[![Plex](docs/media_servers/plex.png)](https://hub.docker.com/r/linuxserver/plex) [![Jellyfin](docs/media_servers/jellyfin.png)](https://hub.docker.com/r/linuxserver/jellyfin) [![Emby](docs/media_servers/emby.png)](https://hub.docker.com/r/linuxserver/emby)
 
 ## Supported Torrenting Clients
 
-![qBittorrent](docs/torrenting_clients/qbittorrent.png) ![Deluge](docs/torrenting_clients/deluge.png) ![μTorrent](docs/torrenting_clients/utorrent-coming-soon.png)
+[![qBittorrent](docs/torrenting_clients/qbittorrent.png)](https://hub.docker.com/r/linuxserver/qbittorrent) [![Deluge](docs/torrenting_clients/deluge.png)](https://hub.docker.com/r/linuxserver/deluge) [![μTorrent](docs/torrenting_clients/utorrent-coming-soon.png)](https://www.utorrent.com/downloads)
 
 ## 📃 Table of Contents
 
