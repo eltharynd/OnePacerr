@@ -15,13 +15,24 @@ episodes fully up to date.
 
 Other than downloading and organizing your episode files, it also updates metadata and posters so that it looks nice and professional on your Media Server setups.
 
-## Supported Media Servers
-
-[![Plex](docs/media_servers/plex.png)](https://hub.docker.com/r/linuxserver/plex) [![Jellyfin](docs/media_servers/jellyfin.png)](https://hub.docker.com/r/linuxserver/jellyfin) [![Emby](docs/media_servers/emby.png)](https://hub.docker.com/r/linuxserver/emby)
-
 ## Supported Torrenting Clients
 
 [![qBittorrent](docs/torrenting_clients/qbittorrent.png)](https://hub.docker.com/r/linuxserver/qbittorrent) [![Deluge](docs/torrenting_clients/deluge.png)](https://hub.docker.com/r/linuxserver/deluge) [![μTorrent](docs/torrenting_clients/utorrent-coming-soon.png)](https://www.utorrent.com/downloads)
+
+## Supported Media Servers
+
+[![Plex](docs/media_servers/plex.png)](https://hub.docker.com/r/linuxserver/plex) [![Jellyfin](docs/media_servers/jellyfin.png)](https://hub.docker.com/r/linuxserver/jellyfin) [![Emby](docs/media_servers/emby.png)](https://hub.docker.com/r/linuxserver/emby) ( or none ) ![asd](docs/media_servers/local_folder.png)
+
+## Works anywhere
+
+| **Cross Platform** | ![Docker](docs/supported_os/docker.png) | ![Windows](docs/supported_os/windows.png) | ![MacOS](docs/supported_os/macos.png) | ![Linux](docs/supported_os/linux.png) |
+| --- | --- | --- | --- | --- |
+| [**Deploy Docker Image**](#-deploy-via-docker) | ✅ | ✅ | ✅ | ✅ |
+| [**Run locally**](#-running-locally) | | ✅* | ✅* | ✅* |
+
+*Requires [Node](https://nodejs.org/en/download) installed
+
+![Docker](docs/supported_os/node.png)
 
 ## 📃 Table of Contents
 
