@@ -63,23 +63,6 @@ readdir(POSTERS_ROOT).then(subfolders => {
 					'<img src="./missing.png" width="150"></img>',
 				).replace('ARC_NAME', season == 0 ? 'Specials' : `Season ${season}`)
 			} else {
-				// let files = readdirSync(seasonFolder)
-				// if (files.length < 1)
-				// 	previewSeasonFiles[`Season ${season}`] = TEMPLATE_ITEM.replace(
-				// 		'<img src="../../posters/POSTER_SET/SeasonSEASON.png" width="150">',
-				// 		'<img src="./missing.png" width="150"></img>',
-				// 	).replace('ARC_NAME', season == 0 ? 'Specials' : `Season ${season}`)
-
-				//for (let file of files) {
-				//let currentPath = path.join(seasonFolder, file)
-				//let targetPath = path.join(seasonFolder, 'poster.png')
-				//console.log(targetPath)
-
-				// if (targetPath != currentPath) {
-				// 	console.log(`Renaming '${currentPath}' -> '${targetPath}'`)
-				// 	copyFileSync(currentPath, targetPath)
-				// 	unlinkSync(currentPath)
-				// }
 				previewSeasonFiles[`Season ${season}`] = TEMPLATE_ITEM.replace(
 					'POSTER_SET',
 					posterSet,
@@ -88,22 +71,6 @@ readdir(POSTERS_ROOT).then(subfolders => {
 					.replace('ARC_NAME', season == 0 ? 'Specials' : `Season ${season}`)
 			}
 		}
-
-		//console.log(previewSeasonFiles)
-
-		// let files = readdirSync(setFolder, { withFileTypes: true })
-		// 	.filter(item => item.isFile())
-		// 	.map(item => item.name)
-		// for (let file of files) {
-		// 	let currentPath = path.join(setFolder, file)
-		// 	let targetPath = path.join(setFolder, 'poster.png')
-
-		// 	if (targetPath != currentPath) {
-		// 		console.log(`Renaming '${currentPath}' -> '${targetPath}'`)
-		// 		copyFileSync(currentPath, targetPath)
-		// 		unlinkSync(currentPath)
-		// 	}
-		// }
 
 		let keys = Object.keys(previewSeasonFiles)
 		let rowsString = ''
@@ -119,7 +86,6 @@ readdir(POSTERS_ROOT).then(subfolders => {
 		let previewPath = `./docs/poster previews/${posterSet}.md`
 
 		previewContents = previewContents.replace('ROWS', rowsString)
-		//console.log(previewContents.replace('ROWS', rowsString))
 		writeFileSync(previewPath, previewContents)
 	})
 })

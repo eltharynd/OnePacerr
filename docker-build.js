@@ -1,6 +1,5 @@
 import { execSync } from 'child_process'
 
-// npm automatically provides the package version to process.env
 const version = process.env.npm_package_version
 
 if (!version) {
@@ -10,15 +9,10 @@ if (!version) {
 	process.exit(1)
 }
 
-// Your GitHub username/org (lowercase)
 const GITHUB_USER = 'eltharynd'
 const IMAGE = `ghcr.io/${GITHUB_USER}/onepacerr`
 
 console.log(`🔐 Logging in to GHCR...`)
-// Requires a Personal Access Token with write:packages scope
-// stored in the GITHUB_TOKEN env variable:
-//   export GITHUB_TOKEN=ghp_xxxx
-//   npm run package
 if (!process.env.GITHUB_TOKEN) {
 	console.error('❌ Error: GITHUB_TOKEN environment variable is not set.')
 	console.error(
@@ -36,7 +30,6 @@ const command = `docker buildx build --platform linux/amd64,linux/arm64 . -t ${I
 console.log(
 	`🚀 Starting multi-platform Docker build for version v${version}...`,
 )
-
 try {
 	execSync(command, { stdio: 'inherit' })
 	console.log('✅ Docker build and push completed successfully!')
