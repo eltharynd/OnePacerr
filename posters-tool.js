@@ -29,7 +29,7 @@ const TEMPLATE_ROW = `  <tr>
 ITEMS  </tr>
 `
 const TEMPLATE_ITEM = `    <td align="center">
-      <img src="../../posters/POSTER_SET/SeasonSEASON.png" width="150"><br>
+      <img alt="ALT_TEXT" src="../../posters/POSTER_SET/SeasonSEASON.png" width="150"><br>
       <sub>ARC_NAME</sub>
     </td>
 `
@@ -41,8 +41,11 @@ readdir(POSTERS_ROOT).then(subfolders => {
 
 		let previewContents = PREVIEW_HEADER.replace(
 			'SHOW',
-			'<img src="../../posters/POSTER_SET/poster.png" width="150"><br>',
-		).replace('POSTER_SET', `[${posterSet}](../../posters/${posterSet})`)
+			'<img alt="ALT_TEXT" src="../../posters/POSTER_SET/poster.png" width="150"><br>',
+		)
+			.replace('POSTER_SET', `[${posterSet}](../../posters/${posterSet})`)
+			.replace('ALT_TEXT', `Show Poster`)
+
 		if (existsSync(path.join(setFolder, 'poster.png')))
 			previewContents = previewContents.replace('POSTER_SET', [posterSet])
 		else
@@ -59,14 +62,18 @@ readdir(POSTERS_ROOT).then(subfolders => {
 			)
 			if (!existsSync(seasonFile)) {
 				previewSeasonFiles[`Season ${season}`] = TEMPLATE_ITEM.replace(
-					'<img src="../../posters/POSTER_SET/SeasonSEASON.png" width="150">',
-					'<img src="./missing.png" width="150"></img>',
+					`<img alt="ALT_TEXT" src="../../posters/POSTER_SET/SeasonSEASON.png" width="150">`,
+					`<img alt="Missing poster for ${season == 0 ? 'Specials' : `Season ${String(season).padStart(2, '0')}`}" src="./missing.png" width="150"></img>`,
 				).replace('ARC_NAME', season == 0 ? 'Specials' : `Season ${season}`)
 			} else {
 				previewSeasonFiles[`Season ${season}`] = TEMPLATE_ITEM.replace(
 					'POSTER_SET',
 					posterSet,
 				)
+					.replace(
+						'ALT_TEXT',
+						`Poster for Season ${season == 0 ? 'Specials' : `${String(season).padStart(2, '0')}`}`,
+					)
 					.replace('SEASON', String(season).padStart(2, '0'))
 					.replace('ARC_NAME', season == 0 ? 'Specials' : `Season ${season}`)
 			}
