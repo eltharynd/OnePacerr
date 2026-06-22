@@ -15,14 +15,13 @@ episodes fully up to date.
 
 Other than downloading and organizing your episode files, it also updates metadata and posters so that it looks nice and professional on your Media Server setups.
 
-![Plex](docs/media_servers/plex.png) ![Jellyfin](docs/media_servers/jellyfin.png)
+## Supported Media Servers
 
-We plan to support as many Media Severs as possible, the following is the current status of the implementation:
+![Plex](docs/media_servers/plex.png) ![Jellyfin](docs/media_servers/jellyfin.png) ![Emby](docs/media_servers/emby.png)
 
-- **Local Folder**: ✅ Implemented.
-- **Plex Media Server**: ✅ Implemented.
-- **Jellyfin**: ✅ Implemented.
-- **Emby**: ❌ Will implement after jellyfin, don't have a deadline for you
+## Supporter Torrenting Clients
+
+![qBittorrent](docs/torrenting_clients/qbittorrent.png) ![Deluge](docs/torrenting_clients/deluge.png) ![μTorrent](docs/torrenting_clients/utorrent-coming-soon.png)
 
 ## 📃 Table of Contents
 
@@ -94,7 +93,7 @@ Before running OnePacerr, ensure you have the following services up and running:
     - `npm install`
     - `npm start`
 - **one of these torrent clients** (with WebUI enabled)
-  - [qBittorrent](https://hub.docker.com/r/linuxserver/qbittorrent) (Recommended) 
+  - [qBittorrent](https://hub.docker.com/r/linuxserver/qbittorrent) (Recommended)
   - [Deluge](https://hub.docker.com/r/linuxserver/deluge)
   - More torrenting clients coming
 - You can also just organize a Local Folder, but usually people use this to organize their media server:
@@ -226,6 +225,7 @@ services:
       - TORRENT_USER=<your-username-here>
       - TORRENT_PASSWORD=<your-password-here>
       - TORRENT_CLIENT=qbittorrent
+      #- TORRENT_CATEGORY_FORCE=false
       #- TORRENT_CATEGORY=onepacerr
       #- TORRENT_CATEGORY_ONCE_COMPLETED=completed
       #- TORRENT_CHECK_INTERVAL=60
@@ -344,7 +344,7 @@ In order for an episode to be processed/downloaded/updated, it has to match BOTH
 >
 > `jellyfin` Jellyfin Media Server.
 >
-> `emby` coming soon.
+> `emby` Emby Media Server.
 
 | Library Variables | Default | Description |
 | :--- | :--- | :--- |
@@ -410,6 +410,7 @@ If you set `LIBRARY_MEDIA_SERVER=false`, you can instead generate those files re
 | ⭐ `TORRENT_URL` | `http://localhost:8080` | Your torrent API URL. |
 | ⭐ `TORRENT_USER` | _None_ | Your torrent API username. |
 | ⭐ `TORRENT_PASSWORD` | _None_ | Your torrent API password. |
+| `TORRENT_CATEGORY_FORCE` | `false` | If `true`, when trying to add a torrent also forces a category update if torrent already exists with a different category. |
 | `TORRENT_CATEGORY` | `onepacerr` | Creates downloads with this category, also filters completed torrents using this. |
 | `TORRENT_CATEGORY_ONCE_COMPLETED` | `completed` | After processing completed downloads, changes the torrent category to this one. |
 | `TORRENT_CHECK_INTERVAL` | `60` | Seconds between checking for completed downloads. |

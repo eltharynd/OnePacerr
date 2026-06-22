@@ -419,7 +419,8 @@ export class MetadataController {
 			let NFO = `<?xml version='1.0' encoding='utf-8'?>\n${js2xml(
 				{
 					season: {
-						title: a.title,
+						title: a.part == 0 ? a.title : `${a.part}. ${a.title}`,
+						sorttitle: a.part == 0 ? a.title : `${a.part}. ${a.title}`,
 						seasonnumber: a.part,
 						plot: a.description,
 						outline: a.description,

@@ -23,13 +23,13 @@ export class PlexController implements ILibraryController {
 	private section: ShowSection
 	private show: Show
 
-	constructor(options: { url: string; token: string }) {
-		if (!options.url || !options.token) {
+	constructor(config: { baseUrl: string; token: string }) {
+		if (!config.baseUrl || !config.token) {
 			throw new Error(`Plex misconfigured`)
 		}
-		this.server = new PlexServer(options.url, options.token)
+		this.server = new PlexServer(config.baseUrl, config.token)
 		this.ws = new WebSocket(
-			`${options.url.replace('http://', 'ws://').replace('https://', 'wss://')}/:/websockets/notifications?X-Plex-Token=${options.token}`,
+			`${config.baseUrl.replace('http://', 'ws://').replace('https://', 'wss://')}/:/websockets/notifications?X-Plex-Token=${config.token}`,
 		)
 		this.ws.on('open', () => {
 			Logger.debug('Connected to Plex Live Event Stream')

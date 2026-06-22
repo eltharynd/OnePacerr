@@ -1,14 +1,4 @@
-import { Api, Jellyfin } from '@jellyfin/sdk'
-import { BaseItemKind } from '@jellyfin/sdk/lib/generated-client/models/base-item-kind.js'
-import { VirtualFolderInfo } from '@jellyfin/sdk/lib/generated-client/models/virtual-folder-info.js'
-import { getItemsApi } from '@jellyfin/sdk/lib/utils/api/items-api.js'
-import { getLibraryApi } from '@jellyfin/sdk/lib/utils/api/library-api.js'
-import { getLibraryStructureApi } from '@jellyfin/sdk/lib/utils/api/library-structure-api.js'
-import { getScheduledTasksApi } from '@jellyfin/sdk/lib/utils/api/scheduled-tasks-api.js'
-import { getTvShowsApi } from '@jellyfin/sdk/lib/utils/api/tv-shows-api.js'
-import { getUserApi } from '@jellyfin/sdk/lib/utils/api/user-api.js'
-import { randomUUID } from 'node:crypto'
-import WebSocket from 'ws'
+import path from 'node:path'
 import environment from '../../environment.js'
 import { Context } from '../../util/context.js'
 import Logger from '../../util/logger.js'
@@ -19,59 +9,49 @@ import {
 	LibraryClient,
 	TargetLibraryFile,
 } from '../library.model.js'
+import EmbyClient, {
+	EmbyConfig,
+	EmbyItem,
+	EmbyLibrary,
+	EmbyVirtualFolder,
+} from './emby.client.js'
 
 export class EmbyController implements ILibraryController {
 	readonly libraryClient: LibraryClient = 'emby'
 
-	private jellyfin: Jellyfin
-	private api: Api
-	private ws: WebSocket
-	private credentials: { Username: string; Pw: string }
+	private emby: EmbyClient
 
-	private library
-	private virtualFolder: VirtualFolderInfo
-	private show
+	private library: EmbyLibrary
+	private virtualFolder: EmbyVirtualFolder
+	private show: EmbyItem
 
-	devideUUID = randomUUID()
-
-	constructor(options: { url: string; username: string; password: string }) {
-		if (!options.url || !options.username || !options.password)
-			throw new Error(`Jellyfin misconfigured`)
-
-		this.jellyfin = new Jellyfin({
-			clientInfo: {
-				name: 'OnePacerr',
-				version: process.env.npm_package_version,
-			},
-			deviceInfo: {
-				name: 'OnePacerr container',
-				id: this.devideUUID,
-			},
-		})
-
-		this.api = this.jellyfin.createApi(options.url)
-
-		this.credentials = {
-			Username: options.username,
-			Pw: options.password,
+	constructor(config: EmbyConfig) {
+		if (!config.baseUrl || !config.username || !config.password) {
+			throw new Error(`Emby misconfigured`)
 		}
+		this.emby = new EmbyClient(config)
 	}
 
 	async init() {
-		Logger.info(`Authenticating to Jellyfin...`)
-		let { data } = await getUserApi(this.api).authenticateUserByName({
-			authenticateUserByName: this.credentials,
-		})
+		Logger.info(`Authenticating to Emby...`)
+		await this.emby.login()
 
-		Logger.info(`Searching for Jellyfin Library...`)
-		this.library = (
-			await getLibraryApi(this.api).getMediaFolders()
-		).data.Items.find(mf => mf.Name == environment.JELLYFIN_LIBRARY_NAME)
+		Logger.info(`Searching for Emby Library...`)
+		this.library = (await this.emby.getLibraries()).find(
+			l => l.Name == environment.EMBY_LIBRARY_NAME,
+		)
 
-		Logger.info(`Searching for Jellyfin Virtual Folder...`)
+		if (!this.library) {
+			Logger.error(
+				`Library '${environment.EMBY_LIBRARY_NAME}' not found on Emby...`,
+			)
+			throw new Error()
+		}
+
+		Logger.info(`Searching for Emby Virtual Folder...`)
 		this.virtualFolder = (
-			await getLibraryStructureApi(this.api).getVirtualFolders()
-		).data.find(vf => vf.Name == environment.JELLYFIN_LIBRARY_NAME)
+			await this.emby.getLibraryLocations(this.library.Name)
+		)[0]
 
 		await this.fetchShow()
 	}
@@ -81,25 +61,34 @@ export class EmbyController implements ILibraryController {
 	}
 
 	async getExistingLibraryEpisodeFile(
-		season: number,
+		arc: number,
 		episode: number,
 		pathAccordingToMediaServer?: boolean,
 	): Promise<string> {
 		let _episode
 		try {
-			_episode = (
-				await getTvShowsApi(this.api).getEpisodes({
-					seriesId: this.show.seriesId,
-				})
-			).data
+			_episode = (await this.emby.getEpisodes(this.show.Id, ['Path'])).find(
+				e => {
+					return e.IndexNumber == episode && e.ParentIndexNumber == arc
+				},
+			)
+
+			if (!_episode) throw new Error('Episode not on JellyEmbyfin')
+
+			if (pathAccordingToMediaServer) return _episode.Path
+			else
+				return path.resolve(
+					_episode.Path.replace(
+						environment.MOUNT_LIBRARY_MEDIA_SERVER,
+						environment.MOUNT_LIBRARY_ONEPACERR,
+					),
+				)
 		} catch (e) {
 			Logger.info(
-				`Episode ${season}-${String(episode).padStart(2, '0')} does not exists on Jellyfin...`,
+				`Episode ${arc}-${String(episode).padStart(2, '0')} does not exists on Emby...`,
 			)
 			return null
 		}
-
-		//TODO COMPLETE
 	}
 
 	async getTargetLibraryEpisodeFile(
@@ -114,53 +103,54 @@ export class EmbyController implements ILibraryController {
 			)
 		}
 
-		let jellyfinLibraryPath = await Context.library.getLibraryFolder()
-		let jellyfinSeparator = jellyfinLibraryPath.includes('/') ? '/' : '\\'
+		let embyLibraryPath = await Context.library.getLibraryFolder()
+		let embySeparator = embyLibraryPath.includes('/') ? '/' : '\\'
 
-		let targetJellyfinFileName = LibraryController.resolveEpisodeTargetFileName(
+		let targetEmbyFileName = LibraryController.resolveEpisodeTargetFileName(
 			arc,
 			episode,
 			episodeDescription.title,
 		)
-		let targetJellyfinPath = `${jellyfinLibraryPath}${jellyfinSeparator}${environment.LIBRARY_SERIES_FOLDER_NAME}${jellyfinSeparator}Season ${String(arc).padStart(2, '0')}${jellyfinSeparator}`
+		let targetEmbyPath = `${embyLibraryPath}${embySeparator}${environment.LIBRARY_SERIES_FOLDER_NAME}${embySeparator}Season ${String(arc).padStart(2, '0')}${embySeparator}`
 
 		return {
-			path: targetJellyfinPath,
-			filename: sanitizeWindowsFileName(targetJellyfinFileName),
+			path: targetEmbyPath,
+			filename: sanitizeWindowsFileName(targetEmbyFileName),
 		}
 	}
 
 	async scanLibrary(folder: string, arc: number) {
-		const tasksApi = getScheduledTasksApi(this.api)
-		const tasks = (await tasksApi.getTasks()).data
+		const tasks = await this.emby.getTasks()
 		const scanTask = tasks.find(t => t.Key === 'RefreshLibrary')
 		if (!scanTask) {
-			Logger.error(`Couldn't subscribe to Jellyfin Scan Task`)
+			Logger.error(`Couldn't subscribe to Emby Scan Task`)
 			throw new Error()
 		}
 
 		Logger.debug(`Refreshing Library`)
-		await tasksApi.startTask({ taskId: scanTask.Id })
+
+		await this.emby.startTask(scanTask.Id)
 
 		await new Promise<void>((resolve, reject) => {
 			const timeoutHandler = setTimeout(() => {
+				clearInterval(pollInterval)
 				Logger.error(
-					`Jellyfin didn't notify folder update before timeout expired...`,
+					`Emby didn't notify folder update before timeout expired...`,
 				)
 				reject()
 			}, 15000)
 
 			const pollInterval = setInterval(async () => {
-				const currentTask = await tasksApi.getTask({ taskId: scanTask.Id })
+				const currentTask = await this.emby.getTask(scanTask.Id)
 
-				if (currentTask.data.State === 'Idle') {
-					Logger.debug(`Jellyfin notified folder update`)
+				if (currentTask.State === 'Idle') {
+					Logger.debug(`Emby notified folder update`)
 					clearTimeout(timeoutHandler)
 					clearInterval(pollInterval)
 					resolve()
 				} else {
 					Logger.debug(
-						`Jellyfin Scanning... ${currentTask.data.CurrentProgressPercentage ?? 0}%`,
+						`Emby Scanning... ${currentTask.CurrentProgressPercentage ?? 0}%`,
 					)
 				}
 			}, 1000)
@@ -185,35 +175,29 @@ export class EmbyController implements ILibraryController {
 	}
 
 	private async fetchShow() {
-		Logger.info(`Searching for Jellyfin Show...`)
-
-		let searchResults = (
-			await getItemsApi(this.api).getItems({
-				searchTerm: environment.LIBRARY_SERIES_NAME,
-				includeItemTypes: [BaseItemKind.Series],
-				recursive: true,
-				parentId: this.library.ItemId,
-			})
-		).data.Items
+		Logger.info(`Searching for Emby Show...`)
+		let searchResults = await this.emby.findShowInLibrary(
+			this.library.Id,
+			environment.LIBRARY_SERIES_NAME,
+		)
 
 		if (searchResults.length < 1) {
 			if (!environment.LIBRARY_CREATE_SHOW_IF_NOT_FOUND) {
 				Logger.error(
-					`Could not find show '${environment.LIBRARY_SERIES_NAME}' in library '${environment.JELLYFIN_LIBRARY_NAME}'...`,
+					`Could not find show '${environment.LIBRARY_SERIES_NAME}' in library '${environment.EMBY_LIBRARY_NAME}'...`,
 				)
 				throw new Error('Show not found')
 			}
 		} else if (searchResults.length > 1) {
 			Logger.error(
-				`Could not find show '${environment.LIBRARY_SERIES_NAME}' in library '${environment.JELLYFIN_LIBRARY_NAME}'...`,
+				`Could not find show '${environment.LIBRARY_SERIES_NAME}' in library '${environment.EMBY_LIBRARY_NAME}'...`,
 			)
 			throw new Error('Too many shows found')
 		}
 
 		if (searchResults[0]) {
 			this.show = searchResults[0]
-			//console.log(this.show)
-			Logger.info(`Found Jellyfin Show '${this.show.Name}'...`)
+			Logger.info(`Found Emby Show '${this.show.Name}'...`)
 		}
 	}
 }

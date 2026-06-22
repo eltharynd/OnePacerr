@@ -31,8 +31,8 @@ export class JellyfinController implements ILibraryController {
 	private virtualFolder: VirtualFolderInfo
 	private show
 
-	constructor(options: { url: string; username: string; password: string }) {
-		if (!options.url || !options.username || !options.password)
+	constructor(config: { baseUrl: string; username: string; password: string }) {
+		if (!config.baseUrl || !config.username || !config.password)
 			throw new Error(`Jellyfin misconfigured`)
 
 		this.jellyfin = new Jellyfin({
@@ -46,11 +46,11 @@ export class JellyfinController implements ILibraryController {
 			},
 		})
 
-		this.api = this.jellyfin.createApi(options.url)
+		this.api = this.jellyfin.createApi(config.baseUrl)
 
 		this.credentials = {
-			Username: options.username,
-			Pw: options.password,
+			Username: config.username,
+			Pw: config.password,
 		}
 	}
 
@@ -153,6 +153,7 @@ export class JellyfinController implements ILibraryController {
 
 		await new Promise<void>((resolve, reject) => {
 			const timeoutHandler = setTimeout(() => {
+				clearInterval(pollInterval)
 				Logger.error(
 					`Jellyfin didn't notify folder update before timeout expired...`,
 				)

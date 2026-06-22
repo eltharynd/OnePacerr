@@ -3,6 +3,7 @@ import {
 	Torrent as qbTorrent,
 	TorrentCategories,
 } from '@ctrl/qbittorrent'
+import environment from '../../environment.js'
 import { TorrentInfo } from '../../metadata/metada.model.js'
 import Logger from '../../util/logger.js'
 import {
@@ -28,10 +29,17 @@ export class qBittorrentController implements ITorrentController {
 		torrentInfo: TorrentInfo,
 		category: string,
 	): Promise<boolean> {
-		let torrents = await this.getAllTorrents()
-		if (torrents.find(t => t.hash === torrentInfo.infoHash)) {
+		let torrent = (await this.getAllTorrents()).find(
+			t => t.hash === torrentInfo.infoHash,
+		)
+		if (torrent) {
 			Logger.debug(`MagnetURI already in qBittorrent...`)
-			return false
+			if (torrent.category == category || !environment.TORRENT_CATEGORY_FORCE)
+				return false
+			else {
+				Logger.debug(`Forcing category change...`)
+				await this.updateTorrentCategory({ hash: torrent.hash }, category)
+			}
 		} else {
 			return await this.client.addMagnet(torrentInfo.magnetURI, { category })
 		}
@@ -55,7 +63,7 @@ export class qBittorrentController implements ITorrentController {
 	}
 
 	public async updateTorrentCategory(
-		torrent: Torrent,
+		torrent: Partial<Torrent>,
 		category: string,
 	): Promise<void> {
 		try {

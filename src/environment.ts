@@ -105,6 +105,9 @@ export default {
 
 	TORRENT_CLIENT: process.env.TORRENT_CLIENT || `qbittorrent`,
 
+	TORRENT_CATEGORY_FORCE: /true/i.test(
+		process.env.TORRENT_CATEGORY_FORCE || 'false',
+	),
 	TORRENT_CATEGORY: process.env.TORRENT_CATEGORY || `onepacerr`,
 	TORRENT_CATEGORY_ONCE_COMPLETED:
 		process.env.TORRENT_CATEGORY_ONCE_COMPLETED || `completed`,

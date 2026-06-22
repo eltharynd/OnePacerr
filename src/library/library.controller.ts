@@ -5,6 +5,7 @@ import { Context } from '../util/context.js'
 import Logger from '../util/logger.js'
 import resolvePosterPath from '../util/resolve-poster-path.js'
 import sanitizeWindowsFileName from '../util/sanitize-windows-filename.js'
+import { EmbyController } from './clients/emby.controller.js'
 import { JellyfinController } from './clients/jellyfin.controller.js'
 import { LocalFolderController } from './clients/local-folder.controller.js'
 import { PlexController } from './clients/plex.controller.js'
@@ -26,24 +27,24 @@ export class LibraryController {
 				break
 			case 'plex':
 				this.client = new PlexController({
-					url: environment.PLEX_URL,
+					baseUrl: environment.PLEX_URL,
 					token: environment.PLEX_TOKEN,
 				})
 				break
 			case 'jellyfin':
 				this.client = new JellyfinController({
-					url: environment.JELLYFIN_URL,
+					baseUrl: environment.JELLYFIN_URL,
 					username: environment.JELLYFIN_USERNAME,
 					password: environment.JELLYFIN_PASSWORD,
 				})
 				break
 			case 'emby':
-			// this.client = new EmbyController({
-			// 	url: environment.EMBY_URL,
-			// 	username: environment.EMBY_USERNAME,
-			// 	password: environment.EMBY_PASSWORD,
-			// })
-			// break
+				this.client = new EmbyController({
+					baseUrl: environment.EMBY_URL,
+					username: environment.EMBY_USERNAME,
+					password: environment.EMBY_PASSWORD,
+				})
+				break
 			default:
 				Logger.error(
 					`Media Server '${environment.LIBRARY_MEDIA_SERVER}' not implemented yet...`,
