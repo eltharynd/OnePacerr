@@ -92,7 +92,7 @@ Before running OnePacerr, ensure you have the following services up and running:
     - create a `.env` file in root (use `sample.env` as example)
     - `npm install`
     - `npm start`
-- **one of these torrent clients** (with WebUI enabled)
+- **one of these torrent clients** (with WebUI/APIs enabled)
   - [qBittorrent](https://hub.docker.com/r/linuxserver/qbittorrent) (Recommended)
   - [Deluge](https://hub.docker.com/r/linuxserver/deluge)
   - More torrenting clients coming
