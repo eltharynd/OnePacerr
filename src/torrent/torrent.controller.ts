@@ -125,10 +125,10 @@ export class TorrentController {
 	}
 
 	private resolveTorrentContentPath(torrent: Torrent): string {
-		const candidates = [
-			torrent.content_path,
-			path.join(torrent.save_path, torrent.name),
-		].filter(Boolean)
+		const candidates = [torrent.content_path]
+		if (torrent.save_path && torrent.name) {
+			candidates.push(path.join(torrent.save_path, torrent.name))
+		}
 
 		for (const candidate of candidates) {
 			const mapped = this.mapDownloadPath(candidate)
