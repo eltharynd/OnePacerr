@@ -6,18 +6,20 @@
 ![GitHub Last Commit](https://img.shields.io/github/last-commit/eltharynd/onepacerr?style=flat-square)
 ![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)
 
-**OnePacerr** is a standalone, automated One Pace download tool designed specifically to complement Sonarr in Home Server setups.
+**OnePacerr** is a standalone, automated One Pace download tool designed specifically to complement **Sonarr** in your **Home Server** setups, but it can also be used for "smalelr" purposes.
 
 Because Sonarr does not natively support [One
 Pace](https://onepace.net/) (the fan-edited, manga-accurate version of One Piece), this app
 bridges the gap by automatically downloading, organizing, and keeping your One Pace
-episodes fully up to date.
+episodes fully up to date both on your disk, and on your Media Server of chosing (Plex, Jellyfin, Emby).
 
-Other than downloading and organizing your episode files, it also updates metadata and posters so that it looks nice and professional on your Media Server setups.
+Other than organizing your episode files, it also updates metadata and posters so that it looks nice and professional on your Media Server.
+
+It supports all of the most popular torrenting clients (such as qBittorrent) and the most popular Media Servers (such as Plex), and can even be used without a torrenting client or a media server at all.
 
 ## Supported Torrenting Clients
 
-[![qBittorrent](docs/torrenting_clients/qbittorrent.png)](https://hub.docker.com/r/linuxserver/qbittorrent) [![Deluge](docs/torrenting_clients/deluge.png)](https://hub.docker.com/r/linuxserver/deluge) [![μTorrent](docs/torrenting_clients/utorrent-coming-soon.png)](https://www.utorrent.com/downloads)
+[![qBittorrent](docs/torrenting_clients/qbittorrent.png)](https://hub.docker.com/r/linuxserver/qbittorrent) [![Deluge](docs/torrenting_clients/deluge.png)](https://hub.docker.com/r/linuxserver/deluge) [![μTorrent](docs/torrenting_clients/utorrent-coming-soon.png)](https://www.utorrent.com/downloads) ( or none )
 
 ## Supported Media Servers
 
