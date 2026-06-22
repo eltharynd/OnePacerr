@@ -400,7 +400,7 @@ If you set `LIBRARY_MEDIA_SERVER=false`, you can instead generate those files re
 | Torrent Variables | Default | Description |
 | :--- | :--- | :--- |
 | 🍤 `TORRENT_CLIENT` | `qbittorrent` | Your torrent client. Will be used in the future to use different clients rather tnax qBittorrent. |
-| ⭐ `TORRENT_URL` | `http://localhost:80` | Your torrent API URL. |
+| ⭐ `TORRENT_URL` | `http://localhost:8080` | Your torrent API URL. |
 | ⭐ `TORRENT_USER` | _None_ | Your torrent API username. |
 | ⭐ `TORRENT_PASSWORD` | _None_ | Your torrent API password. |
 | `TORRENT_CATEGORY` | `onepacerr` | Creates downloads with this category, also filters completed torrents using this. |

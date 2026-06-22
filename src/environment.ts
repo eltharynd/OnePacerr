@@ -99,7 +99,7 @@ export default {
 	/**
 	 * TORRENT
 	 */
-	TORRENT_URL: process.env.TORRENT_URL || `http://localhost:80`,
+	TORRENT_URL: process.env.TORRENT_URL || `http://localhost:8080`,
 	TORRENT_USER: process.env.TORRENT_USER || `user`,
 	TORRENT_PASSWORD: process.env.TORRENT_PASSWORD || `password`,
 
