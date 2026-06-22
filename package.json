@@ -15,6 +15,7 @@
 	"author": "eltharynd",
 	"license": "MIT",
 	"dependencies": {
+		"@ctrl/deluge": "^8.0.0",
 		"@ctrl/plex": "^6.0.0",
 		"@ctrl/qbittorrent": "^9.14.0",
 		"@jellyfin/sdk": "^0.13.0",

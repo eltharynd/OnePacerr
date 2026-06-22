@@ -5,7 +5,9 @@ import { Context } from './util/context.js'
 import { LibraryController } from './library/library.controller.js'
 import { MetadataController } from './metadata/metadata.controller.js'
 import { RSSController } from './rss/rss.controller.js'
+import { LabelsDisabledInDelugeError } from './torrent/clients/deluge.controller.js'
 import { TorrentController } from './torrent/torrent.controller.js'
+import { TorrentConnectionError } from './torrent/torrent.model.js'
 import deprecatedWarnings from './util/deprecated-warnings.js'
 import Logger from './util/logger.js'
 
@@ -52,9 +54,16 @@ const startApp = async () => {
 		await Context.metadata.refreshMetadata()
 		await Context.torrent.startWatching()
 	} catch (e) {
-		Logger.error('APPLICATION CRASHED UNEXPECTEDLY...')
-		Logger.error(e)
-		gracefulClose()
+		if (
+			e instanceof LabelsDisabledInDelugeError ||
+			e instanceof TorrentConnectionError
+		) {
+			Logger.debug(`Error handled, no need tO crash...`)
+		} else {
+			Logger.error('APPLICATION CRASHED UNEXPECTEDLY...')
+			Logger.error(e)
+			gracefulClose()
+		}
 	}
 }
 startApp()

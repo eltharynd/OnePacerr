@@ -4,6 +4,8 @@ export type TorrentClient = 'qbittorrent' | 'utorrent' | 'deluge'
 export type Torrent = {
 	readonly hash: string
 	readonly content_path: string
+	readonly category?: string
+	readonly progress?: number
 }
 
 export interface ITorrentController {
@@ -14,3 +16,5 @@ export interface ITorrentController {
 	getCompletedTorrents(category?: string): Promise<Torrent[]>
 	updateTorrentCategory(torrent: Torrent, category: string): Promise<void>
 }
+
+export class TorrentConnectionError extends Error {}

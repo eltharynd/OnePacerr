@@ -21,4 +21,15 @@ export default function deprecatedWarnings() {
 			`You have configured 'MOUNT_LIBRARY_PLEX'. This has been renamed to 'MOUNT_LIBRARY_MEDIA_SERVER' to accomodate different Media Servers than Plex, please update accordingly before the automatic correction for it is removed.`,
 		)
 	}
+
+	if (process.env.PLEX_CREATE_SHOW_IF_NOT_FOUND) {
+		Logger.warn(
+			`You have configured 'PLEX_CREATE_SHOW_IF_NOT_FOUND'. This has been renamed to 'LIBRARY_CREATE_SHOW_IF_NOT_FOUND ' to accomodate different Media Servers than Plex, please update accordingly before the automatic correction for it is removed.`,
+		)
+	}
+	if (process.env.MOUNT_DOWNLOADS_QBITTORRENT) {
+		Logger.warn(
+			`You have configured 'MOUNT_DOWNLOADS_QBITTORRENT'. This has been renamed to 'MOUNT_DOWNLOADS_TORRENT' to accomodate different Torrenting Clients, please update accordingly before the automatic correction for it is removed.`,
+		)
+	}
 }

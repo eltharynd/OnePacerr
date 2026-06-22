@@ -10,8 +10,14 @@ import {
 import { Context } from '../util/context.js'
 import { Filter } from '../util/filters.js'
 import Logger from '../util/logger.js'
+import { DelugeController } from './clients/deluge.controller.js'
 import { qBittorrentController } from './clients/qbittorrent.controller.js'
-import { ITorrentController, Torrent, TorrentClient } from './torrent.model.js'
+import {
+	ITorrentController,
+	Torrent,
+	TorrentClient,
+	TorrentConnectionError,
+} from './torrent.model.js'
 
 export class TorrentController {
 	private client: ITorrentController
@@ -28,8 +34,14 @@ export class TorrentController {
 					password: environment.TORRENT_PASSWORD,
 				})
 				break
-			case 'utorrent':
 			case 'deluge':
+				this.client = new DelugeController({
+					baseUrl: environment.TORRENT_URL,
+					username: environment.TORRENT_USER,
+					password: environment.TORRENT_PASSWORD,
+				})
+				break
+			case 'utorrent':
 			default:
 				Logger.error(
 					`Torrent client '${environment.TORRENT_CLIENT}' not implemented yet...`,
@@ -82,6 +94,10 @@ export class TorrentController {
 				Logger.warn(
 					`Metadata still missing, cannot process completed torrents...`,
 				)
+			} else if (e instanceof TorrentConnectionError) {
+				Logger.warn(
+					`Torrent Client down, could not process completed download...`,
+				)
 			} else {
 				Logger.error(`Error processing completed downloads`)
 				Logger.error(e)
@@ -97,7 +113,7 @@ export class TorrentController {
 	private async importTorrentFiles(torrent: Torrent) {
 		let _path = path.resolve(
 			torrent.content_path.replace(
-				environment.MOUNT_DOWNLOADS_QBITTORRENT,
+				environment.MOUNT_DOWNLOADS_TORRENT,
 				environment.MOUNT_DOWNLOADS_ONEPACERR,
 			),
 		)
@@ -116,7 +132,7 @@ export class TorrentController {
 				files.push(
 					path.resolve(
 						fullPath.replace(
-							environment.MOUNT_DOWNLOADS_QBITTORRENT,
+							environment.MOUNT_DOWNLOADS_TORRENT,
 							environment.MOUNT_DOWNLOADS_ONEPACERR,
 						),
 					),

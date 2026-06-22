@@ -64,13 +64,13 @@ We plan to support as many Media Severs as possible, the following is the curren
 - **File Verification (Optional):** Hashes existing files to ensure they match the latest
   releases and automatically re-downloads outdated versions.
 - **File Organization (Optional):** Scans your existing Media Server (Plex, Jellyfin, Emby) or Local Folder library and renames files accordingly when needed.
-- **Seamless Downloading (Optional):** Automatically sends `magnetURI` links to qBittorrent for
+- **Seamless Downloading (Optional):** Automatically sends `magnetURI` links to torrent client for
   missing episodes.
 
-- **qBittorrent Monitoring (Optional):** Tracks download progress. Once completed, it:
+- **Torrent Monitoring (Optional):** Tracks download progress. Once completed, it:
   - Copies and renames the file to your designated Library folder.
   - Updates the metadata either directly on your Media Server (Plex, Jellyfin, Emby) or creates the files on your Local Folder for later imports.
-  - Assigns a custom (`completed`) category to the processed torrents in qBittorrent.
+  - Assigns a custom (`completed`) category to the processed torrents.
 
 ## 🧪 Pipeline
 
@@ -93,7 +93,9 @@ Before running OnePacerr, ensure you have the following services up and running:
     - create a `.env` file in root (use `sample.env` as example)
     - `npm install`
     - `npm start`
-- [**qBittorrent**](https://hub.docker.com/r/linuxserver/qbittorrent) (with WebUI enabled)
+- **one of these torrent clients** (with WebUI enabled)
+  - [qBittorrent](https://hub.docker.com/r/linuxserver/qbittorrent) (Recommended) 
+  - [Deluge](https://hub.docker.com/r/linuxserver/deluge)
   - More torrenting clients coming
 - You can also just organize a Local Folder, but usually people use this to organize their media server:
   - [**Plex Media Server**](https://hub.docker.com/r/linuxserver/plex)
@@ -180,7 +182,7 @@ services:
       # Cross-Mount Mappings (Uncomment if needed, defaults to nothing)
       #- MOUNT_LIBRARY_MEDIA_SERVER=/mnt/Library/Series
       #- MOUNT_LIBRARY_ONEPACERR=\\TRUENAS\series
-      #- MOUNT_DOWNLOADS_QBITTORRENT=/mnt/Applications/Downloads
+      #- MOUNT_DOWNLOADS_TORRENT=/mnt/Applications/Downloads
       #- MOUNT_DOWNLOADS_ONEPACERR=\\TRUENAS\downloads
 
 
@@ -404,7 +406,7 @@ If you set `LIBRARY_MEDIA_SERVER=false`, you can instead generate those files re
 
 | Torrent Variables | Default | Description |
 | :--- | :--- | :--- |
-| 🍤 `TORRENT_CLIENT` | `qbittorrent` | Your torrent client. Will be used in the future to use different clients rather tnax qBittorrent. |
+| 🍤 `TORRENT_CLIENT` | `qbittorrent` | Your torrent client between: `qbittorrent` or `deluge`. |
 | ⭐ `TORRENT_URL` | `http://localhost:8080` | Your torrent API URL. |
 | ⭐ `TORRENT_USER` | _None_ | Your torrent API username. |
 | ⭐ `TORRENT_PASSWORD` | _None_ | Your torrent API password. |
@@ -420,7 +422,7 @@ If you set `LIBRARY_MEDIA_SERVER=false`, you can instead generate those files re
 | :--- | :--- | :--- |
 | `MOUNT_LIBRARY_MEDIA_SERVER` | _None_ | Use these mapping variables if your **Media Server** uses different mount paths than the OnePacerr container. |
 | `MOUNT_LIBRARY_ONEPACERR` | _None_ | Use these mapping variables if your **Media Server** uses different mount paths than the OnePacerr container. |
-| `MOUNT_DOWNLOADS_QBITTORRENT` | _None_ | Use these mapping variables if **qBittorrent** uses different mount paths than the OnePacerr container. |
+| `MOUNT_DOWNLOADS_TORRENT` | _None_ | Use these mapping variables if **qBittorrent** uses different mount paths than the OnePacerr container. |
 | `MOUNT_DOWNLOADS_ONEPACERR` | _None_ | Use these mapping variables if **qBittorrent** uses different mount paths than the OnePacerr container. |
 
 ---
@@ -464,10 +466,11 @@ If you want to contribute to the posters or create an entire new set, first of a
 - [X] **Jellyfin Support** _(Requested by Marci on Discord)_ (since v1.3.0)
 - [X] **Filters** to skip seasons/episodes (since v1.3.4)
 - [X] **Better re-organize** check for leftover files and delete them... (since v1.3.5)
+- [X] **Support Deluge** (since v1.3.8)
+- [ ] **Support uTorrent**
 - [ ] **Jellyfin alternate Auth methods**
 - [ ] **Emby Support** _(Requested by u/RealJustMe on r/Servarr)_
 - [ ] **Rest API** Manual execution/status/configuration endpoints
-- [ ] **Support alternate torrent clients** (thinking uTorrent and deluge)
 - [ ] **Support hard/softlinks**
 - [ ] **Support Plex/Jellyfin Libraries with multiple folders** (currently only gets the first result from API)
 

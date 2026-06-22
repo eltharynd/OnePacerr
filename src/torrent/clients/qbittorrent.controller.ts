@@ -5,7 +5,12 @@ import {
 } from '@ctrl/qbittorrent'
 import { TorrentInfo } from '../../metadata/metada.model.js'
 import Logger from '../../util/logger.js'
-import { ITorrentController, Torrent, TorrentClient } from '../torrent.model.js'
+import {
+	ITorrentController,
+	Torrent,
+	TorrentClient,
+	TorrentConnectionError,
+} from '../torrent.model.js'
 
 export class qBittorrentController implements ITorrentController {
 	readonly torrentClient: TorrentClient = 'qbittorrent'
@@ -33,7 +38,12 @@ export class qBittorrentController implements ITorrentController {
 	}
 
 	public async getAllTorrents<T = Torrent>(category?: string): Promise<T[]> {
-		return (await this.client.listTorrents({ category })) as T[]
+		try {
+			return (await this.client.listTorrents({ category })) as T[]
+		} catch (e: any) {
+			Logger.error(`Could not connect to qBittorrent: ${e.message}`)
+			throw new TorrentConnectionError()
+		}
 	}
 
 	public async getCompletedTorrents<T = Torrent>(
