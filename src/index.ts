@@ -29,6 +29,7 @@ const startApp = async () => {
 	process.on('SIGTERM', gracefulClose)
 
 	try {
+		Logger.info(`VERSION ${process.env.npm_package_version} DETECTED...`)
 		Logger.info('STARTING APPLICATION...')
 
 		deprecatedWarnings()
