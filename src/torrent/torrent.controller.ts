@@ -1,4 +1,10 @@
-import { copyFileSync, mkdirSync, readdirSync, unlinkSync } from 'node:fs'
+import {
+	copyFileSync,
+	existsSync,
+	mkdirSync,
+	readdirSync,
+	unlinkSync,
+} from 'node:fs'
 import path from 'node:path'
 import environment from '../environment.js'
 import { TargetLibraryFile } from '../library/library.model.js'
@@ -109,34 +115,51 @@ export class TorrentController {
 		}
 	}
 
-	//TODO refactor this method to be more maintainable
-	private async importTorrentFiles(torrent: Torrent) {
-		let _path = path.resolve(
-			torrent.content_path.replace(
+	private mapDownloadPath(qbPath: string): string {
+		return path.resolve(
+			qbPath.replace(
 				environment.MOUNT_DOWNLOADS_TORRENT,
 				environment.MOUNT_DOWNLOADS_ONEPACERR,
 			),
 		)
+	}
+
+	private resolveTorrentContentPath(torrent: Torrent): string {
+		const candidates = [
+			torrent.content_path,
+			path.join(torrent.save_path, torrent.name),
+		].filter(Boolean)
+
+		for (const candidate of candidates) {
+			const mapped = this.mapDownloadPath(candidate)
+			if (existsSync(mapped)) {
+				if (candidate !== torrent.content_path) {
+					Logger.debug(
+						`Resolved torrent content path to '${mapped}' (qBittorrent reported '${torrent.content_path}')`,
+					)
+				}
+				return mapped
+			}
+		}
+
+		return this.mapDownloadPath(candidates[0])
+	}
+
+	//TODO refactor this method to be more maintainable
+	private async importTorrentFiles(torrent: Torrent) {
+		const contentPath = this.resolveTorrentContentPath(torrent)
 
 		let files: string[] = []
 
-		if (_path.endsWith('.mkv')) {
-			files = [_path]
+		if (contentPath.endsWith('.mkv')) {
+			files = [contentPath]
 			Logger.debug(`Processing 1 torrent file...`)
 		} else {
-			let mkvs = readdirSync(_path).filter(f => f.endsWith('.mkv'))
+			let mkvs = readdirSync(contentPath).filter(f => f.endsWith('.mkv'))
 			if (mkvs.length > 0)
 				Logger.debug(`Processing ${mkvs.length} torrent files...`)
-			for (let f of readdirSync(_path).filter(f => f.endsWith('.mkv'))) {
-				let fullPath = `${torrent.content_path}${torrent.content_path.includes('/') ? '/' : '\\'}${f}`
-				files.push(
-					path.resolve(
-						fullPath.replace(
-							environment.MOUNT_DOWNLOADS_TORRENT,
-							environment.MOUNT_DOWNLOADS_ONEPACERR,
-						),
-					),
-				)
+			for (let f of mkvs) {
+				files.push(this.mapDownloadPath(path.join(contentPath, f)))
 			}
 		}
 
