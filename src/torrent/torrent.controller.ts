@@ -138,16 +138,18 @@ export class TorrentController {
 						`Resolved torrent content path to '${mapped}' (qBittorrent reported '${torrent.content_path}')`,
 					)
 				}
-				return mapped
+				return candidate
 			}
 		}
 
-		return this.mapDownloadPath(candidates[0])
+		return candidates[0]
 	}
 
 	//TODO refactor this method to be more maintainable
 	private async importTorrentFiles(torrent: Torrent) {
-		const contentPath = this.resolveTorrentContentPath(torrent)
+		const contentPath = this.mapDownloadPath(
+			this.resolveTorrentContentPath(torrent),
+		)
 
 		let files: string[] = []
 
@@ -159,7 +161,7 @@ export class TorrentController {
 			if (mkvs.length > 0)
 				Logger.debug(`Processing ${mkvs.length} torrent files...`)
 			for (let f of mkvs) {
-				files.push(this.mapDownloadPath(path.join(contentPath, f)))
+				files.push(path.join(contentPath, f))
 			}
 		}
 
