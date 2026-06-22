@@ -76,20 +76,18 @@ export class JellyfinController implements ILibraryController {
 			).data.Items.map(l => l.Name).join(', ')
 
 			throw new LibraryConnectionError(
-				`Emby library '${environment.JELLYFIN_LIBRARY_NAME}' not found at ${this.config.baseUrl}. Available libraries: ${available || 'none'}`,
+				`Jellyfin library '${environment.JELLYFIN_LIBRARY_NAME}' not found at ${this.config.baseUrl}. Available libraries: ${available || 'none'}`,
 			)
 		}
 
 		Logger.info(`Searching for Jellyfin Virtual Folder...`)
-		const virtualFolders = (
+		this.virtualFolder = (
 			await getLibraryStructureApi(this.api).getVirtualFolders()
 		).data.find(vf => vf.Name == environment.JELLYFIN_LIBRARY_NAME)
 
-		this.virtualFolder = virtualFolders[0]
-
 		if (!this.virtualFolder?.Locations?.[0]) {
 			throw new LibraryConnectionError(
-				`Emby library '${this.library.Name}' has no folder locations configured at ${this.config.baseUrl}`,
+				`Jellyfin library '${this.library.Name}' has no folder locations configured at ${this.config.baseUrl}`,
 			)
 		}
 
