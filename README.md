@@ -238,11 +238,11 @@ services:
 
 ### 🟢 Running locally
 
-Install node (>24 tested) on your machine then:
+Install [node](https://nodejs.org/en/download) (>24 tested) on your machine then:
 
 - create a `.env` file in root (use `sample.env` as example)
-- `npm install`
-- `npm start`
+- run `npm install`
+- run `npm start`
 
 ### 👩‍💻 Contributing to the development
 
