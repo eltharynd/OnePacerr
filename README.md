@@ -307,7 +307,7 @@ Here is a breakdown of key optional variables you can adjust in your
 | --- | --- | --- |
 | `INCLUDE_SPECIALS` | `false` | Set to `true` to also process specials. |
 | `PREFER_EXTENDED` | `false` | Set to `true` to prioritize extended cuts over standard releases. |
-| `PREFER_G8` | `false` | Set to true to prefer the G-8 cut at the end of Skypiea. |
+| `PREFER_G8` | `false` | Set to `true` to prefer the G-8 cut at the end of Skypiea. |
 | --- | --- | --- |
 | `FILTERS_INCLUDE` | _None_ | Only process seasons/episodes that match these [filters](#-filters). |
 | `FILTERS_EXCLUDE` | _None_ | Only process seasons/episodes that don't match these [filters](#-filters). |
