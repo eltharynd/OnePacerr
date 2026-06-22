@@ -1,23 +1,25 @@
 import axios from 'axios'
-import { copyFileSync, mkdirSync, readdirSync, unlinkSync } from 'fs'
+import { mkdirSync, readdirSync, unlinkSync } from 'fs'
 import path from 'path'
 import { js2xml } from 'xml-js'
 import environment from '../environment.js'
-import resolveSeasonPosterFileName from '../util/resolve-season-poster-filename.js'
-import resolveSeriesRootFolder from '../util/resolve-series-root-folder.js'
 import { TargetLibraryFile } from '../library/library.model.js'
+import { QueueDownloadResult } from '../torrent/torrent.model.js'
 import { Context } from '../util/context.js'
 import getFileCrc32Hash from '../util/crc32.js'
 import { Filter } from '../util/filters.js'
 import Logger from '../util/logger.js'
+import resolveSeasonPosterFileName from '../util/resolve-season-poster-filename.js'
+import resolveSeriesRootFolder from '../util/resolve-series-root-folder.js'
+import safeCopyFileSync from '../util/safe-copy-file.js'
 import {
 	Episode,
 	EpisodeDescription,
 	Metadata,
 	MetadataAbsentError,
+	PipelineReport,
 	TorrentInfo,
 } from './metada.model.js'
-import { QueueDownloadResult } from '../torrent/torrent.model.js'
 
 export class MetadataController {
 	private metadata: Metadata
@@ -26,6 +28,8 @@ export class MetadataController {
 	private TVShowNFO
 	private seasonNFOs = {}
 	private episodesNFOs = {}
+
+	private pipelineReport: PipelineReport
 
 	async refreshMetadata() {
 		Logger.info(`Refreshing Metadata...`)
@@ -53,12 +57,18 @@ export class MetadataController {
 
 		try {
 			if (newMetadata) await this.processMetadataEpisodes()
-		} catch (e) {
+			newMetadata = false
+		} catch (e: any) {
 			//TODO refactor checkMetadataDownloaded and create a queue of failedToProcess to only retry those
 			Logger.error(
 				`Unexpected error encountered when processing metadata, we will attempt to reprocess it again next cycle...`,
 			)
 			this.reprocess = true
+			if (this.pipelineReport) {
+				this.pipelineReport.ended = new Date()
+				this.pipelineReport.status = 'ERRORED'
+				this.pipelineReport.error = e.message || 'Unspecified'
+			}
 		}
 		if (newMetadata) await this.processMetadataEpisodes()
 
@@ -70,10 +80,32 @@ export class MetadataController {
 	async processMetadataEpisodes() {
 		this.checkMetadataDownloaded()
 
+		this.pipelineReport = new PipelineReport()
+
 		Logger.info(`Generating .nfo files...`)
+
 		await this.generateTVShowNFO()
 		await this.generateSeasonNFOs()
 		await this.generateEpisodeNFOs()
+
+		this.pipelineReport.processedEpisodes = 0
+		this.pipelineReport.monitoredEpisodes = this.metadata.arcs[
+			environment.METADATA_LANGUAGE
+		]
+			.filter(
+				a =>
+					(a.part != 0 || environment.INCLUDE_SPECIALS) &&
+					Filter({ arc: a.part }),
+			)
+			.map(a => {
+				return a.episodes.filter(e =>
+					Filter({ arc: a.part, episode: e.episode }),
+				).length
+			})
+			.reduce((acc, curr) => acc + curr)
+
+		this.pipelineReport.started = new Date()
+		this.pipelineReport.status = 'RUNNING'
 
 		Logger.info(`Processing episodes from metadata...`)
 
@@ -86,9 +118,10 @@ export class MetadataController {
 			}
 
 			Logger.info(`Processing Season ${arc.part}...`)
+
 			for (let episode of arc.episodes) {
 				if (!Filter({ arc: arc.part, episode: episode.episode })) continue
-
+				this.pipelineReport.processedEpisodes++
 				Logger.debug(
 					`Episode ${arc.part}-${String(episode.episode).padStart(2, '0')} - Processing`,
 				)
@@ -189,21 +222,21 @@ export class MetadataController {
 							)
 						}
 						continue
+					} else {
+						if (environment.SKIP_DOWNLOADS) {
+							Logger.info(
+								`Episode ${arc.part}-${String(episode.episode).padStart(2, '0')} - CRC32 Mismatch [Download skipped]`,
+							)
 						} else {
-							if (environment.SKIP_DOWNLOADS) {
-								Logger.info(
-									`Episode ${arc.part}-${String(episode.episode).padStart(2, '0')} - CRC32 Mismatch [Download skipped]`,
-								)
-							} else {
-								const queueResult = await this.addToDownloadQueue(
-									arc.part,
-									episode.episode,
-									environment.PREFER_EXTENDED && !!episode.extended,
-								)
-								Logger.info(
-									`Episode ${arc.part}-${String(episode.episode).padStart(2, '0')} - CRC32 Mismatch [${this.formatDownloadQueueStatus(queueResult)}]`,
-								)
-							}
+							const queueResult = await this.addToDownloadQueue(
+								arc.part,
+								episode.episode,
+								environment.PREFER_EXTENDED && !!episode.extended,
+							)
+							Logger.info(
+								`Episode ${arc.part}-${String(episode.episode).padStart(2, '0')} - CRC32 Mismatch [${this.formatDownloadQueueStatus(queueResult)}]`,
+							)
+						}
 					}
 				} else {
 					if (environment.SKIP_DOWNLOADS) {
@@ -221,6 +254,14 @@ export class MetadataController {
 						)
 					}
 				}
+			}
+
+			if (
+				this.pipelineReport.processedEpisodes >=
+				this.pipelineReport.monitoredEpisodes
+			) {
+				this.pipelineReport.ended = new Date()
+				this.pipelineReport.status = 'DONE'
 			}
 		}
 	}
@@ -292,7 +333,7 @@ export class MetadataController {
 				)
 			})
 
-			copyFileSync(serverFile, targetFile)
+			await safeCopyFileSync(serverFile, targetFile)
 
 			await Context.library.scanLibrary(targetLibraryFile.path, arc)
 
@@ -434,7 +475,9 @@ export class MetadataController {
 		)
 
 		for (let a of arcs) {
-			let path = resolveSeriesRootFolder(await Context.library.getLibraryFolder())
+			let path = resolveSeriesRootFolder(
+				await Context.library.getLibraryFolder(),
+			)
 			path += path.includes('/') ? '/' : '\\'
 			if (environment.LIBRARY_MEDIA_SERVER === 'none') {
 				path += resolveSeasonPosterFileName(a.part)
@@ -602,6 +645,84 @@ export class MetadataController {
 		if (!this.metadata) {
 			Logger.warn(`Metadata missing, something went wrong with import...`)
 			throw new MetadataAbsentError()
+		}
+	}
+
+	getStatusReport() {
+		const base = {
+			url: environment.METADATA_URL,
+			configs: {
+				METADATA_URL: environment.METADATA_URL,
+				METADATA_LANGUAGE: environment.METADATA_LANGUAGE,
+				METADATA_POSTER_SET: environment.METADATA_POSTER_SET,
+				METADATA_CHECK_INTERVAL: environment.METADATA_CHECK_INTERVAL / 1000,
+			},
+			downloaded: false,
+		}
+
+		if (!this.metadata) return base
+
+		return {
+			...base,
+			downloaded: true,
+			age: new Date(this.metadata?.status.last_update),
+
+			arcs: {
+				monitored: this.metadata.arcs[environment.METADATA_LANGUAGE].filter(
+					a =>
+						(a.part != 0 || environment.INCLUDE_SPECIALS) &&
+						Filter({ arc: a.part }),
+				).length,
+				total: Object.keys(this.metadata.arcs[environment.METADATA_LANGUAGE])
+					.length,
+			},
+			episodes: {
+				monitored: this.metadata.arcs[environment.METADATA_LANGUAGE]
+					.filter(
+						a =>
+							(a.part != 0 || environment.INCLUDE_SPECIALS) &&
+							Filter({ arc: a.part }),
+					)
+					.map(a => {
+						return a.episodes.filter(e =>
+							Filter({ arc: a.part, episode: e.episode }),
+						).length
+					})
+					.reduce((acc, curr) => acc + curr),
+				total: Object.keys(this.metadata.episodes).length,
+			},
+		}
+	}
+
+	getPipelineReport() {
+		return {
+			config: {
+				SKIP_VERIFY_PRESENT_FILES: environment.SKIP_VERIFY_PRESENT_FILES,
+				SKIP_ORGANIZE_PRESENT_FILES: environment.SKIP_VERIFY_PRESENT_FILES,
+				SKIP_UPDATE_METADATA_PRESENT_FILES:
+					environment.SKIP_VERIFY_PRESENT_FILES,
+				SKIP_DOWNLOADS: environment.SKIP_VERIFY_PRESENT_FILES,
+				SKIP_POSTERS: environment.SKIP_VERIFY_PRESENT_FILES,
+				INCLUDE_SPECIALS: environment.SKIP_VERIFY_PRESENT_FILES,
+				PREFER_EXTENDED: environment.SKIP_VERIFY_PRESENT_FILES,
+				PREFER_G8: environment.SKIP_VERIFY_PRESENT_FILES,
+			},
+			monitored: {
+				seasons: 1,
+				episodes: this.metadata.arcs[environment.METADATA_LANGUAGE]
+					.filter(
+						a =>
+							(a.part != 0 || environment.INCLUDE_SPECIALS) &&
+							Filter({ arc: a.part }),
+					)
+					.map(a => {
+						return a.episodes.filter(e =>
+							Filter({ arc: a.part, episode: e.episode }),
+						).length
+					})
+					.reduce((acc, curr) => acc + curr),
+			},
+			report: this.pipelineReport,
 		}
 	}
 }

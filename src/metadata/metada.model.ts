@@ -49,4 +49,21 @@ export type Metadata = {
 	other_edits: any
 }
 
+type PipelineStatus = 'PRE' | 'RUNNING' | 'DONE' | 'ERRORED'
+
+export class PipelineReport {
+	created: Date
+	started: Date
+	ended: Date
+	processedEpisodes: number
+	monitoredEpisodes: number
+	status: PipelineStatus
+	error?: string
+
+	constructor() {
+		this.created = new Date()
+		this.status = 'PRE'
+	}
+}
+
 export class MetadataAbsentError extends Error {}

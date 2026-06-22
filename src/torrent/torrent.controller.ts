@@ -1,10 +1,4 @@
-import {
-	copyFileSync,
-	existsSync,
-	mkdirSync,
-	readdirSync,
-	unlinkSync,
-} from 'node:fs'
+import { existsSync, mkdirSync, readdirSync, unlinkSync } from 'node:fs'
 import path from 'node:path'
 import environment from '../environment.js'
 import { TargetLibraryFile } from '../library/library.model.js'
@@ -16,6 +10,7 @@ import {
 import { Context } from '../util/context.js'
 import { Filter } from '../util/filters.js'
 import Logger from '../util/logger.js'
+import safeCopyFileSync from '../util/safe-copy-file.js'
 import { DelugeController } from './clients/deluge.controller.js'
 import { qBittorrentController } from './clients/qbittorrent.controller.js'
 import {
@@ -285,7 +280,7 @@ export class TorrentController {
 					recursive: true,
 				})
 
-				copyFileSync(source, destination)
+				await safeCopyFileSync(source, destination)
 
 				Logger.info(
 					`File for ${episode.arc}-${String(episode.episode).padStart(2, '0')} imported successfully`,

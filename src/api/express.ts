@@ -7,6 +7,7 @@ import { HealthController } from './health/health.controller.js'
 import { DefaultInterceptor } from './interceptors/default.interceptor.js'
 import { HttpErrorHandler } from './middlewares/error.middleware.js'
 import { LoggerMiddleware } from './middlewares/logger.middleware.js'
+import { StatusController } from './status/status.controller.js'
 
 export class Express {
 	origins = ['*']
@@ -24,7 +25,7 @@ export class Express {
 			routePrefix: environment.API_BASE.replace(/\/$/, ''),
 			defaultErrorHandler: false,
 			middlewares: [LoggerMiddleware, HttpErrorHandler],
-			controllers: [HealthController],
+			controllers: [HealthController, StatusController],
 			interceptors: [DefaultInterceptor],
 			validation: { whitelist: true },
 			classToPlainTransformOptions: {
