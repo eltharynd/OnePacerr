@@ -463,6 +463,7 @@ If you want to contribute to the posters or create an entire new set, first of a
 - [ ] **Emby Support** _(Requested by u/RealJustMe on r/Servarr)_
 - [ ] **Rest API** Manual execution/status/configuration endpoints
 - [ ] **Support alternate torrent clients** (thinking uTorrent and deluge)
+- [ ] **Support hard/softlinks**
 - [ ] **Support Plex/Jellyfin Libraries with multiple folders** (currently only gets the first result from API)
 
 - [Request a new feature](https://github.com/eltharynd/OnePacerr/issues)
