@@ -1,7 +1,7 @@
+import { existsSync } from 'fs'
 import path from 'path'
 import environment from '../environment.js'
 import Logger from './logger.js'
-import { existsSync } from 'fs'
 
 export default function resolvePosterPath(options?: IResolvePosterPathOptions) {
 	if (
@@ -28,8 +28,8 @@ export default function resolvePosterPath(options?: IResolvePosterPathOptions) {
 		)
 	}
 
-	let targetPath = `./posters/${targetSet}/${options ? `${options.arc}/poster.png` : 'poster.png'}`
-	let fallbackPath = `./posters/${fallbackSet}/${options ? `${options.arc}/poster.png` : 'poster.png'}`
+	let targetPath = `./posters/${targetSet}/${options ? `Season${String(options.arc).padStart(2, '0')}.png` : 'poster.png'}`
+	let fallbackPath = `./posters/${fallbackSet}/${options ? `Season${String(options.arc).padStart(2, '0')}.png` : 'poster.png'}`
 
 	let pathOnDisk = path.resolve(targetPath)
 	if (existsSync(pathOnDisk)) {

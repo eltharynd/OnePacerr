@@ -7,7 +7,7 @@
 - Create a new folder called with the name of the set in `posters/`
 - Place each poster in the created folder with the following names:
   - `poster.png` for the Show poster
-  - `SeasonXX.png` where XX is the Season number (two digits, Specials => `Season00.png`)
+  - `SeasonXX.png` where XX is the Seacson number (two digits, Specials => `Season00.png`)
 - Create a pull request 🍳
 - Profit
 
