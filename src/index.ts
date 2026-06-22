@@ -29,7 +29,16 @@ const startApp = async () => {
 	process.on('SIGTERM', gracefulClose)
 
 	try {
-		Logger.info(`VERSION v${process.env.npm_package_version} DETECTED...`)
+		Logger.info(`##################################`)
+		Logger.info(`##################################`)
+		Logger.info(`####                          ####`)
+		Logger.info(
+			`####     OnePacerr ${process.env.npm_package_version}      ####`,
+		)
+		Logger.info(`####                          ####`)
+		Logger.info(`##################################`)
+		Logger.info(`##################################`)
+		Logger.info('')
 		Logger.info('STARTING APPLICATION...')
 
 		deprecatedWarnings()
