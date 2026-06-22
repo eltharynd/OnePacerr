@@ -3,6 +3,7 @@ import { copyFileSync, mkdirSync, readdirSync, unlinkSync } from 'fs'
 import path from 'path'
 import { js2xml } from 'xml-js'
 import environment from '../environment.js'
+import resolveSeasonPosterFileName from '../util/resolve-season-poster-filename.js'
 import { TargetLibraryFile } from '../library/library.model.js'
 import { Context } from '../util/context.js'
 import getFileCrc32Hash from '../util/crc32.js'
@@ -433,9 +434,13 @@ export class MetadataController {
 			path += path.includes('/') ? '/' : '\\'
 			path += environment.LIBRARY_SERIES_FOLDER_NAME
 			path += path.includes('/') ? '/' : '\\'
-			path += `Season ${String(a.part).padStart(2, '0')}`
-			path += path.includes('/') ? '/' : '\\'
-			path += `poster.png`
+			if (environment.LIBRARY_MEDIA_SERVER === 'emby') {
+				path += resolveSeasonPosterFileName(a.part)
+			} else {
+				path += `Season ${String(a.part).padStart(2, '0')}`
+				path += path.includes('/') ? '/' : '\\'
+				path += `poster.png`
+			}
 
 			let NFO = `<?xml version='1.0' encoding='utf-8'?>\n${js2xml(
 				{

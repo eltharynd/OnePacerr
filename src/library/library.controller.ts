@@ -4,6 +4,7 @@ import environment from '../environment.js'
 import { Context } from '../util/context.js'
 import Logger from '../util/logger.js'
 import resolvePosterPath from '../util/resolve-poster-path.js'
+import resolveSeasonPosterFileName from '../util/resolve-season-poster-filename.js'
 import sanitizeWindowsFileName from '../util/sanitize-windows-filename.js'
 import { EmbyController } from './clients/emby.controller.js'
 import { JellyfinController } from './clients/jellyfin.controller.js'
@@ -166,10 +167,20 @@ export class LibraryController {
 				await Context.metadata.getSeasonNFO(arc),
 			)
 			if (!environment.SKIP_POSTERS) {
-				copyFileSync(
-					resolvePosterPath({ arc }),
-					`${path.resolve(`${folder.replace(environment.MOUNT_LIBRARY_MEDIA_SERVER, environment.MOUNT_LIBRARY_ONEPACERR)}`)}${path.sep}poster.png`,
-				)
+				if (this.client.libraryClient === 'emby') {
+					let showFolder = await this.getLibraryFolder()
+					showFolder += showFolder.includes('/') ? '/' : '\\'
+					showFolder += environment.LIBRARY_SERIES_FOLDER_NAME
+					let posterDest = `${path.resolve(`${showFolder.replace(environment.MOUNT_LIBRARY_MEDIA_SERVER, environment.MOUNT_LIBRARY_ONEPACERR)}`)}${path.sep}${resolveSeasonPosterFileName(arc)}`
+
+					mkdirSync(path.dirname(posterDest), { recursive: true })
+					copyFileSync(resolvePosterPath({ arc }), posterDest)
+				} else {
+					copyFileSync(
+						resolvePosterPath({ arc }),
+						`${path.resolve(`${folder.replace(environment.MOUNT_LIBRARY_MEDIA_SERVER, environment.MOUNT_LIBRARY_ONEPACERR)}`)}${path.sep}poster.png`,
+					)
+				}
 			}
 		}
 
