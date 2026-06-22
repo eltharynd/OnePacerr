@@ -18,7 +18,10 @@ export class DelugeController implements ITorrentController {
 		username: string
 		password: string
 	}) {
-		this.client = new Deluge(options)
+		this.client = new Deluge({
+			...options,
+			timeout: environment.TORRENT_CLIENT_TIMEOUT,
+		})
 	}
 
 	public async addTorrent(

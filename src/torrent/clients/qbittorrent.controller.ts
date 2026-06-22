@@ -22,7 +22,10 @@ export class qBittorrentController implements ITorrentController {
 		username: string
 		password: string
 	}) {
-		this.client = new QBittorrent(options)
+		this.client = new QBittorrent({
+			...options,
+			timeout: environment.TORRENT_CLIENT_TIMEOUT,
+		})
 	}
 
 	public async addTorrent(

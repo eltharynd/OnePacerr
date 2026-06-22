@@ -18,6 +18,7 @@ import {
 
 export class MetadataController {
 	private metadata: Metadata
+	private reprocess: boolean
 
 	private TVShowNFO
 	private seasonNFOs = {}
@@ -37,12 +38,25 @@ export class MetadataController {
 				Logger.info(`Newer Metadata found!`)
 				this.metadata = metadata
 				newMetadata = true
+			} else if (this.reprocess) {
+				Logger.info(`Reprocessing Metadata due to previous errors!`)
+				this.reprocess = false
+				newMetadata = true
 			}
 		} catch (e) {
 			Logger.error(`Error refreshing Metadata, will retry...`)
 			Logger.error(e)
 		}
 
+		try {
+			if (newMetadata) await this.processMetadataEpisodes()
+		} catch (e) {
+			//TODO refactor checkMetadataDownloaded and create a queue of failedToProcess to only retry those
+			Logger.error(
+				`Unexpected error encountered when processing metadata, we will attempt to reprocess it again next cycle...`,
+			)
+			this.reprocess = true
+		}
 		if (newMetadata) await this.processMetadataEpisodes()
 
 		setTimeout(async () => {

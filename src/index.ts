@@ -68,7 +68,7 @@ const startApp = async () => {
 			e instanceof LabelsDisabledInDelugeError ||
 			e instanceof TorrentConnectionError
 		) {
-			Logger.debug(`Error handled, no need tO crash...`)
+			Logger.debug(`Error handled, no need to crash...`)
 		} else {
 			Logger.error('APPLICATION CRASHED UNEXPECTEDLY...')
 			Logger.error(e)

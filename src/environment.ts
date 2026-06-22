@@ -103,6 +103,8 @@ export default {
 	TORRENT_PASSWORD: process.env.TORRENT_PASSWORD || `password`,
 
 	TORRENT_CLIENT: process.env.TORRENT_CLIENT || `qbittorrent`,
+	TORRENT_CLIENT_TIMEOUT:
+		Number.parseInt(process.env.TORRENT_CLIENT_TIMEOUT || '10') * 1000,
 
 	TORRENT_CATEGORY_FORCE: /true/i.test(
 		process.env.TORRENT_CATEGORY_FORCE || 'false',
