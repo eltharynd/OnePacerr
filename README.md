@@ -19,7 +19,7 @@ Other than downloading and organizing your episode files, it also updates metada
 
 ![Plex](docs/media_servers/plex.png) ![Jellyfin](docs/media_servers/jellyfin.png) ![Emby](docs/media_servers/emby.png)
 
-## Supporter Torrenting Clients
+## Supported Torrenting Clients
 
 ![qBittorrent](docs/torrenting_clients/qbittorrent.png) ![Deluge](docs/torrenting_clients/deluge.png) ![μTorrent](docs/torrenting_clients/utorrent-coming-soon.png)
 
