@@ -1,4 +1,4 @@
-import { copyFileSync, mkdirSync, writeFileSync } from 'node:fs'
+import { mkdirSync, writeFileSync } from 'node:fs'
 import path from 'node:path'
 import environment from '../environment.js'
 import { Context } from '../util/context.js'
@@ -8,6 +8,7 @@ import resolveSeasonPosterFileName from '../util/resolve-season-poster-filename.
 import resolveSeriesRootFolder, {
 	resolveSeasonFolder,
 } from '../util/resolve-series-root-folder.js'
+import safeCopyFileSync from '../util/safe-copy-file.js'
 import sanitizeWindowsFileName from '../util/sanitize-windows-filename.js'
 import { EmbyController } from './clients/emby.controller.js'
 import { JellyfinController } from './clients/jellyfin.controller.js'
@@ -168,12 +169,12 @@ export class LibraryController {
 			if (!environment.SKIP_POSTERS) {
 				if (this.client.libraryClient === 'none') {
 					mkdirSync(showFolder, { recursive: true })
-					copyFileSync(
+					await safeCopyFileSync(
 						resolvePosterPath({ arc }),
 						`${showFolder}${path.sep}${resolveSeasonPosterFileName(arc)}`,
 					)
 				} else {
-					copyFileSync(
+					await safeCopyFileSync(
 						resolvePosterPath({ arc }),
 						`${path.resolve(`${folder.replace(environment.MOUNT_LIBRARY_MEDIA_SERVER, environment.MOUNT_LIBRARY_ONEPACERR)}`)}${path.sep}poster.png`,
 					)
@@ -198,7 +199,7 @@ export class LibraryController {
 				)
 
 				mkdirSync(`${libraryFolder}${path.sep}`, { recursive: true })
-				copyFileSync(
+				await safeCopyFileSync(
 					resolvePosterPath(),
 					`${libraryFolder}${path.sep}poster.png`,
 				)

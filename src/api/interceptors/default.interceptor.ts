@@ -80,13 +80,13 @@ export class AcceptedResponse extends DefaultResponse {
 	}
 }
 
-export class NoContentErrorResponse extends DefaultResponse {
+export class NoContentResponse extends DefaultResponse {
 	constructor(message?: string, extra?: any) {
 		super('NO_CONTENT', 204, message, extra)
 	}
 }
 
-export class PartialContentErrorResponse extends DefaultResponse {
+export class PartialContentResponse extends DefaultResponse {
 	constructor(message?: string, extra?: any) {
 		super('PARTIAL_CONTENT', 206, message, extra)
 	}
