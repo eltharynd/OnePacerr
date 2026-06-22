@@ -5,6 +5,8 @@ export type QueueDownloadResult = 'added' | 'already_present' | 'skipped'
 export type Torrent = {
 	readonly hash: string
 	readonly content_path: string
+	readonly save_path?: string
+	readonly name?: string
 	readonly category?: string
 	readonly progress?: number
 }
