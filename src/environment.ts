@@ -73,6 +73,12 @@ export default {
 	PLEX_URL: process.env.PLEX_URL || 'http://localhost:32400',
 	PLEX_TOKEN: process.env.PLEX_TOKEN || null,
 	PLEX_LIBRARY_NAME: process.env.PLEX_LIBRARY_NAME || 'TV Shows',
+	PLEX_SKIP_METADATA_FILES: /true/i.test(
+		process.env.PLEX_SKIP_METADATA_FILES || 'true',
+	),
+	PLEX_PLEXMATCH_EVEN_IF_NOT: /true/i.test(
+		process.env.PLEX_PLEXMATCH_EVEN_IF_NOT || 'false',
+	),
 
 	/**
 	 * LIBRARY - JELLYFIN

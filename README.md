@@ -197,6 +197,8 @@ services:
       - PLEX_URL=localhost:32400
       - PLEX_TOKEN=<your-token-here>
       - PLEX_LIBRARY_NAME=TV 
+      #- PLEX_SKIP_METADATA_FILES=true 
+      #- PLEX_PLEXMATCH_EVEN_IF_NOT=false 
       
       # Library - Jellyfin
       - JELLYFIN__URL=localhost:8096
@@ -322,6 +324,8 @@ FILTERS_EXCLUDE=S35,S36
 
 In order for an episode to be processed/downloaded/updated, it has to match BOTH filters.
 
+---
+
 ### 🎬 Library (Common)
 
 > [!IMPORTANT]  
@@ -343,11 +347,15 @@ In order for an episode to be processed/downloaded/updated, it has to match BOTH
 | `LIBRARY_FILENAME_FORMAT` | `{SERIES_NAME} - S{ARC}E{EPISODE} - {TITLE}.mkv` | Overrides the filename each file should have, `{SERIES_NAME}`, `{ARC}`, `{EPISODE}` and `{TITLE}` will be replaced with values. `.mkv` automatically added if not specified. |
 | `LIBRARY_CREATE_SHOW_IF_NOT_FOUND` | `true` | If `false`, the app crashes if "LIBRARY_SERIES_NAME" isn't already a Show in your Media Server (useful for catching typos on first setup). Leave `true` to auto-create the show. |
 
+---
+
 ### 📂 Library (Local Folder)
 
 | 💭 Library - None | Default | Description |
 | :--- | :--- | :--- |
 | 🍤 `LIBRARY_NONE_ROOT_FOLDER` | `C:\\OnePacerr` | The root folder where your Library should be saved (Do not Include LIBRARY_SERIES_FOLDER_NAME). |
+
+---
 
 ### 🍊 Library (Plex Media Server)
 
@@ -356,6 +364,14 @@ In order for an episode to be processed/downloaded/updated, it has to match BOTH
 | ⭐ `PLEX_URL` | `http://localhost:32400` | Plex URL. |
 | ⭐ `PLEX_TOKEN` | _None_ | Your [Plex Token](https://support.plex.tv/articles/204059436-finding-an-authentication-token-x-plex-token/). |
 | 🍤 `PLEX_LIBRARY_NAME` | `TV Shows` | Name of the Library in Plex. |
+| `PLEX_SKIP_METADATA_FILES` | `true` | If `false`, will generate `.nfo` and poster pngs even when Media Server is Plex. |
+| `PLEX_PLEXMATCH_EVEN_IF_NOT` | `false` | If `true`, will generate `.plexmatch` file even when using a different Media Sever. |
+
+**Note** on `PLEX_SKIP_METADATA_FILES`: Metadata for plex is set via API because doing so with just the files are unreliable at best. For this reason, when `LIBRARY_MEDIA_SERVER` is set to `plex`, by default (`LIBRARY_MEDIA_SERVER=true`) OnePacerr will not generate the `.nfo` and the various `poster.png` on the Media Server folder.
+
+If you set `LIBRARY_MEDIA_SERVER=false`, you can instead generate those files regardless. This is useful if you want to use the same media folder for multiple Media Servers, or if you just would rather create all of the metadata in case you ever change Media Server (it doesn't take that much space anyways).
+
+---
 
 ### 🪼 Library (Jellyfin)
 
@@ -366,6 +382,8 @@ In order for an episode to be processed/downloaded/updated, it has to match BOTH
 | ⭐ `JELLYFIN_PASSWORD` | _None_ | Your Jellyfin password. |
 | 🍤 `JELLYFIN_LIBRARY_NAME` | `Shows` | Name of the Library in Jellyfin. |
 
+---
+
 ### ✳️ Library (Emby)
 
 | 💭 Library - Emby Variables | Default | Description |
@@ -374,6 +392,8 @@ In order for an episode to be processed/downloaded/updated, it has to match BOTH
 | ⭐ `EMBY_USERNAME` | _None_ | Your Emby username. |
 | ⭐ `EMBY_PASSWORD` | _None_ | Your Emby password. |
 | 🍤 `EMBY_LIBRARY_NAME` | `TV Shows` | Name of the Library in Emby. |
+
+---
 
 ### 💾 Torrent
 
@@ -387,6 +407,8 @@ In order for an episode to be processed/downloaded/updated, it has to match BOTH
 | `TORRENT_CATEGORY_ONCE_COMPLETED` | `completed` | After processing completed downloads, changes the torrent category to this one. |
 | `TORRENT_CHECK_INTERVAL` | `60` | Seconds between checking for completed downloads. |
 
+---
+
 ### 💿 Mount Path Mappings
 
 | Mount Configuration Variables | Default | Description |
@@ -396,6 +418,8 @@ In order for an episode to be processed/downloaded/updated, it has to match BOTH
 | `MOUNT_DOWNLOADS_QBITTORRENT` | _None_ | Use these mapping variables if **qBittorrent** uses different mount paths than the OnePacerr container. |
 | `MOUNT_DOWNLOADS_ONEPACERR` | _None_ | Use these mapping variables if **qBittorrent** uses different mount paths than the OnePacerr container. |
 
+---
+
 ### ℹ️ Metadata
 
 | Metadata Variables | Default | Description |
@@ -404,6 +428,8 @@ In order for an episode to be processed/downloaded/updated, it has to match BOTH
 | `METADATA_LANGUAGE` | `en` | Currently only language supported. |
 | `METADATA_POSTER_SET` | `default` | Currently `default` equals `piratezekk`. There are also `official` and `mizzoufan523` available. If a set is missing a poster it uses `default`. |
 | `METADATA_CHECK_INTERVAL` | `3600` | Seconds between checking for new metadata. |
+
+---
 
 ## 🖼️ Poster Sets
 

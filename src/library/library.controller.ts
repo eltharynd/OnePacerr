@@ -89,19 +89,31 @@ export class LibraryController {
 		libraryFolder += libraryFolder.includes('/') ? '/' : '\\'
 		libraryFolder += environment.LIBRARY_SERIES_FOLDER_NAME
 
-		let plexmatch = `show: ${environment.LIBRARY_SERIES_NAME}`
 		mkdirSync(
 			`${path.resolve(`${libraryFolder.replace(environment.MOUNT_LIBRARY_MEDIA_SERVER, environment.MOUNT_LIBRARY_ONEPACERR)}`)}${path.sep}`,
 			{ recursive: true },
 		)
-		writeFileSync(
-			`${path.resolve(`${libraryFolder.replace(environment.MOUNT_LIBRARY_MEDIA_SERVER, environment.MOUNT_LIBRARY_ONEPACERR)}`)}${path.sep}.plexmatch`,
-			plexmatch,
+
+		if (
+			this.client.libraryClient != 'plex' &&
+			environment.PLEX_PLEXMATCH_EVEN_IF_NOT
+		) {
+			let plexmatch = `show: ${environment.LIBRARY_SERIES_NAME}`
+			writeFileSync(
+				`${path.resolve(`${libraryFolder.replace(environment.MOUNT_LIBRARY_MEDIA_SERVER, environment.MOUNT_LIBRARY_ONEPACERR)}`)}${path.sep}.plexmatch`,
+				plexmatch,
+			)
+		}
+
+		if (
+			this.client.libraryClient != 'plex' ||
+			!environment.PLEX_SKIP_METADATA_FILES
 		)
-		writeFileSync(
-			`${path.resolve(`${libraryFolder.replace(environment.MOUNT_LIBRARY_MEDIA_SERVER, environment.MOUNT_LIBRARY_ONEPACERR)}`)}${path.sep}tvshow.nfo`,
-			Context.metadata.getTVShowNFO(),
-		)
+			writeFileSync(
+				`${path.resolve(`${libraryFolder.replace(environment.MOUNT_LIBRARY_MEDIA_SERVER, environment.MOUNT_LIBRARY_ONEPACERR)}`)}${path.sep}tvshow.nfo`,
+				Context.metadata.getTVShowNFO(),
+			)
+
 		await this.client.scanLibrary(folder, arc)
 	}
 
@@ -111,63 +123,79 @@ export class LibraryController {
 		title: string,
 		description: string,
 	) {
-		let folder = await this.getLibraryFolder()
-		folder += folder.includes('/') ? '/' : '\\'
-		folder += environment.LIBRARY_SERIES_FOLDER_NAME
-		folder += folder.includes('/') ? '/' : '\\'
-		folder += `Season ${String(arc).padStart(2, '0')}`
+		if (
+			this.client.libraryClient != 'plex' ||
+			!environment.PLEX_SKIP_METADATA_FILES
+		) {
+			let folder = await this.getLibraryFolder()
+			folder += folder.includes('/') ? '/' : '\\'
+			folder += environment.LIBRARY_SERIES_FOLDER_NAME
+			folder += folder.includes('/') ? '/' : '\\'
+			folder += `Season ${String(arc).padStart(2, '0')}`
 
-		mkdirSync(
-			`${path.resolve(`${folder.replace(environment.MOUNT_LIBRARY_MEDIA_SERVER, environment.MOUNT_LIBRARY_ONEPACERR)}`)}${path.sep}`,
-			{ recursive: true },
-		)
-		writeFileSync(
-			`${path.resolve(`${folder.replace(environment.MOUNT_LIBRARY_MEDIA_SERVER, environment.MOUNT_LIBRARY_ONEPACERR)}`)}${path.sep}${sanitizeWindowsFileName(await LibraryController.resolveEpisodeTargetFileName(arc, episode, title)).replace('.mkv', '.nfo')}`,
-			await Context.metadata.getEpisodeNFO(arc, episode),
-		)
+			mkdirSync(
+				`${path.resolve(`${folder.replace(environment.MOUNT_LIBRARY_MEDIA_SERVER, environment.MOUNT_LIBRARY_ONEPACERR)}`)}${path.sep}`,
+				{ recursive: true },
+			)
+			writeFileSync(
+				`${path.resolve(`${folder.replace(environment.MOUNT_LIBRARY_MEDIA_SERVER, environment.MOUNT_LIBRARY_ONEPACERR)}`)}${path.sep}${sanitizeWindowsFileName(await LibraryController.resolveEpisodeTargetFileName(arc, episode, title)).replace('.mkv', '.nfo')}`,
+				await Context.metadata.getEpisodeNFO(arc, episode),
+			)
+		}
 		await this.client.updateEpisodeMetadata(arc, episode, title, description)
 	}
 
 	async updateSeasonMetadata(arc: number) {
-		let folder = await this.getLibraryFolder()
-		folder += folder.includes('/') ? '/' : '\\'
-		folder += environment.LIBRARY_SERIES_FOLDER_NAME
-		folder += folder.includes('/') ? '/' : '\\'
-		folder += `Season ${String(arc).padStart(2, '0')}`
+		if (
+			this.client.libraryClient != 'plex' ||
+			!environment.PLEX_SKIP_METADATA_FILES
+		) {
+			let folder = await this.getLibraryFolder()
+			folder += folder.includes('/') ? '/' : '\\'
+			folder += environment.LIBRARY_SERIES_FOLDER_NAME
+			folder += folder.includes('/') ? '/' : '\\'
+			folder += `Season ${String(arc).padStart(2, '0')}`
 
-		mkdirSync(
-			`${path.resolve(`${folder.replace(environment.MOUNT_LIBRARY_MEDIA_SERVER, environment.MOUNT_LIBRARY_ONEPACERR)}`)}${path.sep}`,
-			{ recursive: true },
-		)
-		writeFileSync(
-			`${path.resolve(`${folder.replace(environment.MOUNT_LIBRARY_MEDIA_SERVER, environment.MOUNT_LIBRARY_ONEPACERR)}`)}${path.sep}season.nfo`,
-			await Context.metadata.getSeasonNFO(arc),
-		)
-		if (!environment.SKIP_POSTERS) {
-			copyFileSync(
-				resolvePosterPath({ arc }),
-				`${path.resolve(`${folder.replace(environment.MOUNT_LIBRARY_MEDIA_SERVER, environment.MOUNT_LIBRARY_ONEPACERR)}`)}${path.sep}poster.png`,
+			mkdirSync(
+				`${path.resolve(`${folder.replace(environment.MOUNT_LIBRARY_MEDIA_SERVER, environment.MOUNT_LIBRARY_ONEPACERR)}`)}${path.sep}`,
+				{ recursive: true },
 			)
+			writeFileSync(
+				`${path.resolve(`${folder.replace(environment.MOUNT_LIBRARY_MEDIA_SERVER, environment.MOUNT_LIBRARY_ONEPACERR)}`)}${path.sep}season.nfo`,
+				await Context.metadata.getSeasonNFO(arc),
+			)
+			if (!environment.SKIP_POSTERS) {
+				copyFileSync(
+					resolvePosterPath({ arc }),
+					`${path.resolve(`${folder.replace(environment.MOUNT_LIBRARY_MEDIA_SERVER, environment.MOUNT_LIBRARY_ONEPACERR)}`)}${path.sep}poster.png`,
+				)
+			}
 		}
 
 		await this.client.updateSeasonMetadata(arc)
 	}
 
 	async updateShowMetadata() {
-		if (!environment.SKIP_POSTERS) {
-			let libraryFolder = await this.getLibraryFolder()
-			libraryFolder += libraryFolder.includes('/') ? '/' : '\\'
-			libraryFolder += environment.LIBRARY_SERIES_FOLDER_NAME
+		if (
+			this.client.libraryClient != 'plex' ||
+			!environment.PLEX_SKIP_METADATA_FILES
+		) {
+			if (!environment.SKIP_POSTERS) {
+				let libraryFolder = await this.getLibraryFolder()
+				libraryFolder += libraryFolder.includes('/') ? '/' : '\\'
+				libraryFolder += environment.LIBRARY_SERIES_FOLDER_NAME
 
-			mkdirSync(
-				`${path.resolve(`${libraryFolder.replace(environment.MOUNT_LIBRARY_MEDIA_SERVER, environment.MOUNT_LIBRARY_ONEPACERR)}`)}${path.sep}`,
-				{ recursive: true },
-			)
-			copyFileSync(
-				resolvePosterPath(),
-				`${path.resolve(`${libraryFolder.replace(environment.MOUNT_LIBRARY_MEDIA_SERVER, environment.MOUNT_LIBRARY_ONEPACERR)}`)}${path.sep}poster.png`,
-			)
+				mkdirSync(
+					`${path.resolve(`${libraryFolder.replace(environment.MOUNT_LIBRARY_MEDIA_SERVER, environment.MOUNT_LIBRARY_ONEPACERR)}`)}${path.sep}`,
+					{ recursive: true },
+				)
+				copyFileSync(
+					resolvePosterPath(),
+					`${path.resolve(`${libraryFolder.replace(environment.MOUNT_LIBRARY_MEDIA_SERVER, environment.MOUNT_LIBRARY_ONEPACERR)}`)}${path.sep}poster.png`,
+				)
+			}
 		}
+
 		await this.client.updateShowMetadata()
 	}
 
