@@ -14,6 +14,7 @@ import { DelugeController } from './clients/deluge.controller.js'
 import { qBittorrentController } from './clients/qbittorrent.controller.js'
 import {
 	ITorrentController,
+	QueueDownloadResult,
 	Torrent,
 	TorrentClient,
 	TorrentConnectionError,
@@ -62,19 +63,23 @@ export class TorrentController {
 		}
 	}
 
-	public async queueDownload(torrentInfo: TorrentInfo) {
+	public async queueDownload(
+		torrentInfo: TorrentInfo,
+	): Promise<QueueDownloadResult> {
 		if (environment.SKIP_DOWNLOADS) {
 			Logger.info(`Downloads disabled by env vars`)
-			return
+			return 'skipped'
 		}
 
 		Logger.debug(`Adding magnetURI to ${this.client.torrentClient}...`)
 		let torrents = await this.client.getAllTorrents()
 		if (torrents.find(t => t.hash === torrentInfo.infoHash)) {
 			Logger.debug(`Torrent already in ${this.client.torrentClient}...`)
-			return
-		} else
-			await this.client.addTorrent(torrentInfo, environment.TORRENT_CATEGORY)
+			return 'already_present'
+		}
+
+		await this.client.addTorrent(torrentInfo, environment.TORRENT_CATEGORY)
+		return 'added'
 	}
 
 	private async processCompletedTorrents() {
