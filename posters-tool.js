@@ -13,12 +13,6 @@ import path from 'path'
 const POSTERS_ROOT = './posters'
 const CURRENT_SEASONS = 36
 
-/*
-<table>
-
-</table>
-*/
-
 const PREVIEW_HEADER = `# Poster previews for POSTER_SET
 
 ## Show
@@ -35,7 +29,7 @@ const TEMPLATE_ROW = `  <tr>
 ITEMS  </tr>
 `
 const TEMPLATE_ITEM = `    <td align="center">
-      <img src="../../posters/POSTER_SET/SEASON/poster.png" width="150"><br>
+      <img src="../../posters/POSTER_SET/SeasonSEASON.png" width="150"><br>
       <sub>ARC_NAME</sub>
     </td>
 `
@@ -56,62 +50,69 @@ readdir(POSTERS_ROOT).then(subfolders => {
 				'../../posters/POSTER_SET/poster.png',
 				'./missing.png',
 			)
-		let previewSeasonPaths = {}
+		let previewSeasonFiles = {}
 
 		for (let season = 0; season <= CURRENT_SEASONS; season++) {
-			let seasonFolder = path.join(setFolder, `${season}`)
-
-			mkdirSync(seasonFolder, {
-				recursive: true,
-			})
-
-			let files = readdirSync(seasonFolder)
-			if (files.length < 1)
-				previewSeasonPaths[`Season ${season}`] = TEMPLATE_ITEM.replace(
-					'<img src="../../posters/POSTER_SET/SEASON/poster.png" width="150">',
+			let seasonFile = path.resolve(
+				setFolder,
+				`Season${String(season).padStart(2, '0')}.png`,
+			)
+			if (!existsSync(seasonFile)) {
+				previewSeasonFiles[`Season ${season}`] = TEMPLATE_ITEM.replace(
+					'<img src="../../posters/POSTER_SET/SeasonSEASON.png" width="150">',
 					'<img src="./missing.png" width="150"></img>',
 				).replace('ARC_NAME', season == 0 ? 'Specials' : `Season ${season}`)
-			for (let file of files) {
-				let currentPath = path.join(seasonFolder, file)
-				let targetPath = path.join(seasonFolder, 'poster.png')
+			} else {
+				// let files = readdirSync(seasonFolder)
+				// if (files.length < 1)
+				// 	previewSeasonFiles[`Season ${season}`] = TEMPLATE_ITEM.replace(
+				// 		'<img src="../../posters/POSTER_SET/SeasonSEASON.png" width="150">',
+				// 		'<img src="./missing.png" width="150"></img>',
+				// 	).replace('ARC_NAME', season == 0 ? 'Specials' : `Season ${season}`)
+
+				//for (let file of files) {
+				//let currentPath = path.join(seasonFolder, file)
+				//let targetPath = path.join(seasonFolder, 'poster.png')
 				//console.log(targetPath)
 
-				if (targetPath != currentPath) {
-					console.log(`Renaming '${currentPath}' -> '${targetPath}'`)
-					copyFileSync(currentPath, targetPath)
-					unlinkSync(currentPath)
-				}
-				previewSeasonPaths[`Season ${season}`] = TEMPLATE_ITEM.replace(
+				// if (targetPath != currentPath) {
+				// 	console.log(`Renaming '${currentPath}' -> '${targetPath}'`)
+				// 	copyFileSync(currentPath, targetPath)
+				// 	unlinkSync(currentPath)
+				// }
+				previewSeasonFiles[`Season ${season}`] = TEMPLATE_ITEM.replace(
 					'POSTER_SET',
 					posterSet,
 				)
-					.replace('SEASON', season)
+					.replace('SEASON', String(season).padStart(2, '0'))
 					.replace('ARC_NAME', season == 0 ? 'Specials' : `Season ${season}`)
 			}
 		}
 
-		let files = readdirSync(setFolder, { withFileTypes: true })
-			.filter(item => item.isFile())
-			.map(item => item.name)
-		for (let file of files) {
-			let currentPath = path.join(setFolder, file)
-			let targetPath = path.join(setFolder, 'poster.png')
+		//console.log(previewSeasonFiles)
 
-			if (targetPath != currentPath) {
-				console.log(`Renaming '${currentPath}' -> '${targetPath}'`)
-				copyFileSync(currentPath, targetPath)
-				unlinkSync(currentPath)
-			}
-		}
+		// let files = readdirSync(setFolder, { withFileTypes: true })
+		// 	.filter(item => item.isFile())
+		// 	.map(item => item.name)
+		// for (let file of files) {
+		// 	let currentPath = path.join(setFolder, file)
+		// 	let targetPath = path.join(setFolder, 'poster.png')
 
-		let keys = Object.keys(previewSeasonPaths)
+		// 	if (targetPath != currentPath) {
+		// 		console.log(`Renaming '${currentPath}' -> '${targetPath}'`)
+		// 		copyFileSync(currentPath, targetPath)
+		// 		unlinkSync(currentPath)
+		// 	}
+		// }
+
+		let keys = Object.keys(previewSeasonFiles)
 		let rowsString = ''
 
 		for (let i = 0; i < keys.length; i += 5) {
 			let row = keys.slice(i, i + 5)
 			let rowString = ''
 			for (let item of row) {
-				rowString += previewSeasonPaths[item]
+				rowString += previewSeasonFiles[item]
 			}
 			rowsString += TEMPLATE_ROW.replace('ITEMS', rowString)
 		}
