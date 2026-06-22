@@ -5,13 +5,9 @@
 - Create the art
 - Fork the repo 🍳
 - Create a new folder called with the name of the set in `posters/`
-- Create folders for all seasons **either**
-  - manually following the other sets
-  - or running `node poster-tools.js` and it will generate all the subfolders 🍳
-- Place each poster in the correct folder (seasons and root for show)
-- Rename all files to `poster.png` **either**
-  - manually
-  - or running `node poster-tools.js` and it will rename all of the files 🍳
+- Place each poster in the created folder with the following names:
+  - `poster.png` for the Show poster
+  - `SeasonXX.png` where XX is the Season number (two digits, Specials => `Season00.png`)
 - Create a pull request 🍳
 - Profit
 
