@@ -200,20 +200,20 @@ services:
       #- LIBRARY_NONE_ROOT_FOLDER=C:\\OnePacerr
 
       # Library - Plex
-      - PLEX_URL=localhost:32400
+      - PLEX_URL=http://localhost:32400
       - PLEX_TOKEN=<your-token-here>
       - PLEX_LIBRARY_NAME=TV 
       #- PLEX_SKIP_METADATA_FILES=true 
       #- PLEX_PLEXMATCH_EVEN_IF_NOT=false 
       
       # Library - Jellyfin
-      - JELLYFIN__URL=localhost:8096
+      - JELLYFIN__URL=http://localhost:8096
       - JELLYFIN_USERNAME=<your-username-here>
       - JELLYFIN_PASSWORD=<your-password-here>
       #- JELLYFIN_LIBRARY_NAME=Shows
 
       # Library - Emby
-      - EMBY_URL=localhost:8096
+      - EMBY_URL=http://localhost:8096
       - EMBY_USERNAME=<your-username-here>
       - EMBY_PASSWORD=<your-password-here>
       #- EMBY_LIBRARY_NAME=TV Shows
@@ -221,7 +221,7 @@ services:
 
 
       # Torrent Settings
-      - TORRENT_URL=localhost:8080
+      - TORRENT_URL=http://localhost:8080
       - TORRENT_USER=<your-username-here>
       - TORRENT_PASSWORD=<your-password-here>
       - TORRENT_CLIENT=qbittorrent
