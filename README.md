@@ -148,7 +148,12 @@ services:
     container_name: onepacerr
     restart: unless-stopped
     environment:
+      # Set the Timezone to yours
       - TZ=Europe/Zurich
+      # Set the User/Group it should run as.
+      # This Group/User should have read access to torrent folder
+      # This Group/User should have read/write access to library folder
+      # Your Media Server User/Group should have read access to library folder
       - PUID=568
       - PGID=568
 
