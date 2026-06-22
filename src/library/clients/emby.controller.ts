@@ -7,17 +7,15 @@ import { LibraryController } from '../library.controller.js'
 import {
 	ILibraryController,
 	LibraryClient,
+	LibraryConnectionError,
 	TargetLibraryFile,
 } from '../library.model.js'
 import EmbyClient, {
 	EmbyConfig,
-	EmbyConnectionError,
 	EmbyItem,
 	EmbyLibrary,
 	EmbyVirtualFolder,
 } from './emby.client.js'
-
-export { EmbyConnectionError }
 
 export class EmbyController implements ILibraryController {
 	readonly libraryClient: LibraryClient = 'emby'
@@ -28,9 +26,9 @@ export class EmbyController implements ILibraryController {
 	private virtualFolder: EmbyVirtualFolder
 	private show: EmbyItem
 
-	constructor(config: EmbyConfig) {
+	constructor(private config: EmbyConfig) {
 		if (!config.baseUrl || !config.username || !config.password) {
-			throw new EmbyConnectionError(
+			throw new LibraryConnectionError(
 				'Could not connect to Emby — check EMBY_URL and credentials. Set EMBY_URL, EMBY_USERNAME, and EMBY_PASSWORD',
 			)
 		}
@@ -38,10 +36,12 @@ export class EmbyController implements ILibraryController {
 	}
 
 	async init() {
-		Logger.info(`Authenticating to Emby at ${environment.EMBY_URL}...`)
+		Logger.info(`Authenticating to Emby at ${this.config.baseUrl}...`)
 		await this.emby.login()
 
-		Logger.info(`Searching for Emby Library '${environment.EMBY_LIBRARY_NAME}'...`)
+		Logger.info(
+			`Searching for Emby Library '${environment.EMBY_LIBRARY_NAME}'...`,
+		)
 		this.library = (await this.emby.getLibraries()).find(
 			l => l.Name == environment.EMBY_LIBRARY_NAME,
 		)
@@ -50,8 +50,8 @@ export class EmbyController implements ILibraryController {
 			const available = (await this.emby.getLibraries())
 				.map(l => l.Name)
 				.join(', ')
-			throw new EmbyConnectionError(
-				`Emby library '${environment.EMBY_LIBRARY_NAME}' not found at ${environment.EMBY_URL}. Available libraries: ${available || 'none'}`,
+			throw new LibraryConnectionError(
+				`Emby library '${environment.EMBY_LIBRARY_NAME}' not found at ${this.config.baseUrl}. Available libraries: ${available || 'none'}`,
 			)
 		}
 
@@ -62,8 +62,8 @@ export class EmbyController implements ILibraryController {
 		this.virtualFolder = virtualFolders[0]
 
 		if (!this.virtualFolder?.Locations?.[0]) {
-			throw new EmbyConnectionError(
-				`Emby library '${this.library.Name}' has no folder locations configured at ${environment.EMBY_URL}`,
+			throw new LibraryConnectionError(
+				`Emby library '${this.library.Name}' has no folder locations configured at ${this.config.baseUrl}`,
 			)
 		}
 

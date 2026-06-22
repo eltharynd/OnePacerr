@@ -1,15 +1,9 @@
 import { randomUUID } from 'node:crypto'
 import { formatConnectionError } from '../../util/format-connection-error.js'
+import { LibraryConnectionError } from '../library.model.js'
 
 const EMBY_CONNECT_HELP =
 	'Could not connect to Emby — check EMBY_URL and credentials'
-
-export class EmbyConnectionError extends Error {
-	constructor(message: string, options?: { cause?: unknown }) {
-		super(message, options)
-		this.name = 'EmbyConnectionError'
-	}
-}
 
 export interface EmbyConfig {
 	baseUrl: string
@@ -70,8 +64,11 @@ class EmbyClient {
 
 	constructor(private config: EmbyConfig) {}
 
-	private connectionError(label: string, error: unknown): EmbyConnectionError {
-		return new EmbyConnectionError(
+	private connectionError(
+		label: string,
+		error: unknown,
+	): LibraryConnectionError {
+		return new LibraryConnectionError(
 			`${EMBY_CONNECT_HELP}. ${formatConnectionError(label, this.config.baseUrl, error)}`,
 			{ cause: error },
 		)
@@ -107,7 +104,7 @@ class EmbyClient {
 		})
 
 		if (!res.ok) {
-			throw new EmbyConnectionError(
+			throw new LibraryConnectionError(
 				`${EMBY_CONNECT_HELP}. Emby request failed (${path}): HTTP ${res.status} ${res.statusText} at ${this.config.baseUrl}`,
 			)
 		}
@@ -134,7 +131,7 @@ class EmbyClient {
 		)
 
 		if (!res.ok) {
-			throw new EmbyConnectionError(
+			throw new LibraryConnectionError(
 				`${EMBY_CONNECT_HELP}. Emby login failed for user '${this.config.username}' at ${this.config.baseUrl}: HTTP ${res.status} ${res.statusText}`,
 			)
 		}

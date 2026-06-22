@@ -17,6 +17,7 @@ import { LibraryController } from '../library.controller.js'
 import {
 	ILibraryController,
 	LibraryClient,
+	LibraryConnectionError,
 	TargetLibraryFile,
 } from '../library.model.js'
 
@@ -31,7 +32,9 @@ export class JellyfinController implements ILibraryController {
 	private virtualFolder: VirtualFolderInfo
 	private show
 
-	constructor(config: { baseUrl: string; username: string; password: string }) {
+	constructor(
+		private config: { baseUrl: string; username: string; password: string },
+	) {
 		if (!config.baseUrl || !config.username || !config.password)
 			throw new Error(`Jellyfin misconfigured`)
 
@@ -55,20 +58,40 @@ export class JellyfinController implements ILibraryController {
 	}
 
 	async init() {
-		Logger.info(`Authenticating to Jellyfin...`)
-		let { data } = await getUserApi(this.api).authenticateUserByName({
+		Logger.info(`Authenticating to Jellyfin at ${this.config.baseUrl}...`)
+		await getUserApi(this.api).authenticateUserByName({
 			authenticateUserByName: this.credentials,
 		})
 
-		Logger.info(`Searching for Jellyfin Library...`)
+		Logger.info(
+			`Searching for Jellyfin Library '${environment.JELLYFIN_LIBRARY_NAME}'...`,
+		)
 		this.library = (
 			await getLibraryApi(this.api).getMediaFolders()
 		).data.Items.find(mf => mf.Name == environment.JELLYFIN_LIBRARY_NAME)
 
+		if (!this.library) {
+			const available = (
+				await getLibraryApi(this.api).getMediaFolders()
+			).data.Items.map(l => l.Name).join(', ')
+
+			throw new LibraryConnectionError(
+				`Emby library '${environment.JELLYFIN_LIBRARY_NAME}' not found at ${this.config.baseUrl}. Available libraries: ${available || 'none'}`,
+			)
+		}
+
 		Logger.info(`Searching for Jellyfin Virtual Folder...`)
-		this.virtualFolder = (
+		const virtualFolders = (
 			await getLibraryStructureApi(this.api).getVirtualFolders()
 		).data.find(vf => vf.Name == environment.JELLYFIN_LIBRARY_NAME)
+
+		this.virtualFolder = virtualFolders[0]
+
+		if (!this.virtualFolder?.Locations?.[0]) {
+			throw new LibraryConnectionError(
+				`Emby library '${this.library.Name}' has no folder locations configured at ${this.config.baseUrl}`,
+			)
+		}
 
 		await this.fetchShow()
 	}
