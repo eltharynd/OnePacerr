@@ -4,6 +4,10 @@ import environment from '../environment.js'
 import { Context } from '../util/context.js'
 import Logger from '../util/logger.js'
 import resolvePosterPath from '../util/resolve-poster-path.js'
+import resolveSeasonPosterFileName from '../util/resolve-season-poster-filename.js'
+import resolveSeriesRootFolder, {
+	resolveSeasonFolder,
+} from '../util/resolve-series-root-folder.js'
 import sanitizeWindowsFileName from '../util/sanitize-windows-filename.js'
 import { EmbyController } from './clients/emby.controller.js'
 import { JellyfinController } from './clients/jellyfin.controller.js'
@@ -86,9 +90,7 @@ export class LibraryController {
 	}
 
 	async scanLibrary(folder: string, arc: number) {
-		let libraryFolder = await this.getLibraryFolder()
-		libraryFolder += libraryFolder.includes('/') ? '/' : '\\'
-		libraryFolder += environment.LIBRARY_SERIES_FOLDER_NAME
+		let libraryFolder = resolveSeriesRootFolder(await this.getLibraryFolder())
 
 		mkdirSync(
 			`${path.resolve(`${libraryFolder.replace(environment.MOUNT_LIBRARY_MEDIA_SERVER, environment.MOUNT_LIBRARY_ONEPACERR)}`)}${path.sep}`,
@@ -128,11 +130,7 @@ export class LibraryController {
 			this.client.libraryClient != 'plex' ||
 			!environment.PLEX_SKIP_METADATA_FILES
 		) {
-			let folder = await this.getLibraryFolder()
-			folder += folder.includes('/') ? '/' : '\\'
-			folder += environment.LIBRARY_SERIES_FOLDER_NAME
-			folder += folder.includes('/') ? '/' : '\\'
-			folder += `Season ${String(arc).padStart(2, '0')}`
+			let folder = resolveSeasonFolder(await this.getLibraryFolder(), arc)
 
 			mkdirSync(
 				`${path.resolve(`${folder.replace(environment.MOUNT_LIBRARY_MEDIA_SERVER, environment.MOUNT_LIBRARY_ONEPACERR)}`)}${path.sep}`,
@@ -151,11 +149,13 @@ export class LibraryController {
 			this.client.libraryClient != 'plex' ||
 			!environment.PLEX_SKIP_METADATA_FILES
 		) {
-			let folder = await this.getLibraryFolder()
-			folder += folder.includes('/') ? '/' : '\\'
-			folder += environment.LIBRARY_SERIES_FOLDER_NAME
-			folder += folder.includes('/') ? '/' : '\\'
-			folder += `Season ${String(arc).padStart(2, '0')}`
+			let folder = resolveSeasonFolder(await this.getLibraryFolder(), arc)
+			let showFolder = path.resolve(
+				resolveSeriesRootFolder(await this.getLibraryFolder()).replace(
+					environment.MOUNT_LIBRARY_MEDIA_SERVER,
+					environment.MOUNT_LIBRARY_ONEPACERR,
+				),
+			)
 
 			mkdirSync(
 				`${path.resolve(`${folder.replace(environment.MOUNT_LIBRARY_MEDIA_SERVER, environment.MOUNT_LIBRARY_ONEPACERR)}`)}${path.sep}`,
@@ -166,10 +166,18 @@ export class LibraryController {
 				await Context.metadata.getSeasonNFO(arc),
 			)
 			if (!environment.SKIP_POSTERS) {
-				copyFileSync(
-					resolvePosterPath({ arc }),
-					`${path.resolve(`${folder.replace(environment.MOUNT_LIBRARY_MEDIA_SERVER, environment.MOUNT_LIBRARY_ONEPACERR)}`)}${path.sep}poster.png`,
-				)
+				if (this.client.libraryClient === 'none') {
+					mkdirSync(showFolder, { recursive: true })
+					copyFileSync(
+						resolvePosterPath({ arc }),
+						`${showFolder}${path.sep}${resolveSeasonPosterFileName(arc)}`,
+					)
+				} else {
+					copyFileSync(
+						resolvePosterPath({ arc }),
+						`${path.resolve(`${folder.replace(environment.MOUNT_LIBRARY_MEDIA_SERVER, environment.MOUNT_LIBRARY_ONEPACERR)}`)}${path.sep}poster.png`,
+					)
+				}
 			}
 		}
 
@@ -182,17 +190,17 @@ export class LibraryController {
 			!environment.PLEX_SKIP_METADATA_FILES
 		) {
 			if (!environment.SKIP_POSTERS) {
-				let libraryFolder = await this.getLibraryFolder()
-				libraryFolder += libraryFolder.includes('/') ? '/' : '\\'
-				libraryFolder += environment.LIBRARY_SERIES_FOLDER_NAME
-
-				mkdirSync(
-					`${path.resolve(`${libraryFolder.replace(environment.MOUNT_LIBRARY_MEDIA_SERVER, environment.MOUNT_LIBRARY_ONEPACERR)}`)}${path.sep}`,
-					{ recursive: true },
+				let libraryFolder = path.resolve(
+					resolveSeriesRootFolder(await this.getLibraryFolder()).replace(
+						environment.MOUNT_LIBRARY_MEDIA_SERVER,
+						environment.MOUNT_LIBRARY_ONEPACERR,
+					),
 				)
+
+				mkdirSync(`${libraryFolder}${path.sep}`, { recursive: true })
 				copyFileSync(
 					resolvePosterPath(),
-					`${path.resolve(`${libraryFolder.replace(environment.MOUNT_LIBRARY_MEDIA_SERVER, environment.MOUNT_LIBRARY_ONEPACERR)}`)}${path.sep}poster.png`,
+					`${libraryFolder}${path.sep}poster.png`,
 				)
 			}
 		}
