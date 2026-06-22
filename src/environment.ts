@@ -30,10 +30,9 @@ export default {
 	SKIP_DOWNLOADS: /true/i.test(process.env.SKIP_DOWNLOADS || 'false'),
 	SKIP_POSTERS: /true/i.test(process.env.SKIP_POSTERS || 'false'),
 
-	METADATA_POSTER_SET: process.env.METADATA_POSTER_SET || 'default',
-
 	INCLUDE_SPECIALS: /true/i.test(process.env.INCLUDE_SPECIALS || 'false'),
 	PREFER_EXTENDED: /true/i.test(process.env.PREFER_EXTENDED || 'false'),
+	PREFER_G8: /true/i.test(process.env.PREFER_G8 || 'false'),
 
 	FILTERS_INCLUDE: process.env.FILTERS_INCLUDE || '',
 	FILTERS_EXCLUDE: process.env.FILTERS_EXCLUDE || '',
@@ -137,6 +136,7 @@ export default {
 		process.env.METADATA_URL ||
 		`https://raw.githubusercontent.com/ladyisatis/one-pace-metadata/refs/heads/v2/metadata/data.json`,
 	METADATA_LANGUAGE: process.env.METADATA_LANGUAGE || 'en',
+	METADATA_POSTER_SET: process.env.METADATA_POSTER_SET || 'default',
 	METADATA_CHECK_INTERVAL:
 		Number.parseInt(process.env.METADATA_CHECK_INTERVAL || '3600') * 1000,
 }

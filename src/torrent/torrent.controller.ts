@@ -85,7 +85,7 @@ export class TorrentController {
 				environment.TORRENT_CATEGORY,
 			)
 			if (completed.length > 0)
-				Logger.info(`Importing ${completed.length} completed torrents...`)
+				Logger.info(`Processing ${completed.length} completed torrents...`)
 			for (let torrent of completed) {
 				await this.importTorrentFiles(torrent as Torrent)
 			}
@@ -122,11 +122,11 @@ export class TorrentController {
 
 		if (_path.endsWith('.mkv')) {
 			files = [_path]
-			Logger.debug(`Importing 1 file from torrent...`)
+			Logger.debug(`Processing 1 torrent file...`)
 		} else {
 			let mkvs = readdirSync(_path).filter(f => f.endsWith('.mkv'))
 			if (mkvs.length > 0)
-				Logger.debug(`Importing ${mkvs.length} files from torrent...`)
+				Logger.debug(`Processing ${mkvs.length} torrent files...`)
 			for (let f of readdirSync(_path).filter(f => f.endsWith('.mkv'))) {
 				let fullPath = `${torrent.content_path}${torrent.content_path.includes('/') ? '/' : '\\'}${f}`
 				files.push(
@@ -166,7 +166,12 @@ export class TorrentController {
 					continue
 				}
 
-				if (!Filter(episode)) continue
+				if (!Filter(episode)) {
+					Logger.debug(
+						`File for S${String(episode.arc).padStart(2, '0')}E${String(episode.episode).padStart(2, '0')} skipped due to filters...`,
+					)
+					continue
+				}
 
 				let targetCRC32 = await Context.metadata.getEpisodeUpdatedCRC32(
 					episode.arc,

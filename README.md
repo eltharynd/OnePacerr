@@ -185,6 +185,7 @@ services:
 
       #- INCLUDE_SPECIALS=false
       - PREFER_EXTENDED=true
+      - PREFER_G8=true
 
       #FILTERS_INCLUDE=S01
       #FILTERS_EXCLUDE=S35,S36
@@ -248,8 +249,8 @@ services:
       # Metadata Settings
       #- METADATA_URL=raw.githubusercontent.com/ladyisatis/one-pace-metadata/refs/heads/v2metadata/data.json
       #- METADATA_LANGUAGE=en
-      #- METADATA_CHECK_INTERVAL=3600
       #- METADATA_POSTER_SET=default
+      #- METADATA_CHECK_INTERVAL=3600
     volumes:
       - /mnt/Library/Movies:/mnt/Library/Movies
       - /mnt/Library/Series:/mnt/Library/Series
@@ -305,6 +306,7 @@ Here is a breakdown of key optional variables you can adjust in your
 | --- | --- | --- |
 | `INCLUDE_SPECIALS` | `false` | Set to `true` to also process specials. |
 | `PREFER_EXTENDED` | `false` | Set to `true` to prioritize extended cuts over standard releases. |
+| `PREFER_G8` | `false` | Set to true to prefer the G-8 cut at the end of Skypiea. |
 | --- | --- | --- |
 | `FILTERS_INCLUDE` | _None_ | Only process seasons/episodes that match these [filters](#-filters). |
 | `FILTERS_EXCLUDE` | _None_ | Only process seasons/episodes that don't match these [filters](#-filters). |

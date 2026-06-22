@@ -116,6 +116,13 @@ export class MetadataController {
 						`Episode ${arc.part}-${String(episode.episode).padStart(2, '0')} - Hash complete (${CRC32})`,
 					)
 
+					if (arc.part == 16 && Number.parseInt(episode.episode) == 25) {
+						if (!environment.PREFER_G8) {
+							Logger.debug(`Corrected 16. Skypiea 25 for alternate G-8 cut`)
+							episode.standard = 'C951349C'
+						}
+					}
+
 					if (environment.PREFER_EXTENDED && !!episode.extended) {
 						if (CRC32 == episode.extended) {
 							Logger.info(
@@ -507,9 +514,11 @@ export class MetadataController {
 			).title
 		} ${String(episode).padStart(2, '0')}${extended ? ` Extended Cut` : ''}`
 
-		if (rsstitle == 'Skypiea 25') {
-			Logger.debug('Manual correction for Alternate G-8')
-			rsstitle = 'Skypiea 25 Alternate Cut (G-8)'
+		if (rsstitle.startsWith(`Skypiea 25`)) {
+			Logger.debug('Manual correction for 16. Skypeiea 25 Alternate G-8')
+			rsstitle = environment.PREFER_G8
+				? 'Skypiea 25 Alternate Cut (G-8)'
+				: 'Skypiea 25'
 		}
 
 		let torrentInfo: TorrentInfo
@@ -545,7 +554,7 @@ export class MetadataController {
 				return { arc: 16, episode: 14 }
 			}
 			Logger.warn(
-				`CRC32 ${CRC32} not in metadata... Could just be an out of date release in a batch...`,
+				`CRC32 ${CRC32} not in metadata... Probably just an out of date release included in a batch...`,
 			)
 			throw new Error(`CRC32 ${CRC32} not in metadata...`)
 		}
