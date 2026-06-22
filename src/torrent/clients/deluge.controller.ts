@@ -60,6 +60,8 @@ export class DelugeController implements ITorrentController {
 					return {
 						hash: t.id,
 						content_path: t.savePath,
+						save_path: t.savePath,
+						name: t.name,
 						category: t.label,
 						progress: t.isCompleted ? 1 : t.progress / 100,
 					}

@@ -1,9 +1,12 @@
 import { TorrentInfo } from '../metadata/metada.model.js'
 
 export type TorrentClient = 'qbittorrent' | 'utorrent' | 'deluge'
+export type QueueDownloadResult = 'added' | 'already_present' | 'skipped'
 export type Torrent = {
 	readonly hash: string
 	readonly content_path: string
+	readonly save_path?: string
+	readonly name?: string
 	readonly category?: string
 	readonly progress?: number
 }

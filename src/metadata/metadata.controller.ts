@@ -17,6 +17,7 @@ import {
 	MetadataAbsentError,
 	TorrentInfo,
 } from './metada.model.js'
+import { QueueDownloadResult } from '../torrent/torrent.model.js'
 
 export class MetadataController {
 	private metadata: Metadata
@@ -162,10 +163,14 @@ export class MetadataController {
 									`Episode ${arc.part}-${String(episode.episode).padStart(2, '0')} - Standard instead of extended [Download skipped]`,
 								)
 							} else {
-								Logger.info(
-									`Episode ${arc.part}-${String(episode.episode).padStart(2, '0')} - Standard instead of extended [Download queued]`,
+								const queueResult = await this.addToDownloadQueue(
+									arc.part,
+									episode.episode,
+									true,
 								)
-								await this.addToDownloadQueue(arc.part, episode.episode, true)
+								Logger.info(
+									`Episode ${arc.part}-${String(episode.episode).padStart(2, '0')} - Standard instead of extended [${this.formatDownloadQueueStatus(queueResult)}]`,
+								)
 							}
 						}
 					} else if (CRC32 == episode.standard) {
@@ -184,21 +189,21 @@ export class MetadataController {
 							)
 						}
 						continue
-					} else {
-						if (environment.SKIP_DOWNLOADS) {
-							Logger.info(
-								`Episode ${arc.part}-${String(episode.episode).padStart(2, '0')} - CRC32 Mismatch [Download skipped]`,
-							)
 						} else {
-							Logger.info(
-								`Episode ${arc.part}-${String(episode.episode).padStart(2, '0')} - CRC32 Mismatch [Download queued]`,
-							)
-							await this.addToDownloadQueue(
-								arc.part,
-								episode.episode,
-								environment.PREFER_EXTENDED && !!episode.extended,
-							)
-						}
+							if (environment.SKIP_DOWNLOADS) {
+								Logger.info(
+									`Episode ${arc.part}-${String(episode.episode).padStart(2, '0')} - CRC32 Mismatch [Download skipped]`,
+								)
+							} else {
+								const queueResult = await this.addToDownloadQueue(
+									arc.part,
+									episode.episode,
+									environment.PREFER_EXTENDED && !!episode.extended,
+								)
+								Logger.info(
+									`Episode ${arc.part}-${String(episode.episode).padStart(2, '0')} - CRC32 Mismatch [${this.formatDownloadQueueStatus(queueResult)}]`,
+								)
+							}
 					}
 				} else {
 					if (environment.SKIP_DOWNLOADS) {
@@ -206,13 +211,13 @@ export class MetadataController {
 							`Episode ${arc.part}-${String(episode.episode).padStart(2, '0')} - Missing [Download skipped]`,
 						)
 					} else {
-						Logger.info(
-							`Episode ${arc.part}-${String(episode.episode).padStart(2, '0')} - Missing [Download queued]`,
-						)
-						await this.addToDownloadQueue(
+						const queueResult = await this.addToDownloadQueue(
 							arc.part,
 							episode.episode,
 							environment.PREFER_EXTENDED && !!episode.extended,
+						)
+						Logger.info(
+							`Episode ${arc.part}-${String(episode.episode).padStart(2, '0')} - Missing [${this.formatDownloadQueueStatus(queueResult)}]`,
 						)
 					}
 				}
@@ -526,7 +531,7 @@ export class MetadataController {
 		arc: number,
 		episode: string | number,
 		extended?: boolean,
-	) {
+	): Promise<QueueDownloadResult> {
 		this.checkMetadataDownloaded()
 
 		let rsstitle = `${
@@ -551,7 +556,18 @@ export class MetadataController {
 			torrentInfo = await Context.rss.getTorrentInfo(rsstitle)
 		}
 
-		await Context.torrent.queueDownload(torrentInfo)
+		return await Context.torrent.queueDownload(torrentInfo)
+	}
+
+	private formatDownloadQueueStatus(result: QueueDownloadResult): string {
+		switch (result) {
+			case 'added':
+				return 'Download queued'
+			case 'already_present':
+				return 'Torrent already in client'
+			case 'skipped':
+				return 'Download skipped'
+		}
 	}
 
 	getEpisodeUpdatedCRC32(arc: number, episode: number): string {

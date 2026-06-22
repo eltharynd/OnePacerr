@@ -4,6 +4,13 @@ export type TargetLibraryFile = {
 	readonly filename: string
 }
 
+export class LibraryConnectionError extends Error {
+	constructor(message: string, options?: { cause?: unknown }) {
+		super(message, options)
+		this.name = 'EmbyConnectionError'
+	}
+}
+
 export interface ILibraryController {
 	readonly libraryClient: LibraryClient
 

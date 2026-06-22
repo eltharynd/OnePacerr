@@ -1,4 +1,10 @@
-import { copyFileSync, mkdirSync, readdirSync, unlinkSync } from 'node:fs'
+import {
+	copyFileSync,
+	existsSync,
+	mkdirSync,
+	readdirSync,
+	unlinkSync,
+} from 'node:fs'
 import path from 'node:path'
 import environment from '../environment.js'
 import { TargetLibraryFile } from '../library/library.model.js'
@@ -14,6 +20,7 @@ import { DelugeController } from './clients/deluge.controller.js'
 import { qBittorrentController } from './clients/qbittorrent.controller.js'
 import {
 	ITorrentController,
+	QueueDownloadResult,
 	Torrent,
 	TorrentClient,
 	TorrentConnectionError,
@@ -62,19 +69,23 @@ export class TorrentController {
 		}
 	}
 
-	public async queueDownload(torrentInfo: TorrentInfo) {
+	public async queueDownload(
+		torrentInfo: TorrentInfo,
+	): Promise<QueueDownloadResult> {
 		if (environment.SKIP_DOWNLOADS) {
 			Logger.info(`Downloads disabled by env vars`)
-			return
+			return 'skipped'
 		}
 
 		Logger.debug(`Adding magnetURI to ${this.client.torrentClient}...`)
 		let torrents = await this.client.getAllTorrents()
 		if (torrents.find(t => t.hash === torrentInfo.infoHash)) {
 			Logger.debug(`Torrent already in ${this.client.torrentClient}...`)
-			return
-		} else
-			await this.client.addTorrent(torrentInfo, environment.TORRENT_CATEGORY)
+			return 'already_present'
+		}
+
+		await this.client.addTorrent(torrentInfo, environment.TORRENT_CATEGORY)
+		return 'added'
 	}
 
 	private async processCompletedTorrents() {
@@ -109,34 +120,53 @@ export class TorrentController {
 		}
 	}
 
-	//TODO refactor this method to be more maintainable
-	private async importTorrentFiles(torrent: Torrent) {
-		let _path = path.resolve(
-			torrent.content_path.replace(
+	private mapDownloadPath(qbPath: string): string {
+		return path.resolve(
+			qbPath.replace(
 				environment.MOUNT_DOWNLOADS_TORRENT,
 				environment.MOUNT_DOWNLOADS_ONEPACERR,
 			),
 		)
+	}
+
+	private resolveTorrentContentPath(torrent: Torrent): string {
+		const candidates = [torrent.content_path]
+		if (torrent.save_path && torrent.name) {
+			candidates.push(path.join(torrent.save_path, torrent.name))
+		}
+
+		for (const candidate of candidates) {
+			const mapped = this.mapDownloadPath(candidate)
+			if (existsSync(mapped)) {
+				if (candidate !== torrent.content_path) {
+					Logger.debug(
+						`Resolved torrent content path to '${mapped}' (qBittorrent reported '${torrent.content_path}')`,
+					)
+				}
+				return candidate
+			}
+		}
+
+		return candidates[0]
+	}
+
+	//TODO refactor this method to be more maintainable
+	private async importTorrentFiles(torrent: Torrent) {
+		const contentPath = this.mapDownloadPath(
+			this.resolveTorrentContentPath(torrent),
+		)
 
 		let files: string[] = []
 
-		if (_path.endsWith('.mkv')) {
-			files = [_path]
+		if (contentPath.endsWith('.mkv')) {
+			files = [contentPath]
 			Logger.debug(`Processing 1 torrent file...`)
 		} else {
-			let mkvs = readdirSync(_path).filter(f => f.endsWith('.mkv'))
+			let mkvs = readdirSync(contentPath).filter(f => f.endsWith('.mkv'))
 			if (mkvs.length > 0)
 				Logger.debug(`Processing ${mkvs.length} torrent files...`)
-			for (let f of readdirSync(_path).filter(f => f.endsWith('.mkv'))) {
-				let fullPath = `${torrent.content_path}${torrent.content_path.includes('/') ? '/' : '\\'}${f}`
-				files.push(
-					path.resolve(
-						fullPath.replace(
-							environment.MOUNT_DOWNLOADS_TORRENT,
-							environment.MOUNT_DOWNLOADS_ONEPACERR,
-						),
-					),
-				)
+			for (let f of mkvs) {
+				files.push(path.join(contentPath, f))
 			}
 		}
 
