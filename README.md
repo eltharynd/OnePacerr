@@ -468,12 +468,11 @@ If you want to contribute to the posters or create an entire new set, first of a
 - [X] **Filters** to skip seasons/episodes (since v1.3.4)
 - [X] **Better re-organize** check for leftover files and delete them... (since v1.3.5)
 - [X] **Support Deluge** (since v1.3.8)
+- [X] **Emby Support** _(Requested by u/RealJustMe on r/Servarr)_ (since v1.4.0)
 - [ ] **Support uTorrent**
-- [ ] **Jellyfin alternate Auth methods**
-- [ ] **Emby Support** _(Requested by u/RealJustMe on r/Servarr)_
 - [ ] **Rest API** Manual execution/status/configuration endpoints
 - [ ] **Support hard/softlinks**
-- [ ] **Support Plex/Jellyfin Libraries with multiple folders** (currently only gets the first result from API)
+- [ ] **Support Libraries with multiple folders** (currently only gets the first result from API)
 
 - [Request a new feature](https://github.com/eltharynd/OnePacerr/issues)
 
