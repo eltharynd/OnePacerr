@@ -3,6 +3,7 @@ import path from 'node:path'
 import environment from '../environment.js'
 import { TargetLibraryFile } from '../library/library.model.js'
 import {
+	CRCNotInMetadata,
 	Episode,
 	MetadataAbsentError,
 	TorrentInfo,
@@ -138,7 +139,7 @@ export class TorrentController {
 				environment.TORRENT_CATEGORY,
 			)
 			if (completed.length > 0)
-				Logger.info(`Processing ${completed.length} completed torrents...`)
+				Logger.debug(`Processing ${completed.length} completed torrents...`)
 			for (let torrent of completed) {
 				await this.importTorrentFiles(torrent as Torrent)
 			}
@@ -227,11 +228,12 @@ export class TorrentController {
 				} catch (e) {
 					if (e instanceof MetadataAbsentError) {
 						throw e
+					} else if (e instanceof CRCNotInMetadata) {
+						Logger.debug(
+							`File '${file}' is not most up to date (probably part of an outdated batch)... Skipping import`,
+						)
+						continue
 					}
-					Logger.debug(
-						`File '${file}' is not most up to date (probably part of an outdated batch)... Skipping import`,
-					)
-					continue
 				}
 
 				if (!Filter(episode)) {

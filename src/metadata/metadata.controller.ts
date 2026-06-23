@@ -7,6 +7,7 @@ import Logger from '../util/logger.js'
 import resolveSeasonPosterFileName from '../util/resolve-season-poster-filename.js'
 import resolveSeriesRootFolder from '../util/resolve-series-root-folder.js'
 import {
+	CRCNotInMetadata,
 	Episode,
 	EpisodeDescription,
 	FormattedArc,
@@ -117,10 +118,10 @@ export class MetadataController {
 				Logger.debug(`Skypiea 14 manual correction`)
 				return { arc: 16, episode: 14 }
 			}
-			Logger.warn(
+			Logger.debug(
 				`CRC32 ${CRC32} not in metadata... Probably just an out of date release included in a batch...`,
 			)
-			throw new Error(`CRC32 ${CRC32} not in metadata...`)
+			throw new CRCNotInMetadata(`CRC32 ${CRC32} not in metadata...`)
 		}
 		return episode
 	}

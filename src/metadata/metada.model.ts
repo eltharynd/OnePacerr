@@ -67,3 +67,4 @@ export type FormattedEpisode = {
 }
 
 export class MetadataAbsentError extends Error {}
+export class CRCNotInMetadata extends Error {}
