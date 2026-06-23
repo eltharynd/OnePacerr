@@ -223,7 +223,7 @@ export class TorrentController {
 
 				let episode: Episode
 				try {
-					episode = await Context.metadata.getEpisodeFromCRC32(CRC32)
+					episode = await Context.metadata.findEpisode(CRC32)
 				} catch (e) {
 					if (e instanceof MetadataAbsentError) {
 						throw e
@@ -241,7 +241,7 @@ export class TorrentController {
 					continue
 				}
 
-				let targetCRC32 = await Context.metadata.getEpisodeUpdatedCRC32(
+				let targetCRC32 = await Context.metadata.findCRC32(
 					episode.arc,
 					episode.episode,
 				)

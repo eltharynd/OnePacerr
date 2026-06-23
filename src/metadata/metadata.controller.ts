@@ -1,7 +1,6 @@
 import axios from 'axios'
 import { js2xml } from 'xml-js'
 import environment from '../environment.js'
-import { QueueDownloadResult } from '../torrent/torrent.model.js'
 import { Context } from '../util/context.js'
 import { Filter } from '../util/filters.js'
 import Logger from '../util/logger.js'
@@ -13,7 +12,6 @@ import {
 	FormattedArc,
 	MetadataAbsentError,
 	RawMetadataJson,
-	TorrentInfo,
 } from './metada.model.js'
 
 export class MetadataController {
@@ -74,6 +72,7 @@ export class MetadataController {
 		this.checkMetadataDownloaded()
 		return this.seasonNFOs[`${arc}`]
 	}
+
 	getEpisodeNFO(arc: number, episode: number) {
 		this.checkMetadataDownloaded()
 		return this.episodesNFOs[`${arc}`][`${episode}`]
@@ -96,6 +95,100 @@ export class MetadataController {
 	getShowDescription() {
 		this.checkMetadataDownloaded()
 		return this.metadata.tvshow[environment.METADATA_LANGUAGE]
+	}
+
+	findCRC32(arc: number, episode: number): string {
+		this.checkMetadataDownloaded()
+
+		let target = this.metadata.arcs[environment.METADATA_LANGUAGE]
+			.find(a => a.part === arc)
+			.episodes.find(e => Number.parseInt(e.episode) == episode)
+		return environment.PIPELINE_PREFER_EXTENDED && !!target.extended
+			? target.extended
+			: target.standard
+	}
+
+	findEpisode(CRC32: string): Episode {
+		this.checkMetadataDownloaded()
+
+		let episode = this.metadata.episodes[CRC32]
+		if (!episode) {
+			if (CRC32 == '704F68EA') {
+				Logger.debug(`Skypiea 14 manual correction`)
+				return { arc: 16, episode: 14 }
+			}
+			Logger.warn(
+				`CRC32 ${CRC32} not in metadata... Probably just an out of date release included in a batch...`,
+			)
+			throw new Error(`CRC32 ${CRC32} not in metadata...`)
+		}
+		return episode
+	}
+
+	getReport() {
+		const base = {
+			url: environment.METADATA_URL,
+			configs: {
+				METADATA_URL: environment.METADATA_URL,
+				METADATA_LANGUAGE: environment.METADATA_LANGUAGE,
+				METADATA_POSTER_SET: environment.METADATA_POSTER_SET,
+				METADATA_CHECK_INTERVAL: environment.METADATA_CHECK_INTERVAL / 1000,
+			},
+			downloaded: false,
+		}
+
+		if (!this.metadata) return base
+
+		return {
+			...base,
+			downloaded: true,
+			age: new Date(this.metadata?.status.last_update),
+
+			arcs: {
+				monitored: this.metadata.arcs[environment.METADATA_LANGUAGE].filter(
+					a =>
+						(a.part != 0 || environment.PIPELINE_INCLUDE_SPECIALS) &&
+						Filter({ arc: a.part }),
+				).length,
+				total: Object.keys(this.metadata.arcs[environment.METADATA_LANGUAGE])
+					.length,
+			},
+			episodes: {
+				monitored: this.metadata.arcs[environment.METADATA_LANGUAGE]
+					.filter(
+						a =>
+							(a.part != 0 || environment.PIPELINE_INCLUDE_SPECIALS) &&
+							Filter({ arc: a.part }),
+					)
+					.map(a => {
+						return a.episodes.filter(e =>
+							Filter({ arc: a.part, episode: e.episode }),
+						).length
+					})
+					.reduce((acc, curr) => acc + curr),
+				total: Object.keys(this.metadata.episodes).length,
+			},
+		}
+	}
+
+	private async sendToPipeline() {
+		this.checkMetadataDownloaded()
+
+		if (Context.pipeline.isRunning()) await Context.pipeline.waitForFinished()
+		Context.pipeline.create()
+
+		Logger.info(`Generating monitored episodes list...`)
+		await this.generateMonitored()
+
+		Logger.info(`Generating .nfo files...`)
+		await this.generateTVShowNFO()
+		await this.generateSeasonNFOs()
+		await this.generateEpisodeNFOs()
+
+		Logger.debug(`Adding monitored to pipeline`)
+		Context.pipeline.addMonitored(this.monitored)
+
+		Context.pipeline.start()
 	}
 
 	private generateMonitored() {
@@ -273,147 +366,10 @@ export class MetadataController {
 		}
 	}
 
-	private async sendToPipeline() {
-		this.checkMetadataDownloaded()
-
-		if (Context.pipeline.isRunning()) await Context.pipeline.waitForFinished()
-		Context.pipeline.create()
-
-		Logger.info(`Generating monitored episodes list...`)
-		await this.generateMonitored()
-
-		Logger.info(`Generating .nfo files...`)
-		await this.generateTVShowNFO()
-		await this.generateSeasonNFOs()
-		await this.generateEpisodeNFOs()
-
-		Logger.debug(`Adding monitored to pipeline`)
-		Context.pipeline.addMonitored(this.monitored)
-
-		Context.pipeline.start()
-	}
-
-	async addToDownloadQueue(
-		arc: number,
-		episode: string | number,
-		extended?: boolean,
-	): Promise<QueueDownloadResult> {
-		this.checkMetadataDownloaded()
-
-		let rsstitle = `${
-			this.metadata.arcs[environment.METADATA_LANGUAGE].find(
-				a => a.part === arc,
-			).title
-		} ${String(episode).padStart(2, '0')}${extended ? ` Extended Cut` : ''}`
-
-		if (rsstitle.startsWith(`Skypiea 25`)) {
-			Logger.debug('Manual correction for 16. Skypeiea 25 Alternate G-8')
-			rsstitle = environment.PIPELINE_PREFER_G8
-				? 'Skypiea 25 Alternate Cut (G-8)'
-				: 'Skypiea 25'
-		}
-
-		let torrentInfo: TorrentInfo
-		try {
-			torrentInfo = await Context.rss.getTorrentInfo(rsstitle)
-		} catch (e) {
-			Logger.debug(`Couldn't find MagnetURI in RSS, refreshing it...`)
-			await Context.rss.fetch()
-			torrentInfo = await Context.rss.getTorrentInfo(rsstitle)
-		}
-
-		return await Context.torrent.queueDownload(torrentInfo)
-	}
-
-	formatDownloadQueueStatus(result: QueueDownloadResult): string {
-		switch (result) {
-			case 'added':
-				return 'Download queued'
-			case 'already_present':
-				return 'Torrent already in client'
-			case 'skipped':
-				return 'Download skipped'
-		}
-	}
-
-	getEpisodeUpdatedCRC32(arc: number, episode: number): string {
-		this.checkMetadataDownloaded()
-
-		let target = this.metadata.arcs[environment.METADATA_LANGUAGE]
-			.find(a => a.part === arc)
-			.episodes.find(e => Number.parseInt(e.episode) == episode)
-		return environment.PIPELINE_PREFER_EXTENDED && !!target.extended
-			? target.extended
-			: target.standard
-	}
-
-	getEpisodeFromCRC32(CRC32: string): Episode {
-		this.checkMetadataDownloaded()
-
-		let episode = this.metadata.episodes[CRC32]
-		if (!episode) {
-			if (CRC32 == '704F68EA') {
-				Logger.debug(`Skypiea 14 manual correction`)
-				return { arc: 16, episode: 14 }
-			}
-			Logger.warn(
-				`CRC32 ${CRC32} not in metadata... Probably just an out of date release included in a batch...`,
-			)
-			throw new Error(`CRC32 ${CRC32} not in metadata...`)
-		}
-		return episode
-	}
-
 	public checkMetadataDownloaded() {
 		if (!this.metadata) {
 			Logger.warn(`Metadata missing, something went wrong with import...`)
 			throw new MetadataAbsentError()
-		}
-	}
-
-	getReport() {
-		const base = {
-			url: environment.METADATA_URL,
-			configs: {
-				METADATA_URL: environment.METADATA_URL,
-				METADATA_LANGUAGE: environment.METADATA_LANGUAGE,
-				METADATA_POSTER_SET: environment.METADATA_POSTER_SET,
-				METADATA_CHECK_INTERVAL: environment.METADATA_CHECK_INTERVAL / 1000,
-			},
-			downloaded: false,
-		}
-
-		if (!this.metadata) return base
-
-		return {
-			...base,
-			downloaded: true,
-			age: new Date(this.metadata?.status.last_update),
-
-			arcs: {
-				monitored: this.metadata.arcs[environment.METADATA_LANGUAGE].filter(
-					a =>
-						(a.part != 0 || environment.PIPELINE_INCLUDE_SPECIALS) &&
-						Filter({ arc: a.part }),
-				).length,
-				total: Object.keys(this.metadata.arcs[environment.METADATA_LANGUAGE])
-					.length,
-			},
-			episodes: {
-				monitored: this.metadata.arcs[environment.METADATA_LANGUAGE]
-					.filter(
-						a =>
-							(a.part != 0 || environment.PIPELINE_INCLUDE_SPECIALS) &&
-							Filter({ arc: a.part }),
-					)
-					.map(a => {
-						return a.episodes.filter(e =>
-							Filter({ arc: a.part, episode: e.episode }),
-						).length
-					})
-					.reduce((acc, curr) => acc + curr),
-				total: Object.keys(this.metadata.episodes).length,
-			},
 		}
 	}
 }

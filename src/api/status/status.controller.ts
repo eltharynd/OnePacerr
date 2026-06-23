@@ -7,8 +7,13 @@ export class StatusController {
 	async metadata() {
 		return await Context.metadata.getReport()
 	}
+
 	@Get(`/pipeline`)
 	async pipeline() {
+		return await Context.pipeline.getConfig()
+	}
+	@Get(`/pipeline/report`)
+	async pipelineStatus() {
 		return await Context.pipeline.getReport()
 	}
 }
