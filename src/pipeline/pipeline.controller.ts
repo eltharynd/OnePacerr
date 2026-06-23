@@ -256,7 +256,7 @@ export class PipelineController {
 
 		let rsstitle = `${
 			arc.title
-		} ${String(episode).padStart(2, '0')}${extended ? ` Extended Cut` : ''}`
+		} ${String(episode.episode).padStart(2, '0')}${extended ? ` Extended Cut` : ''}`
 
 		if (rsstitle.startsWith(`Skypiea 25`)) {
 			Logger.debug('Manual correction for 16. Skypeiea 25 Alternate G-8')
@@ -554,6 +554,7 @@ export class PipelineController {
 				}
 			}
 		} else {
+			console.log(2)
 			Logger.debug(
 				`S${ma.arc}E${String(me.episode).padStart(2, '0')} - Missing`,
 			)
@@ -563,6 +564,7 @@ export class PipelineController {
 					`S${ma.arc}E${String(me.episode).padStart(2, '0')} - Missing [Download skipped]`,
 				)
 			} else {
+				console.log(1)
 				const queueResult = await this.addToDownloadQueue(
 					ma,
 					me,

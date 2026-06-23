@@ -1,3 +1,4 @@
+import { isNumber } from 'class-validator'
 import environment from '../environment.js'
 import Logger from './logger.js'
 
@@ -47,11 +48,12 @@ class FiltersContainer {
 	public testEpisode(filter: IFilterInternal): boolean {
 		let toBeIncluded =
 			this.includes.length == 0 ||
-			this.includes.find(
-				inc =>
+			this.includes.find(inc => {
+				return (
 					(!inc.arc || inc.arc == filter.arc) &&
-					(isNaN(inc.episode) || inc.episode == filter.episode),
-			)
+					(!isNumber(inc.episode) || inc.episode == filter.episode)
+				)
+			})
 
 		if (!toBeIncluded) return false
 
@@ -60,7 +62,7 @@ class FiltersContainer {
 			this.excludes.find(
 				inc =>
 					(!inc.arc || inc.arc == filter.arc) &&
-					(isNaN(inc.episode) || inc.episode == filter.episode),
+					(!isNumber(inc.episode) || inc.episode == filter.episode),
 			)
 
 		return !tobeExcluded
@@ -86,6 +88,7 @@ const Filters = new FiltersContainer()
 export const Filter = (filter: IFilter) => {
 	let arc = Number.parseInt(`${filter.arc}`)
 	let episode = Number.parseInt(`${filter.episode}`)
+
 	if (isNaN(episode))
 		return Filters.testSeason({
 			arc: arc,
