@@ -1,5 +1,4 @@
-import { execFileSync } from 'node:child_process'
-import { unlinkSync } from 'node:fs'
+import { existsSync, unlinkSync } from 'node:fs'
 import { copyFile } from 'node:fs/promises'
 import Logger from './logger.js'
 
@@ -12,7 +11,7 @@ export default function safeCopyFileSync(source: string, destination: string) {
 			.catch(e => {
 				Logger.error(`Error Copying '${source}}' -> '${destination}'`)
 				try {
-					if (execFileSync(destination)) unlinkSync(destination)
+					if (existsSync(destination)) unlinkSync(destination)
 				} catch (ee) {
 					Logger.error(`Error deleting '${destination}'`)
 					Logger.error(e)
