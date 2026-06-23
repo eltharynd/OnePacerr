@@ -229,6 +229,11 @@ export class PlexController implements ILibraryController {
 		let attemptsLeft = 5
 		while (attemptsLeft-- > 0) {
 			if (await attempt(attemptsLeft)) attemptsLeft = 0
+			await new Promise<void>(resolve => {
+				setTimeout(() => {
+					resolve()
+				}, 3000)
+			})
 		}
 	}
 
