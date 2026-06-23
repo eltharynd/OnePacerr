@@ -9,7 +9,7 @@ export default function safeCopyFileSync(source: string, destination: string) {
 				resolve()
 			})
 			.catch(e => {
-				Logger.error(`Error Copying '${source}}' -> '${destination}'`)
+				Logger.error(`Error Copying '${source}' -> '${destination}'`)
 				try {
 					if (existsSync(destination)) unlinkSync(destination)
 				} catch (ee) {
