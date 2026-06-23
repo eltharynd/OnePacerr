@@ -91,7 +91,7 @@ export class TorrentController {
 			return
 		}
 
-		Logger.info(`Starting torrent processing loop`)
+		Logger.debug(`Starting torrent processing loop`)
 		if (Context.pipeline.isRunning()) {
 			await Context.pipeline.waitForFinished()
 		}
@@ -115,7 +115,7 @@ export class TorrentController {
 		torrentInfo: TorrentInfo,
 	): Promise<QueueDownloadResult> {
 		if (environment.PIPELINE_SKIP_DOWNLOADS) {
-			Logger.info(`Downloads disabled by env vars`)
+			Logger.debug(`Downloads disabled by env vars`)
 			return 'skipped'
 		}
 
