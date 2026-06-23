@@ -219,7 +219,10 @@ export class PlexController implements ILibraryController {
 						`Metadata update attempt failed, this could just be due to how plex reports being done scanning (it sucks). Attempting ${attemptsLeft} more times...`,
 					)
 					return false
-				} else throw new Error(`Episode could not be found on plex...`)
+				} else {
+					Logger.error(e)
+					throw e
+				}
 			}
 		}
 
