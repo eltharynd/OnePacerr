@@ -16,14 +16,14 @@ class FiltersContainer {
 	private excludes: IFilterInternal[] = []
 
 	constructor() {
-		for (let line of environment.FILTERS_INCLUDE?.replaceAll('-', '')
+		for (let line of environment.PIPELINE_FILTERS_INCLUDE?.replaceAll('-', '')
 			.replaceAll(' ', '')
 			.split(/[;,]/)) {
 			if (!line) continue
 			this.includes.push(this.matchFilter(line))
 		}
 
-		for (let line of environment.FILTERS_EXCLUDE?.replaceAll('-', '')
+		for (let line of environment.PIPELINE_FILTERS_EXCLUDE?.replaceAll('-', '')
 			.replaceAll(' ', '')
 			.split(/[;,]/)) {
 			if (!line) continue

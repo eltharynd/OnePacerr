@@ -166,7 +166,7 @@ export class LibraryController {
 				`${path.resolve(`${folder.replace(environment.MOUNT_LIBRARY_MEDIA_SERVER, environment.MOUNT_LIBRARY_ONEPACERR)}`)}${path.sep}season.nfo`,
 				await Context.metadata.getSeasonNFO(arc),
 			)
-			if (!environment.SKIP_POSTERS) {
+			if (!environment.PIPELINE_SKIP_POSTERS) {
 				if (this.client.libraryClient === 'none') {
 					mkdirSync(showFolder, { recursive: true })
 					await safeCopyFileSync(
@@ -190,7 +190,7 @@ export class LibraryController {
 			this.client.libraryClient != 'plex' ||
 			!environment.PLEX_SKIP_METADATA_FILES
 		) {
-			if (!environment.SKIP_POSTERS) {
+			if (!environment.PIPELINE_SKIP_POSTERS) {
 				let libraryFolder = path.resolve(
 					resolveSeriesRootFolder(await this.getLibraryFolder()).replace(
 						environment.MOUNT_LIBRARY_MEDIA_SERVER,

@@ -103,7 +103,7 @@ export class MetadataController {
 		this.monitored = this.metadata.arcs[environment.METADATA_LANGUAGE]
 			.filter(
 				a =>
-					(a.part != 0 || environment.INCLUDE_SPECIALS) &&
+					(a.part != 0 || environment.PIPELINE_INCLUDE_SPECIALS) &&
 					Filter({ arc: a.part }),
 			)
 			.map(a => {
@@ -308,7 +308,7 @@ export class MetadataController {
 
 		if (rsstitle.startsWith(`Skypiea 25`)) {
 			Logger.debug('Manual correction for 16. Skypeiea 25 Alternate G-8')
-			rsstitle = environment.PREFER_G8
+			rsstitle = environment.PIPELINE_PREFER_G8
 				? 'Skypiea 25 Alternate Cut (G-8)'
 				: 'Skypiea 25'
 		}
@@ -342,7 +342,7 @@ export class MetadataController {
 		let target = this.metadata.arcs[environment.METADATA_LANGUAGE]
 			.find(a => a.part === arc)
 			.episodes.find(e => Number.parseInt(e.episode) == episode)
-		return environment.PREFER_EXTENDED && !!target.extended
+		return environment.PIPELINE_PREFER_EXTENDED && !!target.extended
 			? target.extended
 			: target.standard
 	}
@@ -393,7 +393,7 @@ export class MetadataController {
 			arcs: {
 				monitored: this.metadata.arcs[environment.METADATA_LANGUAGE].filter(
 					a =>
-						(a.part != 0 || environment.INCLUDE_SPECIALS) &&
+						(a.part != 0 || environment.PIPELINE_INCLUDE_SPECIALS) &&
 						Filter({ arc: a.part }),
 				).length,
 				total: Object.keys(this.metadata.arcs[environment.METADATA_LANGUAGE])
@@ -403,7 +403,7 @@ export class MetadataController {
 				monitored: this.metadata.arcs[environment.METADATA_LANGUAGE]
 					.filter(
 						a =>
-							(a.part != 0 || environment.INCLUDE_SPECIALS) &&
+							(a.part != 0 || environment.PIPELINE_INCLUDE_SPECIALS) &&
 							Filter({ arc: a.part }),
 					)
 					.map(a => {

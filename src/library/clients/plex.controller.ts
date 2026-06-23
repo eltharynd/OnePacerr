@@ -245,14 +245,14 @@ export class PlexController implements ILibraryController {
 		await season.editTitle(`${arc}. ${description.title}`)
 		await season.editSummary(description.description)
 
-		if (!environment.SKIP_POSTERS) {
+		if (!environment.PIPELINE_SKIP_POSTERS) {
 			Logger.debug(`Updating Season ${arc} poster in Plex...`)
 			await season.uploadPoster({
 				file: readFileSync(resolvePosterPath({ arc })),
 			})
 		}
 		Logger.debug(
-			`Metadata${!environment.SKIP_POSTERS ? ' and posters' : ''} for Season ${arc} updated...`,
+			`Metadata${!environment.PIPELINE_SKIP_POSTERS ? ' and posters' : ''} for Season ${arc} updated...`,
 		)
 	}
 
@@ -263,7 +263,7 @@ export class PlexController implements ILibraryController {
 		await this.show.editTitle(environment.LIBRARY_SERIES_NAME)
 		await this.show.editSummary(description.plot)
 
-		if (!environment.SKIP_POSTERS) {
+		if (!environment.PIPELINE_SKIP_POSTERS) {
 			Logger.debug(`Updating Show poster in Plex...`)
 			await this.show.uploadPoster({
 				file: readFileSync(resolvePosterPath()),
@@ -271,7 +271,7 @@ export class PlexController implements ILibraryController {
 		}
 
 		Logger.debug(
-			`Metadata${!environment.SKIP_POSTERS ? ' and posters' : ''} for Show updated...`,
+			`Metadata${!environment.PIPELINE_SKIP_POSTERS ? ' and posters' : ''} for Show updated...`,
 		)
 	}
 

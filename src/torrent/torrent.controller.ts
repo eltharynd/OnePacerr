@@ -28,7 +28,7 @@ export class TorrentController {
 	private __handler
 
 	constructor() {
-		if (environment.SKIP_DOWNLOADS) return
+		if (environment.PIPELINE_SKIP_DOWNLOADS) return
 
 		switch (environment.TORRENT_CLIENT as TorrentClient) {
 			case 'qbittorrent':
@@ -55,7 +55,7 @@ export class TorrentController {
 	}
 
 	public async startWatching() {
-		if (environment.SKIP_DOWNLOADS) return
+		if (environment.PIPELINE_SKIP_DOWNLOADS) return
 
 		if (!this.__watching) {
 			Logger.info(
@@ -69,7 +69,7 @@ export class TorrentController {
 	}
 
 	public async stoptWatching() {
-		if (environment.SKIP_DOWNLOADS) return
+		if (environment.PIPELINE_SKIP_DOWNLOADS) return
 
 		if (this.__watching) {
 			Logger.info(
@@ -114,7 +114,7 @@ export class TorrentController {
 	public async queueDownload(
 		torrentInfo: TorrentInfo,
 	): Promise<QueueDownloadResult> {
-		if (environment.SKIP_DOWNLOADS) {
+		if (environment.PIPELINE_SKIP_DOWNLOADS) {
 			Logger.info(`Downloads disabled by env vars`)
 			return 'skipped'
 		}
@@ -299,7 +299,7 @@ export class TorrentController {
 				Logger.debug(
 					`File for ${episode.arc}-${String(episode.episode).padStart(2, '0')} detected`,
 				)
-				if (!environment.SKIP_DOWNLOADS_IMPORTS) {
+				if (!environment.PIPELINE_SKIP_DOWNLOADS_IMPORTS) {
 					if (previousLibraryFileName) {
 						const toDelete = path.resolve(
 							`${targetLibraryFile.path}${previousLibraryFileName}`.replaceAll(
@@ -332,10 +332,14 @@ export class TorrentController {
 					Logger.info(
 						`File for ${episode.arc}-${String(episode.episode).padStart(2, '0')} imported successfully`,
 					)
-					await Context.pipeline.updatemetadata(episode.arc, episode.episode)
+					await Context.pipeline.updatemetadata(
+						episode.arc,
+						episode.episode,
+						true,
+					)
 				} else {
 					Logger.info(
-						`File for ${episode.arc}-${String(episode.episode).padStart(2, '0')} skipped due to 'SKIP_DOWNLOADS_IMPORTS'...`,
+						`File for ${episode.arc}-${String(episode.episode).padStart(2, '0')} skipped due to 'PIPELINE_SKIP_DOWNLOADS_IMPORTS'...`,
 					)
 				}
 			} else {

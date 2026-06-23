@@ -196,10 +196,9 @@ export class PipelineController {
 			`S${ma.arc}E${String(me.episode).padStart(2, '0')} - Processing`,
 		)
 
-		if (me.episode == 1) throw new Error()
 		const skipVerification =
-			environment.SKIP_VERIFY_PRESENT_FILES &&
-			!(environment.SKIP_VERIFY_NOT_FOR_EXTENDED && me.CRC32.extended)
+			environment.PIPELINE_SKIP_VERIFY_PRESENT_FILES &&
+			!(environment.PIPELINE_SKIP_VERIFY_NOT_FOR_EXTENDED && me.CRC32.extended)
 
 		if (me.CRC32.standard == '702231E9') {
 			Logger.debug(`Skypiea 14 manual correction`)
@@ -215,9 +214,9 @@ export class PipelineController {
 				Logger.debug(
 					`S${ma.arc}E${String(me.episode).padStart(2, '0')} - Present`,
 				)
-				if (!environment.SKIP_ORGANIZE_PRESENT_FILES) {
+				if (!environment.PIPELINE_SKIP_ORGANIZE_PRESENT_FILES) {
 					await this.organizeFile(ma.arc, me.episode)
-				} else if (!environment.SKIP_UPDATE_METADATA_PRESENT_FILES) {
+				} else if (!environment.PIPELINE_SKIP_UPDATE_METADATA_PRESENT_FILES) {
 					await this.updatemetadata(ma.arc, me.episode)
 				} else {
 					Logger.info(
@@ -238,13 +237,13 @@ export class PipelineController {
 				)
 
 				if (ma.arc == 16 && me.episode == 25) {
-					if (!environment.PREFER_G8) {
+					if (!environment.PIPELINE_PREFER_G8) {
 						Logger.debug(`Corrected 16. Skypiea 25 for alternate G-8 cut`)
 						me.CRC32.standard = 'C951349C'
 					}
 				}
 
-				if (!!me.CRC32.extended && environment.PREFER_EXTENDED) {
+				if (!!me.CRC32.extended && environment.PIPELINE_PREFER_EXTENDED) {
 					Logger.debug(
 						`S${ma.arc}E${String(me.episode).padStart(2, '0')} - Extended wanted`,
 					)
@@ -252,9 +251,11 @@ export class PipelineController {
 						Logger.debug(
 							`S${ma.arc}E${String(me.episode).padStart(2, '0')} - Extended present`,
 						)
-						if (!environment.SKIP_ORGANIZE_PRESENT_FILES) {
+						if (!environment.PIPELINE_SKIP_ORGANIZE_PRESENT_FILES) {
 							await this.organizeFile(ma.arc, me.episode)
-						} else if (!environment.SKIP_UPDATE_METADATA_PRESENT_FILES) {
+						} else if (
+							!environment.PIPELINE_SKIP_UPDATE_METADATA_PRESENT_FILES
+						) {
 							await this.updatemetadata(ma.arc, me.episode)
 						} else
 							Logger.info(
@@ -264,7 +265,7 @@ export class PipelineController {
 						Logger.debug(
 							`S${ma.arc}E${String(me.episode).padStart(2, '0')} - Standard present`,
 						)
-						if (environment.SKIP_DOWNLOADS) {
+						if (environment.PIPELINE_SKIP_DOWNLOADS) {
 							Logger.info(
 								`S${ma.arc}E${String(me.episode).padStart(2, '0')} - Standard instead of extended [Download skipped]`,
 							)
@@ -279,7 +280,10 @@ export class PipelineController {
 							)
 						}
 					}
-				} else if (!!me.CRC32.extended && !environment.PREFER_EXTENDED) {
+				} else if (
+					!!me.CRC32.extended &&
+					!environment.PIPELINE_PREFER_EXTENDED
+				) {
 					Logger.debug(
 						`S${ma.arc}E${String(me.episode).padStart(2, '0')} - Standard wanted`,
 					)
@@ -287,9 +291,11 @@ export class PipelineController {
 						Logger.debug(
 							`S${ma.arc}E${String(me.episode).padStart(2, '0')} - Standard present`,
 						)
-						if (!environment.SKIP_ORGANIZE_PRESENT_FILES) {
+						if (!environment.PIPELINE_SKIP_ORGANIZE_PRESENT_FILES) {
 							await this.organizeFile(ma.arc, me.episode)
-						} else if (!environment.SKIP_UPDATE_METADATA_PRESENT_FILES) {
+						} else if (
+							!environment.PIPELINE_SKIP_UPDATE_METADATA_PRESENT_FILES
+						) {
 							await this.updatemetadata(ma.arc, me.episode)
 						} else
 							Logger.info(
@@ -299,7 +305,7 @@ export class PipelineController {
 						Logger.debug(
 							`S${ma.arc}E${String(me.episode).padStart(2, '0')} - Extended present`,
 						)
-						if (environment.SKIP_DOWNLOADS) {
+						if (environment.PIPELINE_SKIP_DOWNLOADS) {
 							Logger.info(
 								`S${ma.arc}E${String(me.episode).padStart(2, '0')} - Extended instead of Standard [Download skipped]`,
 							)
@@ -316,7 +322,7 @@ export class PipelineController {
 					}
 				} else {
 					console.log(6)
-					if (environment.SKIP_DOWNLOADS) {
+					if (environment.PIPELINE_SKIP_DOWNLOADS) {
 						Logger.info(
 							`S${ma.arc}E${String(me.episode).padStart(2, '0')} - CRC32 Mismatch [Download skipped]`,
 						)
@@ -324,7 +330,7 @@ export class PipelineController {
 						const queueResult = await Context.metadata.addToDownloadQueue(
 							ma.arc,
 							me.episode,
-							environment.PREFER_EXTENDED && !!me.CRC32.extended,
+							environment.PIPELINE_PREFER_EXTENDED && !!me.CRC32.extended,
 						)
 						Logger.info(
 							`S${ma.arc}E${String(me.episode).padStart(2, '0')} - CRC32 Mismatch [${Context.metadata.formatDownloadQueueStatus(queueResult)}]`,
@@ -337,7 +343,7 @@ export class PipelineController {
 				`S${ma.arc}E${String(me.episode).padStart(2, '0')} - Missing`,
 			)
 
-			if (environment.SKIP_DOWNLOADS) {
+			if (environment.PIPELINE_SKIP_DOWNLOADS) {
 				Logger.info(
 					`S${ma.arc}E${String(me.episode).padStart(2, '0')} - Missing [Download skipped]`,
 				)
@@ -345,7 +351,7 @@ export class PipelineController {
 				const queueResult = await Context.metadata.addToDownloadQueue(
 					ma.arc,
 					me.episode,
-					environment.PREFER_EXTENDED && !!me.CRC32.extended,
+					environment.PIPELINE_PREFER_EXTENDED && !!me.CRC32.extended,
 				)
 				Logger.info(
 					`S${ma.arc}E${String(me.episode).padStart(2, '0')} - Missing [${Context.metadata.formatDownloadQueueStatus(queueResult)}]`,
@@ -448,13 +454,13 @@ export class PipelineController {
 			Logger.debug(
 				`S${arc}E${String(episode).padStart(2, '0')} - Correctly formatted...`,
 			)
-			if (!environment.SKIP_UPDATE_METADATA_PRESENT_FILES) {
+			if (!environment.PIPELINE_SKIP_UPDATE_METADATA_PRESENT_FILES) {
 				await this.updatemetadata(arc, episode)
 			}
 		}
 	}
 
-	async updatemetadata(arc: number, episode: number) {
+	async updatemetadata(arc: number, episode: number, suppressLog?: boolean) {
 		Context.metadata.checkMetadataDownloaded()
 		Logger.debug(
 			`S${arc}E${String(episode).padStart(2, '0')} - Attempting Metadata Update`,
@@ -481,7 +487,7 @@ export class PipelineController {
 		)
 		await Context.library.updateSeasonMetadata(arc)
 		await Context.library.updateShowMetadata()
-		Logger.info(
+		Logger[suppressLog ? 'debug' : 'info'](
 			`S${arc}E${String(episode).padStart(2, '0')} - Exists on Media Server (Metadata refreshed)`,
 		)
 	}

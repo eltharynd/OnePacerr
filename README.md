@@ -122,9 +122,9 @@ If your files are nicely named and organized and if Plex has all the metadata, y
 
 ```dotenv
 # 🐔 BASE CONFIG WHEN YOUR LIBRARY IS ALREADY WELL ORGANIZED
-SKIP_VERIFY_PRESENT_FILES=true
-SKIP_ORGANIZE_PRESENT_FILES=true
-SKIP_UPDATE_METADATA_PRESENT_FILES=true
+PIPELINE_SKIP_VERIFY_PRESENT_FILES=true
+PIPELINE_SKIP_ORGANIZE_PRESENT_FILES=true
+PIPELINE_SKIP_UPDATE_METADATA_PRESENT_FILES=true
 ```
 
 This will prevent the app to verify hash (CRC32 hashing can take a while depending on your machine), to verify plex file names (and rename where nexessary) and to update the metadata on plex for **the files that are already present on Plex**.
@@ -135,9 +135,9 @@ My recommendation **when plex already has some/all of the episodes** is to run i
 
 ```dotenv
 # 🐣 RECOMMENDED CONFIG FOR FIRST RUN
-SKIP_VERIFY_PRESENT_FILES=false
-SKIP_ORGANIZE_PRESENT_FILES=false
-SKIP_UPDATE_METADATA_PRESENT_FILES=false
+PIPELINE_SKIP_VERIFY_PRESENT_FILES=false
+PIPELINE_SKIP_ORGANIZE_PRESENT_FILES=false
+PIPELINE_SKIP_UPDATE_METADATA_PRESENT_FILES=false
 ```
 
 After the app is done processing all of the present seasons/episodes, it's gonna continue monitoring for completed downloads and import as usual.
@@ -177,18 +177,22 @@ services:
 
 
       # Pipeline
-      - SKIP_VERIFY_PRESENT_FILES=false
-      - SKIP_ORGANIZE_PRESENT_FILES=false
-      - SKIP_UPDATE_METADATA_PRESENT_FILES=false
-      #- SKIP_DOWNLOADS=false
-      #- SKIP_POSTERS=false
+      - PIPELINE_SKIP_VERIFY_PRESENT_FILES=false
+      #- PIPELINE_SKIP_VERIFY_NOT_FOR_EXTENDED=false
+      - PIPELINE_SKIP_ORGANIZE_PRESENT_FILES=false
+      - PIPELINE_SKIP_UPDATE_METADATA_PRESENT_FILES=false
+      #- PIPELINE_SKIP_DOWNLOADS=false
+      #- PIPELINE_SKIP_DOWNLOADS_IMPORTS=false
+      #- PIPELINE_SKIP_POSTERS=false
 
-      #- INCLUDE_SPECIALS=false
-      - PREFER_EXTENDED=true
-      - PREFER_G8=true
+      #- PIPELINE_INCLUDE_SPECIALS=false
+      - PIPELINE_PREFER_EXTENDED=true
+      - PIPELINE_PREFER_G8=true
 
-      #FILTERS_INCLUDE=S01
-      #FILTERS_EXCLUDE=S35,S36
+      #- PIPELINE_FILTERS_INCLUDE=S01
+      #- PIPELINE_FILTERS_EXCLUDE=S35,S36
+
+      #- PIPELINE_RETRY_INTERVAL=10
 
 
 
@@ -299,22 +303,25 @@ Here is a breakdown of key optional variables you can adjust in your
 
 | Pipeline Variables | Default | Description |
 | :--- | :--- | :--- |
-| 🍏 `SKIP_VERIFY_PRESENT_FILES` | `true` | If `false`, hashes files present in Plex upon metadata updates to ensure they are the latest/wanted versions. |
-| 🍏 `SKIP_ORGANIZE_PRESENT_FILES` | `true` | If `false`, makes sure the files existing on plex are in the correct folder and named correctly. |
-| 🍏 `SKIP_UPDATE_METADATA_PRESENT_FILES` | `true` | If `false`, automatically updates metadata for files already in your Plex library, otherwise only does so for new downloads. |
-| 🍏 `SKIP_DOWNLOADS` | `false` | If `true`, skips download. Use if you only want to organize your current files |
-| 🍏 `SKIP_POSTERS` | `false` | If `true`, skips updating posters when updating metadata. |
+| 🍏 `PIPELINE_SKIP_VERIFY_PRESENT_FILES` | `true` | If `false`, hashes files present in Plex upon metadata updates to ensure they are the latest/wanted versions. |
+| 🍏 `PIPELINE_SKIP_VERIFY_NOT_FOR_EXTENDED` | `false` | If `true`, PIPELINE_SKIP_VERIFY_PRESENT_FILES only applies to episodes without extended versions |
+| 🍏 `PIPELINE_SKIP_ORGANIZE_PRESENT_FILES` | `true` | If `false`, makes sure the files existing on plex are in the correct folder and named correctly. |
+| 🍏 `PIPELINE_SKIP_UPDATE_METADATA_PRESENT_FILES` | `true` | If `false`, automatically updates metadata for files already in your Plex library, otherwise only does so for new downloads. |
+| 🍏 `PIPELINE_SKIP_DOWNLOADS` | `false` | If `true`, skips download. Use if you only want to organize your current files. |
+| 🍏 `PIPELINE_SKIP_DOWNLOADS_IMPORTS` | `false` | If `true`, skips updating posters when updating metadata. |
+| 🍏 `PIPELINE_SKIP_POSTERS` | `false` | If `true`, skips updating posters when updating metadata. |
 | --- | --- | --- |
-| `INCLUDE_SPECIALS` | `false` | Set to `true` to also process specials. |
-| `PREFER_EXTENDED` | `false` | Set to `true` to prioritize extended cuts over standard releases. |
-| `PREFER_G8` | `false` | Set to `true` to prefer the G-8 cut at the end of Skypiea. |
+| `PIPELINE_INCLUDE_SPECIALS` | `false` | Set to `true` to also process specials. |
+| `PIPELINE_PREFER_EXTENDED` | `false` | Set to `true` to prioritize extended cuts over standard releases. |
+| `PIPELINE_PREFER_G8` | `false` | Set to `true` to prefer the G-8 cut at the end of Skypiea. |
 | --- | --- | --- |
-| `FILTERS_INCLUDE` | _None_ | Only process seasons/episodes that match these [filters](#-filters). |
-| `FILTERS_EXCLUDE` | _None_ | Only process seasons/episodes that don't match these [filters](#-filters). |
+| `PIPELINE_FILTERS_INCLUDE` | _None_ | Only process seasons/episodes that match these [filters](#-filters). |
+| `PIPELINE_FILTERS_EXCLUDE` | _None_ | Only process seasons/episodes that don't match these [filters](#-filters). |
+| `PIPELINE_RETRY_INTERVAL` | 10 | Seconds to wait before re-running pipeline after failures. |
 
 ### 🔎 Filters
 
-`FILTERS_INCLUDE` and `FILTERS_EXCLUDE` are lists of 'filters' as a comma separated string. For example: `filter1,filter2,filter3`.
+`PIPELINE_FILTERS_INCLUDE` and `PIPELINE_FILTERS_EXCLUDE` are lists of 'filters' as a comma separated string. For example: `filter1,filter2,filter3`.
 
 Each filter can either filter for specific season number, episode number or both. Meaning they can either be `Sxx`, `SxxExx` or `Exx`. For example `S01E06` would **match** only S01E06, whilst `S02` would **match** every episode in `S02`, and `E06` would **match** episode 6 of every season (don't ask why).
 
@@ -323,26 +330,26 @@ This should give you flexibility to decide to only process whatever you want ins
 #### Only S16E09 (Probably because you want to re-watch '32:54')
 
 ```dotenv
-FILTERS_INCLUDE=S16E09
+PIPELINE_FILTERS_INCLUDE=S16E09
 ```
 
 #### All seasons before Wano (S35)
 
 ```dotenv
-FILTERS_EXCLUDE=S35,S36
+PIPELINE_FILTERS_EXCLUDE=S35,S36
 ```
 
 #### All first episodes of each Season
 
 ```dotenv
-FILTERS_INCLUDE=E01
+PIPELINE_FILTERS_INCLUDE=E01
 ```
 
 #### All first episodes of each Season, except Wano and Egghead (35,36)
 
 ```dotenv
-FILTERS_INCLUDE=E01
-FILTERS_EXCLUDE=S35,S36
+PIPELINE_FILTERS_INCLUDE=E01
+PIPELINE_FILTERS_EXCLUDE=S35,S36
 ```
 
 In order for an episode to be processed/downloaded/updated, it has to match BOTH filters.

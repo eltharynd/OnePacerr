@@ -18,32 +18,56 @@ export default {
 	/**
 	 * PIPELINE
 	 */
-	SKIP_VERIFY_PRESENT_FILES: /true/i.test(
-		process.env.SKIP_VERIFY_PRESENT_FILES || 'true',
+	PIPELINE_SKIP_VERIFY_PRESENT_FILES: /true/i.test(
+		process.env.PIPELINE_SKIP_VERIFY_PRESENT_FILES ||
+			process.env.SKIP_VERIFY_PRESENT_FILES ||
+			'true',
 	),
-	SKIP_VERIFY_NOT_FOR_EXTENDED: /true/i.test(
-		process.env.SKIP_VERIFY_NOT_FOR_EXTENDED || 'false',
+	PIPELINE_SKIP_VERIFY_NOT_FOR_EXTENDED: /true/i.test(
+		process.env.PIPELINE_SKIP_VERIFY_NOT_FOR_EXTENDED || 'false',
 	),
-	SKIP_ORGANIZE_PRESENT_FILES: /true/i.test(
-		process.env.SKIP_ORGANIZE_PRESENT_FILES || 'true',
+	PIPELINE_SKIP_ORGANIZE_PRESENT_FILES: /true/i.test(
+		process.env.PIPELINE_SKIP_ORGANIZE_PRESENT_FILES ||
+			process.env._SKIP_ORGANIZE_PRESENT_FILES ||
+			'true',
 	),
-	SKIP_UPDATE_METADATA_PRESENT_FILES: /true/i.test(
-		process.env.SKIP_UPDATE_METADATA_PRESENT_FILES || 'true',
+	PIPELINE_SKIP_UPDATE_METADATA_PRESENT_FILES: /true/i.test(
+		process.env.PIPELINE_SKIP_UPDATE_METADATA_PRESENT_FILES ||
+			process.env.SKIP_UPDATE_METADATA_PRESENT_FILES ||
+			'true',
 	),
-	SKIP_DOWNLOADS: /true/i.test(process.env.SKIP_DOWNLOADS || 'false'),
-	SKIP_DOWNLOADS_IMPORTS: /true/i.test(
+	PIPELINE_SKIP_DOWNLOADS: /true/i.test(
+		process.env.PIPELINE_SKIP_DOWNLOADS ||
+			process.env.SKIP_DOWNLOADS ||
+			'false',
+	),
+	PIPELINE_SKIP_DOWNLOADS_IMPORTS: /true/i.test(
 		process.env.SKIP_DOWNLOADS_IMPORTS || 'false',
 	),
-	SKIP_POSTERS: /true/i.test(process.env.SKIP_POSTERS || 'false'),
+	PIPELINE_SKIP_POSTERS: /true/i.test(
+		process.env.PIPELINE_SKIP_POSTERS || process.env.SKIP_POSTERS || 'false',
+	),
+
+	PIPELINE_INCLUDE_SPECIALS: /true/i.test(
+		process.env.PIPELINE_INCLUDE_SPECIALS ||
+			process.env.INCLUDE_SPECIALS ||
+			'false',
+	),
+	PIPELINE_PREFER_EXTENDED: /true/i.test(
+		process.env.PIPELINE_PREFER_EXTENDED ||
+			process.env.PREFER_EXTENDED ||
+			'false',
+	),
+	PIPELINE_PREFER_G8: /true/i.test(
+		process.env.PREFER_G8 || process.env.PIPELINE_PREFER_G8 || 'false',
+	),
+
+	PIPELINE_FILTERS_INCLUDE:
+		process.env.PIPELINE_FILTERS_INCLUDE || process.env.FILTERS_INCLUDE || '',
+	PIPELINE_FILTERS_EXCLUDE: process.env.PIPELINE_FILTERS_EXCLUDE || '',
+
 	PIPELINE_RETRY_INTERVAL:
 		Number.parseInt(process.env.PIPELINE_RETRY_INTERVAL || '10') * 1000,
-
-	INCLUDE_SPECIALS: /true/i.test(process.env.INCLUDE_SPECIALS || 'false'),
-	PREFER_EXTENDED: /true/i.test(process.env.PREFER_EXTENDED || 'false'),
-	PREFER_G8: /true/i.test(process.env.PREFER_G8 || 'false'),
-
-	FILTERS_INCLUDE: process.env.FILTERS_INCLUDE || '',
-	FILTERS_EXCLUDE: process.env.FILTERS_EXCLUDE || '',
 
 	/**
 	 * LIBRARY
