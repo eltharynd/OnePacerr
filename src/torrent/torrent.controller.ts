@@ -23,7 +23,9 @@ import {
 
 export class TorrentController {
 	private client: ITorrentController
+
 	private __watching: boolean = false
+	private __handler
 
 	constructor() {
 		if (environment.SKIP_DOWNLOADS) return
@@ -56,11 +58,56 @@ export class TorrentController {
 		if (environment.SKIP_DOWNLOADS) return
 
 		if (!this.__watching) {
-			this.__watching = true
 			Logger.info(
 				`Starting to monitor ${this.client.torrentClient} for completed downloads...`,
 			)
+
+			this.__watching = true
+
+			await this.monitorLoop()
+		}
+	}
+
+	public async stoptWatching() {
+		if (environment.SKIP_DOWNLOADS) return
+
+		if (this.__watching) {
+			Logger.info(
+				`Stopping to monitor ${this.client.torrentClient} for completed downloads...`,
+			)
+
+			this.__watching = false
+			if (this.__handler) clearTimeout(this.__handler)
+			this.__handler = null
+
 			await this.processCompletedTorrents()
+		}
+	}
+
+	public async monitorLoop() {
+		if (!this.__watching) {
+			if (this.__handler) clearTimeout(this.__handler)
+			this.__handler = null
+			return
+		}
+
+		Logger.info(`Starting torrent processing loop`)
+		if (Context.pipeline.isRunning()) {
+			await Context.pipeline.waitForFinished()
+		}
+
+		try {
+			await this.processCompletedTorrents()
+		} catch (e) {
+			Logger.error(
+				`Download process error, will retry in ${environment.TORRENT_CHECK_INTERVAL / 1000} seconds...`,
+			)
+		} finally {
+			if (this.__watching) {
+				setTimeout(() => {
+					this.monitorLoop()
+				}, environment.TORRENT_CHECK_INTERVAL)
+			}
 		}
 	}
 
@@ -108,10 +155,6 @@ export class TorrentController {
 				Logger.error(`Error processing completed downloads`)
 				Logger.error(e)
 			}
-		} finally {
-			setTimeout(async () => {
-				await this.processCompletedTorrents()
-			}, environment.TORRENT_CHECK_INTERVAL)
 		}
 	}
 
@@ -253,40 +296,48 @@ export class TorrentController {
 					targetLibraryFile.filename,
 				)
 
-				if (previousLibraryFileName) {
-					const toDelete = path.resolve(
-						`${targetLibraryFile.path}${previousLibraryFileName}`.replaceAll(
-							environment.MOUNT_LIBRARY_MEDIA_SERVER,
-							environment.MOUNT_LIBRARY_ONEPACERR,
-						),
-					)
-					try {
-						unlinkSync(toDelete)
-						Logger.debug(
-							`Pre-existing file for ${episode.arc}-${String(episode.episode).padStart(2, '0')} deleted`,
-						)
-					} catch (e) {
-						Logger.error(
-							`Couldn't delete '${previousLibraryFileName}', it probably has been deleted already but plex didn't scan the library...`,
-						)
-					}
-				}
-
 				Logger.debug(
-					`Copying file for ${episode.arc}-${String(episode.episode).padStart(2, '0')}`,
+					`File for ${episode.arc}-${String(episode.episode).padStart(2, '0')} detected`,
 				)
+				if (!environment.SKIP_DOWNLOADS_IMPORTS) {
+					if (previousLibraryFileName) {
+						const toDelete = path.resolve(
+							`${targetLibraryFile.path}${previousLibraryFileName}`.replaceAll(
+								environment.MOUNT_LIBRARY_MEDIA_SERVER,
+								environment.MOUNT_LIBRARY_ONEPACERR,
+							),
+						)
+						try {
+							unlinkSync(toDelete)
+							Logger.debug(
+								`Pre-existing file for ${episode.arc}-${String(episode.episode).padStart(2, '0')} deleted`,
+							)
+						} catch (e) {
+							Logger.error(
+								`Couldn't delete '${previousLibraryFileName}', it probably has been deleted already but plex didn't scan the library...`,
+							)
+						}
+					}
 
-				mkdirSync(destinationFolder, {
-					recursive: true,
-				})
+					Logger.debug(
+						`Copying file for ${episode.arc}-${String(episode.episode).padStart(2, '0')}`,
+					)
 
-				await safeCopyFileSync(source, destination)
+					mkdirSync(destinationFolder, {
+						recursive: true,
+					})
 
-				Logger.info(
-					`File for ${episode.arc}-${String(episode.episode).padStart(2, '0')} imported successfully`,
-				)
+					await safeCopyFileSync(source, destination)
 
-				await Context.metadata.updatemetadata(episode.arc, episode.episode)
+					Logger.info(
+						`File for ${episode.arc}-${String(episode.episode).padStart(2, '0')} imported successfully`,
+					)
+					await Context.pipeline.updatemetadata(episode.arc, episode.episode)
+				} else {
+					Logger.info(
+						`File for ${episode.arc}-${String(episode.episode).padStart(2, '0')} skipped due to 'SKIP_DOWNLOADS_IMPORTS'...`,
+					)
+				}
 			} else {
 				Logger.error(`No CRC32 found in file name: ${file}`)
 			}

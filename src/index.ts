@@ -2,8 +2,10 @@ import 'reflect-metadata'
 import { Express } from './api/express.js'
 import { Context } from './util/context.js'
 
+import environment from './environment.js'
 import { LibraryController } from './library/library.controller.js'
 import { MetadataController } from './metadata/metadata.controller.js'
+import { PipelineController } from './pipeline/pipeline.controller.js'
 import { RSSController } from './rss/rss.controller.js'
 import { LabelsDisabledInDelugeError } from './torrent/clients/deluge.controller.js'
 import { TorrentController } from './torrent/torrent.controller.js'
@@ -48,6 +50,16 @@ const startApp = async () => {
 		Context.express = new Express()
 		await Context.express.start()
 
+		Context.pipeline = new PipelineController({
+			SKIP_VERIFY_PRESENT_FILES: environment.SKIP_VERIFY_PRESENT_FILES,
+			SKIP_ORGANIZE_PRESENT_FILES: environment.SKIP_VERIFY_PRESENT_FILES,
+			SKIP_UPDATE_METADATA_PRESENT_FILES: environment.SKIP_VERIFY_PRESENT_FILES,
+			SKIP_DOWNLOADS: environment.SKIP_VERIFY_PRESENT_FILES,
+			SKIP_POSTERS: environment.SKIP_VERIFY_PRESENT_FILES,
+			INCLUDE_SPECIALS: environment.SKIP_VERIFY_PRESENT_FILES,
+			PREFER_EXTENDED: environment.SKIP_VERIFY_PRESENT_FILES,
+			PREFER_G8: environment.SKIP_VERIFY_PRESENT_FILES,
+		})
 		Context.metadata = new MetadataController()
 		Context.rss = new RSSController()
 		Context.library = new LibraryController()
@@ -64,7 +76,6 @@ const startApp = async () => {
 	try {
 		await Context.library.init()
 		await Context.metadata.refreshMetadata()
-		await Context.torrent.startWatching()
 	} catch (e) {
 		if (
 			e instanceof LabelsDisabledInDelugeError ||

@@ -12,7 +12,7 @@ export type EpisodeDescription = {
 	description: string
 }
 
-export type Metadata = {
+export type RawMetadataJson = {
 	status: {
 		last_update: string
 		last_update_ts: number
@@ -49,20 +49,20 @@ export type Metadata = {
 	other_edits: any
 }
 
-type PipelineStatus = 'PRE' | 'RUNNING' | 'DONE' | 'ERRORED'
+export type FormattedArc = {
+	arc: number
+	title: string
+	description: string
+	episodes: FormattedEpisode[]
+}
 
-export class PipelineReport {
-	created: Date
-	started: Date
-	ended: Date
-	processedEpisodes: number
-	monitoredEpisodes: number
-	status: PipelineStatus
-	error?: string
-
-	constructor() {
-		this.created = new Date()
-		this.status = 'PRE'
+export type FormattedEpisode = {
+	episode: number
+	title: string
+	description: string
+	CRC32: {
+		standard: string
+		extended: string
 	}
 }
 

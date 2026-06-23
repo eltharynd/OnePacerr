@@ -21,6 +21,9 @@ export default {
 	SKIP_VERIFY_PRESENT_FILES: /true/i.test(
 		process.env.SKIP_VERIFY_PRESENT_FILES || 'true',
 	),
+	SKIP_VERIFY_NOT_FOR_EXTENDED: /true/i.test(
+		process.env.SKIP_VERIFY_NOT_FOR_EXTENDED || 'false',
+	),
 	SKIP_ORGANIZE_PRESENT_FILES: /true/i.test(
 		process.env.SKIP_ORGANIZE_PRESENT_FILES || 'true',
 	),
@@ -28,7 +31,12 @@ export default {
 		process.env.SKIP_UPDATE_METADATA_PRESENT_FILES || 'true',
 	),
 	SKIP_DOWNLOADS: /true/i.test(process.env.SKIP_DOWNLOADS || 'false'),
+	SKIP_DOWNLOADS_IMPORTS: /true/i.test(
+		process.env.SKIP_DOWNLOADS_IMPORTS || 'false',
+	),
 	SKIP_POSTERS: /true/i.test(process.env.SKIP_POSTERS || 'false'),
+	PIPELINE_RETRY_INTERVAL:
+		Number.parseInt(process.env.PIPELINE_RETRY_INTERVAL || '10') * 1000,
 
 	INCLUDE_SPECIALS: /true/i.test(process.env.INCLUDE_SPECIALS || 'false'),
 	PREFER_EXTENDED: /true/i.test(process.env.PREFER_EXTENDED || 'false'),

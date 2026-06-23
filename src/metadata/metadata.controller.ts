@@ -1,54 +1,43 @@
 import axios from 'axios'
-import { mkdirSync, readdirSync, unlinkSync } from 'fs'
-import path from 'path'
 import { js2xml } from 'xml-js'
 import environment from '../environment.js'
-import { TargetLibraryFile } from '../library/library.model.js'
 import { QueueDownloadResult } from '../torrent/torrent.model.js'
 import { Context } from '../util/context.js'
-import getFileCrc32Hash from '../util/crc32.js'
 import { Filter } from '../util/filters.js'
 import Logger from '../util/logger.js'
 import resolveSeasonPosterFileName from '../util/resolve-season-poster-filename.js'
 import resolveSeriesRootFolder from '../util/resolve-series-root-folder.js'
-import safeCopyFileSync from '../util/safe-copy-file.js'
 import {
 	Episode,
 	EpisodeDescription,
-	Metadata,
+	FormattedArc,
 	MetadataAbsentError,
-	PipelineReport,
+	RawMetadataJson,
 	TorrentInfo,
 } from './metada.model.js'
 
 export class MetadataController {
-	private metadata: Metadata
-	private reprocess: boolean
+	private metadata: RawMetadataJson
+	private newMetadata: boolean = false
+
+	private monitored: FormattedArc[]
 
 	private TVShowNFO
 	private seasonNFOs = {}
 	private episodesNFOs = {}
 
-	private pipelineReport: PipelineReport
-
 	async refreshMetadata() {
 		Logger.info(`Refreshing Metadata...`)
 
-		let newMetadata = false
 		try {
 			let metadata = (await axios.get(environment.METADATA_URL)).data
-
 			if (
 				!this.metadata ||
 				metadata.status.last_update > this.metadata.status.last_update
 			) {
 				Logger.info(`Newer Metadata found!`)
 				this.metadata = metadata
-				newMetadata = true
-			} else if (this.reprocess) {
-				Logger.info(`Reprocessing Metadata due to previous errors!`)
-				this.reprocess = false
-				newMetadata = true
+				this.newMetadata = true
 			}
 		} catch (e) {
 			Logger.error(`Error refreshing Metadata, will retry...`)
@@ -56,343 +45,38 @@ export class MetadataController {
 		}
 
 		try {
-			if (newMetadata) await this.processMetadataEpisodes()
-			newMetadata = false
+			if (this.newMetadata) await this.sendToPipeline()
+			this.newMetadata = false
 		} catch (e: any) {
-			//TODO refactor checkMetadataDownloaded and create a queue of failedToProcess to only retry those
 			Logger.error(
-				`Unexpected error encountered when processing metadata, we will attempt to reprocess it again next cycle...`,
+				`Unexpected error encountered when sending monitored episodes to pipeline: '${e.message}'`,
 			)
-			this.reprocess = true
-			if (this.pipelineReport) {
-				this.pipelineReport.ended = new Date()
-				this.pipelineReport.status = 'ERRORED'
-				this.pipelineReport.error = e.message || 'Unspecified'
-			}
-		}
-		if (newMetadata) await this.processMetadataEpisodes()
-
-		setTimeout(async () => {
-			await this.refreshMetadata()
-		}, environment.METADATA_CHECK_INTERVAL)
-	}
-
-	async processMetadataEpisodes() {
-		this.checkMetadataDownloaded()
-
-		this.pipelineReport = new PipelineReport()
-
-		Logger.info(`Generating .nfo files...`)
-
-		await this.generateTVShowNFO()
-		await this.generateSeasonNFOs()
-		await this.generateEpisodeNFOs()
-
-		this.pipelineReport.processedEpisodes = 0
-		this.pipelineReport.monitoredEpisodes = this.metadata.arcs[
-			environment.METADATA_LANGUAGE
-		]
-			.filter(
-				a =>
-					(a.part != 0 || environment.INCLUDE_SPECIALS) &&
-					Filter({ arc: a.part }),
+			Logger.error(
+				`Retry in ${environment.METADATA_CHECK_INTERVAL / 1000} seconds`,
 			)
-			.map(a => {
-				return a.episodes.filter(e =>
-					Filter({ arc: a.part, episode: e.episode }),
-				).length
-			})
-			.reduce((acc, curr) => acc + curr)
-
-		this.pipelineReport.started = new Date()
-		this.pipelineReport.status = 'RUNNING'
-
-		Logger.info(`Processing episodes from metadata...`)
-
-		for (let arc of this.metadata.arcs[environment.METADATA_LANGUAGE]) {
-			if (!Filter({ arc: arc.part })) continue
-
-			if (arc.part == 0 && !environment.INCLUDE_SPECIALS) {
-				Logger.info(`Skipping Specials as per env INCLUDE_SPECIALS...`)
-				continue
-			}
-
-			Logger.info(`Processing Season ${arc.part}...`)
-
-			for (let episode of arc.episodes) {
-				if (!Filter({ arc: arc.part, episode: episode.episode })) continue
-				this.pipelineReport.processedEpisodes++
-				Logger.debug(
-					`Episode ${arc.part}-${String(episode.episode).padStart(2, '0')} - Processing`,
-				)
-
-				if (episode.standard == '702231E9') {
-					Logger.debug(`Skypiea 14 manual correction`)
-					episode.standard = '704F68EA'
-				}
-
-				let file = await Context.library.getExistingLibraryEpisodeFile(
-					arc.part,
-					Number.parseInt(episode.episode),
-				)
-				if (file) {
-					if (environment.SKIP_VERIFY_PRESENT_FILES) {
-						Logger.debug(
-							`Episode ${arc.part}-${String(episode.episode).padStart(2, '0')} - Exist on Media Server (Verification skipped)...`,
-						)
-						if (!environment.SKIP_ORGANIZE_PRESENT_FILES) {
-							await this.organizeFile(
-								arc.part,
-								Number.parseInt(episode.episode),
-							)
-						} else if (!environment.SKIP_UPDATE_METADATA_PRESENT_FILES) {
-							await this.updatemetadata(
-								arc.part,
-								Number.parseInt(episode.episode),
-							)
-						}
-						continue
-					}
-
-					Logger.debug(
-						`Episode ${arc.part}-${String(episode.episode).padStart(2, '0')} - Exists on Media Server (Verifying)`,
-					)
-
-					Logger.debug(
-						`Episode ${arc.part}-${String(episode.episode).padStart(2, '0')} - Hashing`,
-					)
-					let CRC32 = await getFileCrc32Hash(file)
-					Logger.debug(
-						`Episode ${arc.part}-${String(episode.episode).padStart(2, '0')} - Hash complete (${CRC32})`,
-					)
-
-					if (arc.part == 16 && Number.parseInt(episode.episode) == 25) {
-						if (!environment.PREFER_G8) {
-							Logger.debug(`Corrected 16. Skypiea 25 for alternate G-8 cut`)
-							episode.standard = 'C951349C'
-						}
-					}
-
-					if (environment.PREFER_EXTENDED && !!episode.extended) {
-						if (CRC32 == episode.extended) {
-							Logger.info(
-								`Episode ${arc.part}-${String(episode.episode).padStart(2, '0')} - Already present`,
-							)
-							if (!environment.SKIP_ORGANIZE_PRESENT_FILES) {
-								await this.organizeFile(
-									arc.part,
-									Number.parseInt(episode.episode),
-								)
-							} else if (!environment.SKIP_UPDATE_METADATA_PRESENT_FILES) {
-								await this.updatemetadata(
-									arc.part,
-									Number.parseInt(episode.episode),
-								)
-							}
-							continue
-						} else if (CRC32 == episode.standard) {
-							if (environment.SKIP_DOWNLOADS) {
-								Logger.info(
-									`Episode ${arc.part}-${String(episode.episode).padStart(2, '0')} - Standard instead of extended [Download skipped]`,
-								)
-							} else {
-								const queueResult = await this.addToDownloadQueue(
-									arc.part,
-									episode.episode,
-									true,
-								)
-								Logger.info(
-									`Episode ${arc.part}-${String(episode.episode).padStart(2, '0')} - Standard instead of extended [${this.formatDownloadQueueStatus(queueResult)}]`,
-								)
-							}
-						}
-					} else if (CRC32 == episode.standard) {
-						Logger.info(
-							`Episode ${arc.part}-${String(episode.episode).padStart(2, '0')} - Already present`,
-						)
-						if (!environment.SKIP_ORGANIZE_PRESENT_FILES) {
-							await this.organizeFile(
-								arc.part,
-								Number.parseInt(episode.episode),
-							)
-						} else if (!environment.SKIP_UPDATE_METADATA_PRESENT_FILES) {
-							await this.updatemetadata(
-								arc.part,
-								Number.parseInt(episode.episode),
-							)
-						}
-						continue
-					} else {
-						if (environment.SKIP_DOWNLOADS) {
-							Logger.info(
-								`Episode ${arc.part}-${String(episode.episode).padStart(2, '0')} - CRC32 Mismatch [Download skipped]`,
-							)
-						} else {
-							const queueResult = await this.addToDownloadQueue(
-								arc.part,
-								episode.episode,
-								environment.PREFER_EXTENDED && !!episode.extended,
-							)
-							Logger.info(
-								`Episode ${arc.part}-${String(episode.episode).padStart(2, '0')} - CRC32 Mismatch [${this.formatDownloadQueueStatus(queueResult)}]`,
-							)
-						}
-					}
-				} else {
-					if (environment.SKIP_DOWNLOADS) {
-						Logger.info(
-							`Episode ${arc.part}-${String(episode.episode).padStart(2, '0')} - Missing [Download skipped]`,
-						)
-					} else {
-						const queueResult = await this.addToDownloadQueue(
-							arc.part,
-							episode.episode,
-							environment.PREFER_EXTENDED && !!episode.extended,
-						)
-						Logger.info(
-							`Episode ${arc.part}-${String(episode.episode).padStart(2, '0')} - Missing [${this.formatDownloadQueueStatus(queueResult)}]`,
-						)
-					}
-				}
-			}
-
-			if (
-				this.pipelineReport.processedEpisodes >=
-				this.pipelineReport.monitoredEpisodes
-			) {
-				this.pipelineReport.ended = new Date()
-				this.pipelineReport.status = 'DONE'
-			}
+		} finally {
+			setTimeout(async () => {
+				await this.refreshMetadata()
+			}, environment.METADATA_CHECK_INTERVAL)
 		}
 	}
 
-	async organizeFile(arc: number, episode: number) {
-		this.checkMetadataDownloaded()
-		Logger.debug(
-			`Episode ${arc}-${String(episode).padStart(2, '0')} - Verifying path format...`,
-		)
-
-		let libraryFile = await Context.library.getExistingLibraryEpisodeFile(
-			arc,
-			episode,
-			true,
-		)
-
-		let episodeDescription = await Context.metadata.getEpisodeDescription(
-			arc,
-			episode,
-		)
-		let targetLibraryFile: TargetLibraryFile =
-			await Context.library.getTargetLibraryEpisodeFile(
-				arc,
-				episode,
-				episodeDescription,
-			)
-
-		if (
-			libraryFile != `${targetLibraryFile.path}${targetLibraryFile.filename}`
-		) {
-			let serverFile = await Context.library.getExistingLibraryEpisodeFile(
-				arc,
-				episode,
-			)
-			let serverFolder = path.resolve(serverFile, '..')
-			let serverFileName = serverFile.replace(`${serverFolder}${path.sep}`, '')
-
-			let targetFolder = path.resolve(
-				`${targetLibraryFile.path}`.replace(
-					environment.MOUNT_LIBRARY_MEDIA_SERVER,
-					environment.MOUNT_LIBRARY_ONEPACERR,
-				),
-			)
-			let targetFile = path.resolve(
-				`${targetLibraryFile.path}${targetLibraryFile.filename}`.replace(
-					environment.MOUNT_LIBRARY_MEDIA_SERVER,
-					environment.MOUNT_LIBRARY_ONEPACERR,
-				),
-			)
-
-			Logger.info(
-				`Episode ${arc}-${String(episode).padStart(2, '0')} - File on Media Server with wrong format, renaming...`,
-			)
-			mkdirSync(targetFolder, {
-				recursive: true,
-			})
-
-			let filesInFolder = readdirSync(serverFolder).filter(
-				f => f != serverFileName,
-			)
-			let trashFiles = filesInFolder.filter(f => {
-				return (
-					f.replace(/\.(nfo|mkv)$/, '') ==
-						serverFileName.replace(/\.mkv$/, '') ||
-					(f.includes(environment.LIBRARY_SERIES_NAME) &&
-						f.includes(
-							`S${String(arc).padStart(2, '0')}E${String(episode).padStart(2, '0')}`,
-						))
-				)
-			})
-
-			await safeCopyFileSync(serverFile, targetFile)
-
-			await Context.library.scanLibrary(targetLibraryFile.path, arc)
-
-			unlinkSync(serverFile)
-			if (trashFiles.length > 0)
-				Logger.info(
-					`Episode ${arc}-${String(episode).padStart(2, '0')} - Cleaning ${trashFiles.length} trash files...`,
-				)
-			for (let t of trashFiles) {
-				unlinkSync(path.resolve(serverFolder, t))
-			}
-
-			await Context.library.scanLibrary(
-				libraryFile.replace(/[\\/]+[^\\/]+$/, ''),
-				arc,
-			)
-			await Context.library.updateEpisodeMetadata(
-				arc,
-				episode,
-				episodeDescription.title,
-				episodeDescription.description,
-			)
-		} else {
-			Logger.debug(
-				`Episode ${arc}-${String(episode).padStart(2, '0')} - Correctly formatted...`,
-			)
-			if (!environment.SKIP_UPDATE_METADATA_PRESENT_FILES) {
-				await this.updatemetadata(arc, episode)
-			}
-		}
+	getMonitored(): FormattedArc[] {
+		return this.monitored
 	}
 
-	async updatemetadata(arc: number, episode: number) {
+	getTVShowNFO() {
 		this.checkMetadataDownloaded()
-		Logger.debug(
-			`Episode ${arc}-${String(episode).padStart(2, '0')} - Attempting Metadata Update`,
-		)
+		return this.TVShowNFO
+	}
 
-		let episodeDescription = await Context.metadata.getEpisodeDescription(
-			arc,
-			episode,
-		)
-		let targetLibraryFile: TargetLibraryFile =
-			await Context.library.getTargetLibraryEpisodeFile(
-				arc,
-				episode,
-				episodeDescription,
-			)
-
-		await Context.library.scanLibrary(targetLibraryFile.path, arc)
-
-		await Context.library.updateEpisodeMetadata(
-			arc,
-			episode,
-			episodeDescription.title,
-			episodeDescription.description,
-		)
-		await Context.library.updateSeasonMetadata(arc)
-		await Context.library.updateShowMetadata()
+	getSeasonNFO(arc: number) {
+		this.checkMetadataDownloaded()
+		return this.seasonNFOs[`${arc}`]
+	}
+	getEpisodeNFO(arc: number, episode: number) {
+		this.checkMetadataDownloaded()
+		return this.episodesNFOs[`${arc}`][`${episode}`]
 	}
 
 	getEpisodeDescription(arc: number, episode: number): EpisodeDescription {
@@ -412,6 +96,40 @@ export class MetadataController {
 	getShowDescription() {
 		this.checkMetadataDownloaded()
 		return this.metadata.tvshow[environment.METADATA_LANGUAGE]
+	}
+
+	private generateMonitored() {
+		this.checkMetadataDownloaded()
+		this.monitored = this.metadata.arcs[environment.METADATA_LANGUAGE]
+			.filter(
+				a =>
+					(a.part != 0 || environment.INCLUDE_SPECIALS) &&
+					Filter({ arc: a.part }),
+			)
+			.map(a => {
+				return {
+					arc: a.part,
+					title: a.title,
+					description: a.description,
+					episodes: a.episodes
+						.filter(e => Filter({ arc: a.part, episode: e.episode }))
+						.map(e => {
+							const desc = this.getEpisodeDescription(
+								a.part,
+								Number.parseInt(e.episode),
+							)
+							return {
+								episode: Number.parseInt(e.episode),
+								title: desc?.title,
+								description: desc?.description,
+								CRC32: {
+									standard: e.standard,
+									extended: e.extended,
+								},
+							}
+						}),
+				}
+			})
 	}
 
 	private async generateTVShowNFO() {
@@ -462,11 +180,6 @@ export class MetadataController {
 		)}`
 	}
 
-	getTVShowNFO() {
-		this.checkMetadataDownloaded()
-		return this.TVShowNFO
-	}
-
 	private async generateSeasonNFOs() {
 		this.checkMetadataDownloaded()
 
@@ -512,11 +225,6 @@ export class MetadataController {
 
 			this.seasonNFOs[`${a.part}`] = NFO
 		}
-	}
-
-	getSeasonNFO(arc: number) {
-		this.checkMetadataDownloaded()
-		return this.seasonNFOs[`${arc}`]
 	}
 
 	private async generateEpisodeNFOs() {
@@ -565,9 +273,24 @@ export class MetadataController {
 		}
 	}
 
-	getEpisodeNFO(arc: number, episode: number) {
+	private async sendToPipeline() {
 		this.checkMetadataDownloaded()
-		return this.episodesNFOs[`${arc}`][`${episode}`]
+
+		if (Context.pipeline.isRunning()) await Context.pipeline.waitForFinished()
+		Context.pipeline.create()
+
+		Logger.info(`Generating monitored episodes list...`)
+		await this.generateMonitored()
+
+		Logger.info(`Generating .nfo files...`)
+		await this.generateTVShowNFO()
+		await this.generateSeasonNFOs()
+		await this.generateEpisodeNFOs()
+
+		Logger.debug(`Adding monitored to pipeline`)
+		Context.pipeline.addMonitored(this.monitored)
+
+		Context.pipeline.start()
 	}
 
 	async addToDownloadQueue(
@@ -602,7 +325,7 @@ export class MetadataController {
 		return await Context.torrent.queueDownload(torrentInfo)
 	}
 
-	private formatDownloadQueueStatus(result: QueueDownloadResult): string {
+	formatDownloadQueueStatus(result: QueueDownloadResult): string {
 		switch (result) {
 			case 'added':
 				return 'Download queued'
@@ -641,14 +364,14 @@ export class MetadataController {
 		return episode
 	}
 
-	private checkMetadataDownloaded() {
+	public checkMetadataDownloaded() {
 		if (!this.metadata) {
 			Logger.warn(`Metadata missing, something went wrong with import...`)
 			throw new MetadataAbsentError()
 		}
 	}
 
-	getStatusReport() {
+	getReport() {
 		const base = {
 			url: environment.METADATA_URL,
 			configs: {
@@ -691,38 +414,6 @@ export class MetadataController {
 					.reduce((acc, curr) => acc + curr),
 				total: Object.keys(this.metadata.episodes).length,
 			},
-		}
-	}
-
-	getPipelineReport() {
-		return {
-			config: {
-				SKIP_VERIFY_PRESENT_FILES: environment.SKIP_VERIFY_PRESENT_FILES,
-				SKIP_ORGANIZE_PRESENT_FILES: environment.SKIP_VERIFY_PRESENT_FILES,
-				SKIP_UPDATE_METADATA_PRESENT_FILES:
-					environment.SKIP_VERIFY_PRESENT_FILES,
-				SKIP_DOWNLOADS: environment.SKIP_VERIFY_PRESENT_FILES,
-				SKIP_POSTERS: environment.SKIP_VERIFY_PRESENT_FILES,
-				INCLUDE_SPECIALS: environment.SKIP_VERIFY_PRESENT_FILES,
-				PREFER_EXTENDED: environment.SKIP_VERIFY_PRESENT_FILES,
-				PREFER_G8: environment.SKIP_VERIFY_PRESENT_FILES,
-			},
-			monitored: {
-				seasons: 1,
-				episodes: this.metadata.arcs[environment.METADATA_LANGUAGE]
-					.filter(
-						a =>
-							(a.part != 0 || environment.INCLUDE_SPECIALS) &&
-							Filter({ arc: a.part }),
-					)
-					.map(a => {
-						return a.episodes.filter(e =>
-							Filter({ arc: a.part, episode: e.episode }),
-						).length
-					})
-					.reduce((acc, curr) => acc + curr),
-			},
-			report: this.pipelineReport,
 		}
 	}
 }

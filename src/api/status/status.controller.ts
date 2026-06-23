@@ -5,10 +5,10 @@ import { Context } from '../../util/context.js'
 export class StatusController {
 	@Get(`/metadata`)
 	async metadata() {
-		return await Context.metadata.getStatusReport()
+		return await Context.metadata.getReport()
 	}
 	@Get(`/pipeline`)
 	async pipeline() {
-		return await Context.metadata.getPipelineReport()
+		return await Context.pipeline.getReport()
 	}
 }
