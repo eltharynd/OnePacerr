@@ -184,7 +184,9 @@ export class PipelineController {
 		Logger.info(``)
 		if (failed.length > 0) {
 			Logger.warn(`##################################`)
-			Logger.warn(`#### Pipeline had ${failed.length} failures  ####`)
+			Logger.warn(
+				`#### Pipeline had ${failed.length == 1 ? `${failed.length} failure ` : failed.length > 9 ? `${failed.length} failures` : `${failed.length} failures `} ####`,
+			)
 			Logger.warn(`#### Will retry next cycle    ####`)
 			Logger.warn(`##################################`)
 		} else {
