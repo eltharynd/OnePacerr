@@ -320,8 +320,37 @@ export class PipelineController {
 							)
 						}
 					}
+				} else if (CRC32 == me.CRC32.standard) {
+					Logger.debug(
+						`S${ma.arc}E${String(me.episode).padStart(2, '0')} - Standard present`,
+					)
+					if (!environment.PIPELINE_SKIP_ORGANIZE_PRESENT_FILES) {
+						await this.organizeFile(ma.arc, me.episode)
+					} else if (!environment.PIPELINE_SKIP_UPDATE_METADATA_PRESENT_FILES) {
+						await this.updatemetadata(ma.arc, me.episode)
+					} else
+						Logger.info(
+							`S${ma.arc}E${String(me.episode).padStart(2, '0')} - Already present`,
+						)
+				} else if (CRC32 == me.CRC32.extended) {
+					Logger.debug(
+						`S${ma.arc}E${String(me.episode).padStart(2, '0')} - Extended present`,
+					)
+					if (environment.PIPELINE_SKIP_DOWNLOADS) {
+						Logger.info(
+							`S${ma.arc}E${String(me.episode).padStart(2, '0')} - Extended instead of Standard [Download skipped]`,
+						)
+					} else {
+						const queueResult = await Context.metadata.addToDownloadQueue(
+							ma.arc,
+							me.episode,
+							true,
+						)
+						Logger.info(
+							`S${ma.arc}E${String(me.episode).padStart(2, '0')} - Extended instead of Standard [${Context.metadata.formatDownloadQueueStatus(queueResult)}]`,
+						)
+					}
 				} else {
-					console.log(6)
 					if (environment.PIPELINE_SKIP_DOWNLOADS) {
 						Logger.info(
 							`S${ma.arc}E${String(me.episode).padStart(2, '0')} - CRC32 Mismatch [Download skipped]`,
