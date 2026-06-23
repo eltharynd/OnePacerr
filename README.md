@@ -447,8 +447,10 @@ If you set `LIBRARY_MEDIA_SERVER=false`, you can instead generate those files re
 | :--- | :--- | :--- |
 | `MOUNT_LIBRARY_MEDIA_SERVER` | _None_ | Use these mapping variables if your **Media Server** uses different mount paths than the OnePacerr container. |
 | `MOUNT_LIBRARY_ONEPACERR` | _None_ | Use these mapping variables if your **Media Server** uses different mount paths than the OnePacerr container. |
-| `MOUNT_DOWNLOADS_TORRENT` | _None_ | Use these mapping variables if **qBittorrent** uses different mount paths than the OnePacerr container. |
-| `MOUNT_DOWNLOADS_ONEPACERR` | _None_ | Use these mapping variables if **qBittorrent** uses different mount paths than the OnePacerr container. |
+| `MOUNT_DOWNLOADS_TORRENT` | _None_ | Use these mapping variables if your **Torrent Client** uses different mount paths than the OnePacerr container. |
+| `MOUNT_DOWNLOADS_ONEPACERR` | _None_ | Use these mapping variables if your **Torrent Client** uses different mount paths than the OnePacerr container. |
+
+If you're not sure what Mount Path Mappings are you can have a read on [TRaSH Guides](https://trash-guides.info/Radarr/Tips/Radarr-remote-path-mapping/).
 
 ---
 
