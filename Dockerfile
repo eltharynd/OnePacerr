@@ -20,4 +20,4 @@ COPY --from=builder /app/dist ./dist
 RUN touch .env
 
 EXPOSE 3000
-CMD ["node", "--enable-source-maps", "dist/index.js"]
+CMD ["npm", "start"]
