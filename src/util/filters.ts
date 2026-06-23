@@ -50,7 +50,7 @@ class FiltersContainer {
 			this.includes.find(
 				inc =>
 					(!inc.arc || inc.arc == filter.arc) &&
-					(!inc.episode || inc.episode == filter.episode),
+					(isNaN(inc.episode) || inc.episode == filter.episode),
 			)
 
 		if (!toBeIncluded) return false
@@ -60,7 +60,7 @@ class FiltersContainer {
 			this.excludes.find(
 				inc =>
 					(!inc.arc || inc.arc == filter.arc) &&
-					(!inc.episode || inc.episode == filter.episode),
+					(isNaN(inc.episode) || inc.episode == filter.episode),
 			)
 
 		return !tobeExcluded
@@ -86,13 +86,13 @@ const Filters = new FiltersContainer()
 export const Filter = (filter: IFilter) => {
 	let arc = Number.parseInt(`${filter.arc}`)
 	let episode = Number.parseInt(`${filter.episode}`)
-	if (episode > 0)
+	if (isNaN(episode))
+		return Filters.testSeason({
+			arc: arc,
+		})
+	else
 		return Filters.testEpisode({
 			arc: arc,
 			episode: episode,
-		})
-	else
-		return Filters.testSeason({
-			arc: arc,
 		})
 }
