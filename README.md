@@ -221,7 +221,7 @@ services:
       #- PLEX_PLEXMATCH_EVEN_IF_NOT=false 
       
       # Library - Jellyfin
-      - JELLYFIN__URL=http://localhost:8096
+      - JELLYFIN_URL=http://localhost:8096
       - JELLYFIN_USERNAME=<your-username-here>
       - JELLYFIN_PASSWORD=<your-password-here>
       #- JELLYFIN_LIBRARY_NAME=Shows
