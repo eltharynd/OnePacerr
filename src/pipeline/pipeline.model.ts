@@ -27,6 +27,21 @@ export class PipelineReport {
 	error?: string
 }
 
-export class NoActivePipelineError extends Error {}
-export class PipelineNotReadyError extends Error {}
-export class PipelineNotDoneError extends Error {}
+export class NoActivePipelineError extends Error {
+	constructor(message?: string, options?: { cause?: unknown }) {
+		super(message, options)
+		this.name = 'NoActivePipelineError'
+	}
+}
+export class PipelineNotReadyError extends Error {
+	constructor(message?: string, options?: { cause?: unknown }) {
+		super(message, options)
+		this.name = 'PipelineNotReadyError'
+	}
+}
+export class PipelineNotDoneError extends Error {
+	constructor(message?: string, options?: { cause?: unknown }) {
+		super(message, options)
+		this.name = 'PipelineNotDoneError'
+	}
+}

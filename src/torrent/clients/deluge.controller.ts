@@ -113,4 +113,9 @@ export class DelugeController implements ITorrentController {
 	}
 }
 
-export class LabelsDisabledInDelugeError extends Error {}
+export class LabelsDisabledInDelugeError extends Error {
+	constructor(message?: string, options?: { cause?: unknown }) {
+		super(message, options)
+		this.name = 'LabelsDisabledInDelugeError'
+	}
+}

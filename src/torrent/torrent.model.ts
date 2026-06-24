@@ -20,4 +20,9 @@ export interface ITorrentController {
 	updateTorrentCategory(torrent: Torrent, category: string): Promise<void>
 }
 
-export class TorrentConnectionError extends Error {}
+export class TorrentConnectionError extends Error {
+	constructor(message?: string, options?: { cause?: unknown }) {
+		super(message, options)
+		this.name = 'TorrentConnectionError'
+	}
+}

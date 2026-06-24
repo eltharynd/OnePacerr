@@ -66,5 +66,15 @@ export type FormattedEpisode = {
 	}
 }
 
-export class MetadataAbsentError extends Error {}
-export class CRCNotInMetadata extends Error {}
+export class MetadataAbsentError extends Error {
+	constructor(message?: string, options?: { cause?: unknown }) {
+		super(message, options)
+		this.name = 'MetadataAbsentError'
+	}
+}
+export class CRCNotInMetadata extends Error {
+	constructor(message?: string, options?: { cause?: unknown }) {
+		super(message, options)
+		this.name = 'CRCNotInMetadata'
+	}
+}

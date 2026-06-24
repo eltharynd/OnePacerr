@@ -310,4 +310,9 @@ export class PlexController implements ILibraryController {
 	}
 }
 
-class PlexSocketNoResponseError extends Error {}
+class PlexSocketNoResponseError extends Error {
+	constructor(message?: string, options?: { cause?: unknown }) {
+		super(message, options)
+		this.name = 'PlexSocketNoResponseError'
+	}
+}
