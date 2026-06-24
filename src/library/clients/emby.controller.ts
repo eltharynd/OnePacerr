@@ -146,13 +146,14 @@ export class EmbyController implements ILibraryController {
 		await this.emby.startTask(scanTask.Id)
 
 		await new Promise<void>((resolve, reject) => {
-			const timeoutHandler = setTimeout(() => {
+			const timeoutCallback = () => {
 				clearInterval(pollInterval)
 				Logger.error(
 					`Emby didn't notify folder update before timeout expired...`,
 				)
 				reject()
-			}, 15000)
+			}
+			let timeoutHandler = setTimeout(timeoutCallback, 15000)
 
 			const pollInterval = setInterval(async () => {
 				const currentTask = await this.emby.getTask(scanTask.Id)
@@ -163,6 +164,8 @@ export class EmbyController implements ILibraryController {
 					clearInterval(pollInterval)
 					resolve()
 				} else {
+					if (timeoutHandler) clearInterval(timeoutHandler)
+					timeoutHandler = setTimeout(timeoutCallback, 15000)
 					Logger.debug(
 						`Emby Scanning... ${currentTask.CurrentProgressPercentage ?? 0}%`,
 					)

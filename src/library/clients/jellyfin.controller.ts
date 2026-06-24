@@ -173,13 +173,14 @@ export class JellyfinController implements ILibraryController {
 		await tasksApi.startTask({ taskId: scanTask.Id })
 
 		await new Promise<void>((resolve, reject) => {
-			const timeoutHandler = setTimeout(() => {
+			const timeoutCallback = () => {
 				clearInterval(pollInterval)
 				Logger.error(
 					`Jellyfin didn't notify folder update before timeout expired...`,
 				)
 				reject()
-			}, 15000)
+			}
+			let timeoutHandler = setTimeout(timeoutCallback, 15000)
 
 			const pollInterval = setInterval(async () => {
 				const currentTask = await tasksApi.getTask({ taskId: scanTask.Id })
@@ -190,6 +191,8 @@ export class JellyfinController implements ILibraryController {
 					clearInterval(pollInterval)
 					resolve()
 				} else {
+					if (timeoutHandler) clearInterval(timeoutHandler)
+					timeoutHandler = setTimeout(timeoutCallback, 15000)
 					Logger.debug(
 						`Jellyfin Scanning... ${currentTask.data.CurrentProgressPercentage ?? 0}%`,
 					)
