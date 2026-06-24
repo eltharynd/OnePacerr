@@ -404,7 +404,7 @@ In order for an episode to be Monitored (processed/downloaded/updated/etc), it h
 | `PLEX_SKIP_METADATA_FILES` | `true` | If `false`, will generate `.nfo` and poster pngs even when Media Server is Plex. |
 | `PLEX_PLEXMATCH_EVEN_IF_NOT` | `false` | If `true`, will generate `.plexmatch` file even when using a different Media Sever. |
 
-**Note** on `PLEX_SKIP_METADATA_FILES`: Metadata for plex is set via API because doing so with just the files are unreliable at best. For this reason, when `LIBRARY_MEDIA_SERVER` is set to `plex`, by default (`PLEX_SKIP_METADATA_FILES=true`) OnePacerr will not generate the `.nfo` and the various `poster.png` on the Media Server folder.
+**Note** on `PLEX_SKIP_METADATA_FILES`: Metadata for plex is set via API because doing so with just the files is unreliable at best. For this reason, when `LIBRARY_MEDIA_SERVER` is set to `plex`, by default (`PLEX_SKIP_METADATA_FILES=true`) OnePacerr will not generate the `.nfo` and the various `poster.png` on the Media Server folder.
 
 If you set `PLEX_SKIP_METADATA_FILES=false`, you can instead generate those files regardless. This is useful if you want to use the same media folder for multiple Media Servers, or if you just would rather create all of the metadata in case you ever change Media Server (it doesn't take that much space anyways).
 
