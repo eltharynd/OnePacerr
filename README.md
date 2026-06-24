@@ -6,7 +6,7 @@
 [![GitHub Last Commit](https://img.shields.io/github/last-commit/eltharynd/onepacerr?style=flat-square)](https://github.com/eltharynd/OnePacerr/commits/main/)
 [![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)](https://github.com/eltharynd/OnePacerr?tab=MIT-1-ov-file)
 
-**OnePacerr** is a standalone, automated One Pace download tool designed specifically to complement **Sonarr** in your **Home Server** setups, but it can also be used for "smaller" purposes.
+Automated One Pace downloads and metadata for Plex, Jellyfin, and Emby. Built to complement your Sonarr stack.
 
 Because Sonarr does not natively support [One
 Pace](https://onepace.net/) (the fan-edited, manga-accurate version of One Piece), this app
