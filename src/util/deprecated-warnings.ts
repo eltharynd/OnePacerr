@@ -42,9 +42,9 @@ export default function deprecatedWarnings() {
 			Logger.warn(
 				`ENV_VAR DEPRECATION: You have configured '${renamed.old}'. This has been renamed to '${renamed.new}'. It will continue working temporarily but please update it...`,
 			)
+	}
 
-		if (process.env['DEBUGGING']) {
-			Logger.changeConfigs({ LOG_LEVEL: 'debug' })
-		}
+	if (process.env['DEBUGGING']) {
+		Logger.changeConfigs({ LOG_LEVEL: 'debug' })
 	}
 }

@@ -1,9 +1,9 @@
 import 'reflect-metadata'
-import { Express } from './api/express.js'
-import { Context } from './util/context.js'
+import environment from './environment.js'
 
 import { Logger } from 'ez-ts-logger'
-import environment from './environment.js'
+
+import { Express } from './api/express.js'
 import { LibraryController } from './library/library.controller.js'
 import { MetadataController } from './metadata/metadata.controller.js'
 import { PipelineController } from './pipeline/pipeline.controller.js'
@@ -11,7 +11,7 @@ import { RSSController } from './rss/rss.controller.js'
 import { LabelsDisabledInDelugeError } from './torrent/clients/deluge.controller.js'
 import { TorrentController } from './torrent/torrent.controller.js'
 import { TorrentConnectionError } from './torrent/torrent.model.js'
-import deprecatedWarnings from './util/deprecated-warnings.js'
+import { Context } from './util/context.js'
 import { logErrorCause } from './util/format-connection-error.js'
 
 const startApp = async () => {
@@ -43,8 +43,6 @@ const startApp = async () => {
 		Logger.info(`##################################`)
 		Logger.info('')
 		Logger.info('STARTING APPLICATION...')
-
-		deprecatedWarnings()
 
 		Logger.info('INITIALIZING EXPRESS SERVER...')
 		Context.express = new Express()

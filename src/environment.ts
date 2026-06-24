@@ -1,4 +1,6 @@
 import dotenv from 'dotenv'
+import { Logger } from 'ez-ts-logger'
+import deprecatedWarnings from './util/deprecated-warnings.js'
 dotenv.config({ path: './.env' })
 
 export default {
@@ -173,3 +175,7 @@ export default {
 	METADATA_CHECK_INTERVAL:
 		Number.parseInt(process.env.METADATA_CHECK_INTERVAL || '3600') * 1000,
 }
+
+Logger.reloadEnvConfigs()
+
+deprecatedWarnings()
