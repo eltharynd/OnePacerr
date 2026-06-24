@@ -3,9 +3,9 @@ import {
 	Torrent as qbTorrent,
 	TorrentCategories,
 } from '@ctrl/qbittorrent'
+import { Logger } from 'ez-ts-logger'
 import environment from '../../environment.js'
 import { TorrentInfo } from '../../metadata/metadata.model.js'
-import Logger from '../../util/logger.js'
 import {
 	ITorrentController,
 	Torrent,

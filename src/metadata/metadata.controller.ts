@@ -1,9 +1,9 @@
 import axios from 'axios'
+import { Logger } from 'ez-ts-logger'
 import { js2xml } from 'xml-js'
 import environment from '../environment.js'
 import { Context } from '../util/context.js'
 import { Filter } from '../util/filters.js'
-import Logger from '../util/logger.js'
 import resolveSeasonPosterFileName from '../util/resolve-season-poster-filename.js'
 import resolveSeriesRootFolder from '../util/resolve-series-root-folder.js'
 import {

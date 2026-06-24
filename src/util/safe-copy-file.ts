@@ -1,6 +1,6 @@
+import { Logger } from 'ez-ts-logger'
 import { existsSync, unlinkSync } from 'node:fs'
 import { copyFile } from 'node:fs/promises'
-import Logger from './logger.js'
 
 export default function safeCopyFileSync(source: string, destination: string) {
 	return new Promise<void>((resolve, reject) => {

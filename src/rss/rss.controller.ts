@@ -1,8 +1,8 @@
+import { Logger } from 'ez-ts-logger'
 import { readFileSync, writeFileSync } from 'node:fs'
 import { stat } from 'node:fs/promises'
 import path from 'node:path'
 import Parser from 'rss-parser'
-import Logger from '../util/logger.js'
 import { Feed, Item } from './rss.model.js'
 
 const RSS_FEED_URL = `https://onepace.net/en/releases/rss.xml`

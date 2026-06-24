@@ -2,6 +2,7 @@ import 'reflect-metadata'
 import { Express } from './api/express.js'
 import { Context } from './util/context.js'
 
+import { Logger } from 'ez-ts-logger'
 import environment from './environment.js'
 import { LibraryController } from './library/library.controller.js'
 import { MetadataController } from './metadata/metadata.controller.js'
@@ -12,7 +13,6 @@ import { TorrentController } from './torrent/torrent.controller.js'
 import { TorrentConnectionError } from './torrent/torrent.model.js'
 import deprecatedWarnings from './util/deprecated-warnings.js'
 import { logErrorCause } from './util/format-connection-error.js'
-import Logger from './util/logger.js'
 
 const startApp = async () => {
 	let gracefulClose = async () => {

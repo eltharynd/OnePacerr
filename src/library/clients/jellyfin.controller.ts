@@ -7,11 +7,11 @@ import { getLibraryStructureApi } from '@jellyfin/sdk/lib/utils/api/library-stru
 import { getScheduledTasksApi } from '@jellyfin/sdk/lib/utils/api/scheduled-tasks-api.js'
 import { getTvShowsApi } from '@jellyfin/sdk/lib/utils/api/tv-shows-api.js'
 import { getUserApi } from '@jellyfin/sdk/lib/utils/api/user-api.js'
+import { Logger } from 'ez-ts-logger'
 import { randomUUID } from 'node:crypto'
 import path from 'node:path'
 import environment from '../../environment.js'
 import { Context } from '../../util/context.js'
-import Logger from '../../util/logger.js'
 import sanitizeWindowsFileName from '../../util/sanitize-windows-filename.js'
 import { LibraryController } from '../library.controller.js'
 import {

@@ -1,4 +1,5 @@
 import { NextFunction, Request, Response } from 'express'
+import { Logger } from 'ez-ts-logger'
 import {
 	ExpressErrorMiddlewareInterface,
 	HttpError,
@@ -6,7 +7,6 @@ import {
 	Req,
 	Res,
 } from 'routing-controllers'
-import Logger from '../../util/logger.js'
 import { InternalServerErrorResponse } from '../interceptors/default.interceptor.js'
 
 @Middleware({ type: 'after' })

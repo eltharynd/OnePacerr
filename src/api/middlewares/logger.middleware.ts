@@ -1,4 +1,5 @@
 import { NextFunction, Request } from 'express'
+import { Logger } from 'ez-ts-logger'
 import {
 	ExpressMiddlewareInterface,
 	Middleware,
@@ -6,7 +7,6 @@ import {
 	Res,
 } from 'routing-controllers'
 import environment from '../../environment.js'
-import Logger from '../../util/logger.js'
 
 @Middleware({ type: 'before' })
 export class LoggerMiddleware implements ExpressMiddlewareInterface {

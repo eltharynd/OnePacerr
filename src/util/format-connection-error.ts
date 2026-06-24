@@ -1,4 +1,4 @@
-import Logger from './logger.js'
+import { Logger } from 'ez-ts-logger'
 
 export function formatConnectionError(
 	label: string,

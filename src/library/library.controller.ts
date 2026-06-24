@@ -1,8 +1,8 @@
+import { Logger } from 'ez-ts-logger'
 import { mkdirSync, writeFileSync } from 'node:fs'
 import path from 'node:path'
 import environment from '../environment.js'
 import { Context } from '../util/context.js'
-import Logger from '../util/logger.js'
 import resolvePosterPath from '../util/resolve-poster-path.js'
 import resolveSeasonPosterFileName from '../util/resolve-season-poster-filename.js'
 import resolveSeriesRootFolder, {

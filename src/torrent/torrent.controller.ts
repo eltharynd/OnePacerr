@@ -1,3 +1,4 @@
+import { Logger } from 'ez-ts-logger'
 import { existsSync, mkdirSync, readdirSync, unlinkSync } from 'node:fs'
 import path from 'node:path'
 import environment from '../environment.js'
@@ -10,7 +11,6 @@ import {
 } from '../metadata/metadata.model.js'
 import { Context } from '../util/context.js'
 import { Filter } from '../util/filters.js'
-import Logger from '../util/logger.js'
 import safeCopyFileSync from '../util/safe-copy-file.js'
 import { DelugeController } from './clients/deluge.controller.js'
 import { qBittorrentController } from './clients/qbittorrent.controller.js'

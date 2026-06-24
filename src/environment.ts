@@ -2,15 +2,10 @@ import dotenv from 'dotenv'
 dotenv.config({ path: './.env' })
 
 export default {
-	/**
-	 * GENERAL
-	 */
-	//TODO complete after updating logger
 	LOG_LEVEL: process.env.LOG_LEVEL || 'info',
 	DEBUGGING:
 		/debug/i.test(process.env.LOG_LEVEL || 'false') ||
 		/true/i.test(process.env.DEBUGGING || 'false'),
-	LOG_OUTPUT: process.env.LOG_OUTPUT || 'text',
 
 	TESTING:
 		/test/i.test(process.env.NODE_ENV) || /true/i.test(process.env.TESTING),

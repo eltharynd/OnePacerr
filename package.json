@@ -29,6 +29,7 @@
 		"cors": "^2.8.6",
 		"dotenv": "^17.4.2",
 		"express": "^5.2.1",
+		"ez-ts-logger": "^1.0.1",
 		"multer": "^2.2.0",
 		"node-json-logger": "^0.3.0",
 		"reflect-metadata": "^0.2.2",

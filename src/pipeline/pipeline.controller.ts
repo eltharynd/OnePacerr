@@ -1,3 +1,4 @@
+import { Logger } from 'ez-ts-logger'
 import { EventEmitter } from 'node:events'
 import { mkdirSync, readdirSync, unlinkSync } from 'node:fs'
 import path from 'node:path'
@@ -11,7 +12,6 @@ import {
 import { QueueDownloadResult } from '../torrent/torrent.model.js'
 import { Context } from '../util/context.js'
 import getFileCrc32Hash from '../util/crc32.js'
-import Logger from '../util/logger.js'
 import safeCopyFileSync from '../util/safe-copy-file.js'
 import {
 	NoActivePipelineError,

@@ -1,6 +1,6 @@
 import { isNumber } from 'class-validator'
+import { Logger } from 'ez-ts-logger'
 import environment from '../environment.js'
-import Logger from './logger.js'
 
 type IFilterInternal = {
 	arc: number

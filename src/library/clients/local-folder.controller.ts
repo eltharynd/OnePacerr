@@ -1,8 +1,8 @@
+import { Logger } from 'ez-ts-logger'
 import { existsSync, mkdirSync, readdirSync } from 'fs'
 import path from 'path'
 import environment from '../../environment.js'
 import { Context } from '../../util/context.js'
-import Logger from '../../util/logger.js'
 import sanitizeWindowsFileName from '../../util/sanitize-windows-filename.js'
 import { LibraryController } from '../library.controller.js'
 import {

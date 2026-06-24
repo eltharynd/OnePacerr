@@ -1,7 +1,7 @@
+import { Logger } from 'ez-ts-logger'
 import { existsSync } from 'fs'
 import path from 'path'
 import environment from '../environment.js'
-import Logger from './logger.js'
 
 export default function resolvePosterPath(options?: IResolvePosterPathOptions) {
 	if (

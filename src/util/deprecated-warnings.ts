@@ -1,4 +1,4 @@
-import Logger from './logger.js'
+import { Logger } from 'ez-ts-logger'
 
 export default function deprecatedWarnings() {
 	const renamedEnv: { old: string; new: string }[] = [
@@ -42,5 +42,9 @@ export default function deprecatedWarnings() {
 			Logger.warn(
 				`ENV_VAR DEPRECATION: You have configured '${renamed.old}'. This has been renamed to '${renamed.new}'. It will continue working temporarily but please update it...`,
 			)
+
+		if (process.env['DEBUGGING']) {
+			Logger.changeConfigs({ LOG_LEVEL: 'debug' })
+		}
 	}
 }
