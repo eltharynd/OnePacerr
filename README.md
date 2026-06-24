@@ -492,16 +492,7 @@ If you want to contribute to the posters or create an entire new set, first of a
 
 ## 📅 Roadmap
 
-- [x] **Poster settings to chose either official/alternate or customs** (since v1.1.1)
-- [x] **Handle Network failures** with a delayed retry or something... (since v1.2.0)
-- [X] **Remove Plex requirement** for when someone just wants to organize a standalone folder (since v1.2.0)
-  - Do so by refactoring PlexController with Factory style so new LibraryControllers can be more easily implemented. This would speed up Jellyfin/Kodi/Emby implementation considerally. Treat no media server the same way just organizing a folder and creating .plexmatch .nfo and such
-- [X] **Local Folder Metadata** files creation so that they can later be moved to any Media Server (since v1.3.0)
-- [X] **Jellyfin Support** _(Requested by Marci on Discord)_ (since v1.3.0)
-- [X] **Filters** to skip seasons/episodes (since v1.3.4)
-- [X] **Better re-organize** check for leftover files and delete them... (since v1.3.5)
-- [X] **Support Deluge** (since v1.3.8)
-- [X] **Emby Support** _(Requested by u/RealJustMe on r/Servarr)_ (since v1.4.0)
+- [ ] **Docusaurus** documentation
 - [ ] **Support uTorrent**
 - [ ] **Rest API** Manual execution/status/configuration endpoints
 - [ ] **Support hard/softlinks**
