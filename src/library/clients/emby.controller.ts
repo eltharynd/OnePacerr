@@ -143,7 +143,15 @@ export class EmbyController implements ILibraryController {
 
 		Logger.debug(`Refreshing Library`)
 
-		await this.emby.startTask(scanTask.Id)
+		if (this.show.Id) {
+			Logger.debug(`Emby Show already exits, refreshing show only`)
+			await this.emby.refreshSeries(this.show.Id)
+		} else {
+			Logger.debug(
+				`Emby doesn't have the show already, scanning the whole Library`,
+			)
+			await this.emby.startTask(scanTask.Id)
+		}
 
 		await new Promise<void>((resolve, reject) => {
 			const timeoutCallback = () => {
@@ -160,6 +168,7 @@ export class EmbyController implements ILibraryController {
 
 				if (currentTask.State === 'Idle') {
 					Logger.debug(`Emby notified folder update`)
+					console.log(currentTask)
 					clearTimeout(timeoutHandler)
 					clearInterval(pollInterval)
 					resolve()

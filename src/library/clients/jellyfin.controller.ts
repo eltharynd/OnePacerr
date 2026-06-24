@@ -1,14 +1,4 @@
-import { Api, Jellyfin } from '@jellyfin/sdk'
-import { BaseItemKind } from '@jellyfin/sdk/lib/generated-client/models/base-item-kind.js'
-import { VirtualFolderInfo } from '@jellyfin/sdk/lib/generated-client/models/virtual-folder-info.js'
-import { getItemsApi } from '@jellyfin/sdk/lib/utils/api/items-api.js'
-import { getLibraryApi } from '@jellyfin/sdk/lib/utils/api/library-api.js'
-import { getLibraryStructureApi } from '@jellyfin/sdk/lib/utils/api/library-structure-api.js'
-import { getScheduledTasksApi } from '@jellyfin/sdk/lib/utils/api/scheduled-tasks-api.js'
-import { getTvShowsApi } from '@jellyfin/sdk/lib/utils/api/tv-shows-api.js'
-import { getUserApi } from '@jellyfin/sdk/lib/utils/api/user-api.js'
 import { Logger } from 'ez-ts-logger'
-import { randomUUID } from 'node:crypto'
 import path from 'node:path'
 import environment from '../../environment.js'
 import { Context } from '../../util/context.js'
@@ -20,70 +10,56 @@ import {
 	LibraryConnectionError,
 	TargetLibraryFile,
 } from '../library.model.js'
+import JellyfinClient, {
+	JellyfinConfig,
+	JellyfinItem,
+	JellyfinLibrary,
+	JellyfinVirtualFolder,
+} from './jellyfin.client.js'
 
 export class JellyfinController implements ILibraryController {
 	readonly libraryClient: LibraryClient = 'jellyfin'
 
-	private jellyfin: Jellyfin
-	private api: Api
-	private credentials: { Username: string; Pw: string }
+	private jellyfin: JellyfinClient
 
-	private library
-	private virtualFolder: VirtualFolderInfo
-	private show
+	private library: JellyfinLibrary
+	private virtualFolder: JellyfinVirtualFolder
+	private show: JellyfinItem
 
-	constructor(
-		private config: { baseUrl: string; username: string; password: string },
-	) {
-		if (!config.baseUrl || !config.username || !config.password)
-			throw new Error(`Jellyfin misconfigured`)
-
-		this.jellyfin = new Jellyfin({
-			clientInfo: {
-				name: 'OnePacerr',
-				version: process.env.npm_package_version,
-			},
-			deviceInfo: {
-				name: 'OnePacerr container',
-				id: randomUUID(),
-			},
-		})
-
-		this.api = this.jellyfin.createApi(config.baseUrl)
-
-		this.credentials = {
-			Username: config.username,
-			Pw: config.password,
+	constructor(private config: JellyfinConfig) {
+		if (!config.baseUrl || !config.username || !config.password) {
+			throw new LibraryConnectionError(
+				'Could not connect to Jellyfin — check JELLYFIN_URL and credentials. Set JELLYFIN_URL, JELLYFIN_USERNAME, and JELLYFIN_PASSWORD',
+			)
 		}
+		this.jellyfin = new JellyfinClient(config)
 	}
 
 	async init() {
 		Logger.info(`Authenticating to Jellyfin at ${this.config.baseUrl}...`)
-		await getUserApi(this.api).authenticateUserByName({
-			authenticateUserByName: this.credentials,
-		})
+		await this.jellyfin.login()
 
 		Logger.info(
 			`Searching for Jellyfin Library '${environment.JELLYFIN_LIBRARY_NAME}'...`,
 		)
-		this.library = (
-			await getLibraryApi(this.api).getMediaFolders()
-		).data.Items.find(mf => mf.Name == environment.JELLYFIN_LIBRARY_NAME)
+		this.library = (await this.jellyfin.getLibraries()).find(
+			l => l.Name == environment.JELLYFIN_LIBRARY_NAME,
+		)
 
 		if (!this.library) {
-			const available = (
-				await getLibraryApi(this.api).getMediaFolders()
-			).data.Items.map(l => l.Name).join(', ')
-
+			const available = (await this.jellyfin.getLibraries())
+				.map(l => l.Name)
+				.join(', ')
 			throw new LibraryConnectionError(
 				`Jellyfin library '${environment.JELLYFIN_LIBRARY_NAME}' not found at ${this.config.baseUrl}. Available libraries: ${available || 'none'}`,
 			)
 		}
 
 		Logger.info(`Searching for Jellyfin Virtual Folder...`)
-		this.virtualFolder = (
-			await getLibraryStructureApi(this.api).getVirtualFolders()
-		).data.find(vf => vf.Name == environment.JELLYFIN_LIBRARY_NAME)
+		const virtualFolders = await this.jellyfin.getLibraryLocations(
+			this.library.Name,
+		)
+		this.virtualFolder = virtualFolders[0]
 
 		if (!this.virtualFolder?.Locations?.[0]) {
 			throw new LibraryConnectionError(
@@ -105,16 +81,13 @@ export class JellyfinController implements ILibraryController {
 	): Promise<string> {
 		let _episode
 		try {
-			_episode = (
-				await getTvShowsApi(this.api).getEpisodes({
-					seriesId: this.show.Id,
-					fields: ['Path' as any],
-				})
-			).data.Items.find(e => {
-				return e.IndexNumber == episode && e.ParentIndexNumber == arc
-			})
+			_episode = (await this.jellyfin.getEpisodes(this.show.Id, ['Path'])).find(
+				e => {
+					return e.IndexNumber == episode && e.ParentIndexNumber == arc
+				},
+			)
 
-			if (!_episode) throw new Error('Episode not on Jellyfin')
+			if (!_episode) throw new Error('Episode not on JellyJellyfinfin')
 
 			if (pathAccordingToMediaServer) return _episode.Path
 			else
@@ -161,8 +134,7 @@ export class JellyfinController implements ILibraryController {
 	}
 
 	async scanLibrary(folder: string, arc: number) {
-		const tasksApi = getScheduledTasksApi(this.api)
-		const tasks = (await tasksApi.getTasks()).data
+		const tasks = await this.jellyfin.getTasks()
 		const scanTask = tasks.find(t => t.Key === 'RefreshLibrary')
 		if (!scanTask) {
 			Logger.error(`Couldn't subscribe to Jellyfin Scan Task`)
@@ -170,7 +142,16 @@ export class JellyfinController implements ILibraryController {
 		}
 
 		Logger.debug(`Refreshing Library`)
-		await tasksApi.startTask({ taskId: scanTask.Id })
+
+		if (this.show.Id) {
+			Logger.debug(`Jellyfin Show already exits, refreshing show only`)
+			await this.jellyfin.refreshSeries(this.show.Id)
+		} else {
+			Logger.debug(
+				`Jellyfin doesn't have the show already, scanning the whole Library`,
+			)
+			await this.jellyfin.startTask(scanTask.Id)
+		}
 
 		await new Promise<void>((resolve, reject) => {
 			const timeoutCallback = () => {
@@ -183,9 +164,9 @@ export class JellyfinController implements ILibraryController {
 			let timeoutHandler = setTimeout(timeoutCallback, 15000)
 
 			const pollInterval = setInterval(async () => {
-				const currentTask = await tasksApi.getTask({ taskId: scanTask.Id })
+				const currentTask = await this.jellyfin.getTask(scanTask.Id)
 
-				if (currentTask.data.State === 'Idle') {
+				if (currentTask.State === 'Idle') {
 					Logger.debug(`Jellyfin notified folder update`)
 					clearTimeout(timeoutHandler)
 					clearInterval(pollInterval)
@@ -194,7 +175,7 @@ export class JellyfinController implements ILibraryController {
 					if (timeoutHandler) clearInterval(timeoutHandler)
 					timeoutHandler = setTimeout(timeoutCallback, 15000)
 					Logger.debug(
-						`Jellyfin Scanning... ${currentTask.data.CurrentProgressPercentage ?? 0}%`,
+						`Jellyfin Scanning... ${currentTask.CurrentProgressPercentage ?? 0}%`,
 					)
 				}
 			}, 1000)
@@ -220,15 +201,10 @@ export class JellyfinController implements ILibraryController {
 
 	private async fetchShow() {
 		Logger.info(`Searching for Jellyfin Show...`)
-
-		let searchResults = (
-			await getItemsApi(this.api).getItems({
-				searchTerm: environment.LIBRARY_SERIES_NAME,
-				includeItemTypes: [BaseItemKind.Series],
-				recursive: true,
-				parentId: this.library.ItemId,
-			})
-		).data.Items.filter(s => s.Name == environment.LIBRARY_SERIES_NAME)
+		let searchResults = await this.jellyfin.findShowInLibrary(
+			this.library.Id,
+			environment.LIBRARY_SERIES_NAME,
+		)
 
 		if (searchResults.length < 1) {
 			if (!environment.LIBRARY_CREATE_SHOW_IF_NOT_FOUND) {

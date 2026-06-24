@@ -2,27 +2,31 @@ import { randomUUID } from 'node:crypto'
 import { formatConnectionError } from '../../util/format-connection-error.js'
 import { LibraryConnectionError } from '../library.model.js'
 
-const EMBY_CONNECT_HELP =
-	'Could not connect to Emby — check EMBY_URL and credentials'
+const JELLYFIN_CONNECT_HELP =
+	'Could not connect to Jellyfin — check JELLYFIN_URL and credentials'
 
-export interface EmbyConfig {
+export interface JellyfinConfig {
 	baseUrl: string
 	username?: string
 	password?: string
+	/** Shown in Jellyfin's "active devices" admin page. Defaults to "MyApp". */
+	clientName?: string
+	/** Defaults to "1.0.0". */
+	clientVersion?: string
 }
 
-export interface EmbyLibrary {
+export interface JellyfinLibrary {
 	Id: string
 	Name: string
 	CollectionType?: string
 }
-export interface EmbyVirtualFolder {
+export interface JellyfinVirtualFolder {
 	Id: string
 	Name: string
 	Locations: string[]
 }
 
-export interface EmbyEpisode {
+export interface JellyfinEpisode {
 	Id: string
 	Name: string
 	IndexNumber?: number
@@ -30,28 +34,28 @@ export interface EmbyEpisode {
 	Path?: string
 }
 
-interface EmbyViewsResponse {
-	Items: EmbyLibrary[]
+interface JellyfinViewsResponse {
+	Items: JellyfinLibrary[]
 }
 
-export interface EmbyItem {
+export interface JellyfinItem {
 	Id: string
 	Name: string
 	Type: string
 	// ...add fields as you need them
 }
 
-interface EmbyItemsResponse {
-	Items: EmbyItem[]
+interface JellyfinItemsResponse {
+	Items: JellyfinItem[]
 	TotalRecordCount: number
 }
 
-interface EmbyAuthentication {
+interface JellyfinAuthentication {
 	AccessToken: string
 	User: { Id: string }
 }
 
-interface EmbyTask {
+interface JellyfinTask {
 	Id: string
 	Name: string
 	Key: string // e.g. "RefreshLibrary"
@@ -59,11 +63,11 @@ interface EmbyTask {
 	CurrentProgressPercentage?: number
 }
 
-class EmbyClient {
-	private auth: EmbyAuthentication
+class JellyfinClient {
+	private auth: JellyfinAuthentication
 	private readonly deviceId: string
 
-	constructor(private config: EmbyConfig) {
+	constructor(private config: JellyfinConfig) {
 		this.deviceId = randomUUID()
 	}
 
@@ -72,12 +76,12 @@ class EmbyClient {
 		error: unknown,
 	): LibraryConnectionError {
 		return new LibraryConnectionError(
-			`${EMBY_CONNECT_HELP}. ${formatConnectionError(label, this.config.baseUrl, error)}`,
+			`${JELLYFIN_CONNECT_HELP}. ${formatConnectionError(label, this.config.baseUrl, error)}`,
 			{ cause: error },
 		)
 	}
 
-	private async fetchEmby(
+	private async fetchJellyfin(
 		url: string,
 		label: string,
 		options?: RequestInit,
@@ -89,26 +93,42 @@ class EmbyClient {
 		}
 	}
 
+	private authorizationHeader(token?: string): string {
+		const parts = [
+			`Client="${this.config.clientName ?? 'MyApp'}"`,
+			`Device="Node"`,
+			`DeviceId="${this.deviceId}"`,
+			`Version="${this.config.clientVersion ?? '1.0.0'}"`,
+		]
+		if (token) parts.push(`Token="${token}"`)
+		return `MediaBrowser ${parts.join(', ')}`
+	}
+
 	private async request<T>(
 		path: string,
 		options: { method?: string; params?: Record<string, string> } = {},
 	): Promise<T> {
-		const url = new URL(`${this.config.baseUrl}/emby${path}`)
+		const url = new URL(`${this.config.baseUrl}${path}`)
 		for (const [k, v] of Object.entries(options.params ?? {})) {
 			url.searchParams.set(k, v)
 		}
 
-		const headers: Record<string, string> = {}
-		headers['X-Emby-Token'] = this.auth.AccessToken
+		const headers: Record<string, string> = {
+			Authorization: this.authorizationHeader(this.auth.AccessToken),
+		}
 
-		const res = await this.fetchEmby(url.toString(), `Emby API ${path}`, {
-			method: options.method ?? 'GET',
-			headers,
-		})
+		const res = await this.fetchJellyfin(
+			url.toString(),
+			`Jellyfin API ${path}`,
+			{
+				method: options.method ?? 'GET',
+				headers,
+			},
+		)
 
 		if (!res.ok) {
 			throw new LibraryConnectionError(
-				`${EMBY_CONNECT_HELP}. Emby request failed (${path}): HTTP ${res.status} ${res.statusText} at ${this.config.baseUrl}`,
+				`${JELLYFIN_CONNECT_HELP}. Jellyfin request failed (${path}): HTTP ${res.status} ${res.statusText} at ${this.config.baseUrl}`,
 			)
 		}
 
@@ -117,14 +137,14 @@ class EmbyClient {
 	}
 
 	async login() {
-		const res = await this.fetchEmby(
-			`${this.config.baseUrl}/emby/Users/AuthenticateByName`,
-			'Emby login',
+		const res = await this.fetchJellyfin(
+			`${this.config.baseUrl}/Users/AuthenticateByName`,
+			'Jellyfin login',
 			{
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json',
-					'X-Emby-Authorization': `Emby Client="MyApp", Device="Node", DeviceId="${this.deviceId}", Version="1.0.0"`,
+					Authorization: this.authorizationHeader(),
 				},
 				body: JSON.stringify({
 					Username: this.config.username,
@@ -135,7 +155,7 @@ class EmbyClient {
 
 		if (!res.ok) {
 			throw new LibraryConnectionError(
-				`${EMBY_CONNECT_HELP}. Emby login failed for user '${this.config.username}' at ${this.config.baseUrl}: HTTP ${res.status} ${res.statusText}`,
+				`${JELLYFIN_CONNECT_HELP}. Jellyfin login failed for user '${this.config.username}' at ${this.config.baseUrl}: HTTP ${res.status} ${res.statusText}`,
 			)
 		}
 
@@ -147,21 +167,23 @@ class EmbyClient {
 	}
 
 	getItems(params: Record<string, string> = {}) {
-		return this.request<EmbyItemsResponse>(
+		return this.request<JellyfinItemsResponse>(
 			`/Users/${this.auth.User.Id}/Items`,
-			params,
+			{ params },
 		)
 	}
 
-	async getLibraries(): Promise<EmbyLibrary[]> {
-		const res = await this.request<EmbyViewsResponse>(
+	async getLibraries(): Promise<JellyfinLibrary[]> {
+		const res = await this.request<JellyfinViewsResponse>(
 			`/Users/${this.auth.User.Id}/Views`,
 		)
 		return res.Items
 	}
 
-	async getLibraryLocations(libraryName: string): Promise<EmbyVirtualFolder[]> {
-		const folders = await this.request<EmbyVirtualFolder[]>(
+	async getLibraryLocations(
+		libraryName: string,
+	): Promise<JellyfinVirtualFolder[]> {
+		const folders = await this.request<JellyfinVirtualFolder[]>(
 			'/Library/VirtualFolders',
 		)
 		return folders.filter(f => f.Name === libraryName)
@@ -170,8 +192,8 @@ class EmbyClient {
 	async findShowInLibrary(
 		libraryId: string,
 		showName: string,
-	): Promise<EmbyItem[]> {
-		const res = await this.request<EmbyItemsResponse>(
+	): Promise<JellyfinItem[]> {
+		const res = await this.request<JellyfinItemsResponse>(
 			`/Users/${this.auth.User.Id}/Items`,
 			{
 				params: {
@@ -190,8 +212,8 @@ class EmbyClient {
 	async getEpisodes(
 		seriesId: string,
 		fields: string[] = [],
-	): Promise<EmbyEpisode[]> {
-		const res = await this.request<{ Items: EmbyEpisode[] }>(
+	): Promise<JellyfinEpisode[]> {
+		const res = await this.request<{ Items: JellyfinEpisode[] }>(
 			`/Shows/${seriesId}/Episodes`,
 			{
 				params: { Fields: fields.join(',') },
@@ -213,12 +235,12 @@ class EmbyClient {
 		})
 	}
 
-	getTasks(): Promise<EmbyTask[]> {
-		return this.request<EmbyTask[]>('/ScheduledTasks')
+	getTasks(): Promise<JellyfinTask[]> {
+		return this.request<JellyfinTask[]>('/ScheduledTasks')
 	}
 
-	getTask(taskId: string): Promise<EmbyTask> {
-		return this.request<EmbyTask>(`/ScheduledTasks/${taskId}`)
+	getTask(taskId: string): Promise<JellyfinTask> {
+		return this.request<JellyfinTask>(`/ScheduledTasks/${taskId}`)
 	}
 
 	startTask(taskId: string): Promise<void> {
@@ -228,4 +250,4 @@ class EmbyClient {
 	}
 }
 
-export default EmbyClient
+export default JellyfinClient
