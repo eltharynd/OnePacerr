@@ -180,6 +180,10 @@ export class EmbyController implements ILibraryController {
 				}
 			}, 1000)
 		})
+
+		if (!this.show) {
+			await this.fetchShow()
+		}
 	}
 
 	async updateEpisodeMetadata(
