@@ -1,10 +1,10 @@
 # ![OnePacerr](docs/logo.png)
 
-![GitHub Packages](https://img.shields.io/badge/ghcr.io-eltharynd%2Fonepacerr-blue?style=flat-square&logo=github)
-![GitHub Release](https://img.shields.io/github/v/release/eltharynd/onepacerr?style=flat-square)
-![GitHub Issues](https://img.shields.io/github/issues/eltharynd/onepacerr?style=flat-square)
-![GitHub Last Commit](https://img.shields.io/github/last-commit/eltharynd/onepacerr?style=flat-square)
-![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)
+[![GitHub Packages](https://img.shields.io/badge/ghcr.io-eltharynd%2Fonepacerr-blue?style=flat-square&logo=github)](https://github.com/eltharynd/OnePacerr/pkgs/container/onepacerr)
+[![GitHub Release](https://img.shields.io/github/v/release/eltharynd/onepacerr?style=flat-square)](https://github.com/eltharynd/OnePacerr/releases)
+[![GitHub Issues](https://img.shields.io/github/issues/eltharynd/onepacerr?style=flat-square)](https://github.com/eltharynd/OnePacerr/issues)
+[![GitHub Last Commit](https://img.shields.io/github/last-commit/eltharynd/onepacerr?style=flat-square)](https://github.com/eltharynd/OnePacerr/commits/main/)
+[![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)](https://github.com/eltharynd/OnePacerr?tab=MIT-1-ov-file)
 
 **OnePacerr** is a standalone, automated One Pace download tool designed specifically to complement **Sonarr** in your **Home Server** setups, but it can also be used for "smaller" purposes.
 
