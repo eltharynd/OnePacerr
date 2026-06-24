@@ -168,7 +168,6 @@ export class EmbyController implements ILibraryController {
 
 				if (currentTask.State === 'Idle') {
 					Logger.debug(`Emby notified folder update`)
-					console.log(currentTask)
 					clearTimeout(timeoutHandler)
 					clearInterval(pollInterval)
 					resolve()

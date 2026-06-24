@@ -556,7 +556,6 @@ export class PipelineController {
 				}
 			}
 		} else {
-			console.log(2)
 			Logger.debug(
 				`S${ma.arc}E${String(me.episode).padStart(2, '0')} - Missing`,
 			)
@@ -566,7 +565,6 @@ export class PipelineController {
 					`S${ma.arc}E${String(me.episode).padStart(2, '0')} - Missing [Download skipped]`,
 				)
 			} else {
-				console.log(1)
 				const queueResult = await this.addToDownloadQueue(
 					ma,
 					me,
