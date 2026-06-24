@@ -7,7 +7,7 @@ import {
 	Episode,
 	MetadataAbsentError,
 	TorrentInfo,
-} from '../metadata/metada.model.js'
+} from '../metadata/metadata.model.js'
 import { Context } from '../util/context.js'
 import { Filter } from '../util/filters.js'
 import Logger from '../util/logger.js'
@@ -264,7 +264,7 @@ export class TorrentController {
 				let previousLibraryFileName
 
 				try {
-					let existingPlexFiles = readdirSync(
+					let existingLibraryFiles = readdirSync(
 						path.resolve(
 							targetLibraryFile.path.replace(
 								environment.MOUNT_LIBRARY_MEDIA_SERVER,
@@ -272,7 +272,7 @@ export class TorrentController {
 							),
 						),
 					)
-					for (let existingFile of existingPlexFiles.filter(f =>
+					for (let existingFile of existingLibraryFiles.filter(f =>
 						f.endsWith('.mkv'),
 					)) {
 						let episodeNumber = existingFile
@@ -283,7 +283,7 @@ export class TorrentController {
 						}
 					}
 				} catch (e) {
-					Logger.debug('File did not exist on plex...')
+					Logger.debug('File did not exist on Media Server...')
 				}
 
 				const source = file
@@ -316,7 +316,7 @@ export class TorrentController {
 							)
 						} catch (e) {
 							Logger.error(
-								`Couldn't delete '${previousLibraryFileName}', it probably has been deleted already but plex didn't scan the library...`,
+								`Couldn't delete '${previousLibraryFileName}', it probably has been deleted already but Media Server didn't scan the library...`,
 							)
 						}
 					}

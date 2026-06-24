@@ -34,6 +34,7 @@ export default function deprecatedWarnings() {
 		{ old: 'PREFER_G8', new: 'PIPELINE_PREFER_G8' },
 		{ old: 'FILTERS_INCLUDE', new: 'PIPELINE_FILTERS_INCLUDE' },
 		{ old: 'FILTERS_EXCLUDE', new: 'PIPELINE_FILTERS_EXCLUDE' },
+		{ old: 'DEBUGGING', new: `LOG_LEVEL': 'debug` },
 	]
 
 	for (let renamed of renamedEnv) {

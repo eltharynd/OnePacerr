@@ -13,7 +13,7 @@ import {
 	FormattedArc,
 	MetadataAbsentError,
 	RawMetadataJson,
-} from './metada.model.js'
+} from './metadata.model.js'
 
 export class MetadataController {
 	private metadata: RawMetadataJson

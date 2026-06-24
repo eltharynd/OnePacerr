@@ -1,4 +1,4 @@
-import { TorrentInfo } from '../metadata/metada.model.js'
+import { TorrentInfo } from '../metadata/metadata.model.js'
 
 export type TorrentClient = 'qbittorrent' | 'utorrent' | 'deluge'
 export type QueueDownloadResult = 'added' | 'already_present' | 'skipped'

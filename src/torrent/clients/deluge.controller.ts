@@ -1,6 +1,6 @@
 import { Deluge } from '@ctrl/deluge'
 import environment from '../../environment.js'
-import { TorrentInfo } from '../../metadata/metada.model.js'
+import { TorrentInfo } from '../../metadata/metadata.model.js'
 import Logger from '../../util/logger.js'
 import {
 	ITorrentController,

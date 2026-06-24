@@ -6,7 +6,7 @@
 ![GitHub Last Commit](https://img.shields.io/github/last-commit/eltharynd/onepacerr?style=flat-square)
 ![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)
 
-**OnePacerr** is a standalone, automated One Pace download tool designed specifically to complement **Sonarr** in your **Home Server** setups, but it can also be used for "smalelr" purposes.
+**OnePacerr** is a standalone, automated One Pace download tool designed specifically to complement **Sonarr** in your **Home Server** setups, but it can also be used for "smaller" purposes.
 
 Because Sonarr does not natively support [One
 Pace](https://onepace.net/) (the fan-edited, manga-accurate version of One Piece), this app
@@ -15,15 +15,15 @@ episodes fully up to date both on your disk, and on your Media Server of chosing
 
 Other than organizing your episode files, it also updates metadata and posters so that it looks nice and professional on your Media Server.
 
-It supports all of the most popular torrenting clients (such as qBittorrent) and the most popular Media Servers (such as Plex), and can even be used without a torrenting client or a media server at all.
+It supports the most popular torrenting clients (qBittorrent, deluge and µTorrent) and the most popular Media Servers (Plex, Jellyfin, Emby), or it can even be used without a torrenting client or a Media Server at all.
 
 ## Supported Torrenting Clients
 
-[![qBittorrent](docs/torrenting_clients/qbittorrent.png)](https://hub.docker.com/r/linuxserver/qbittorrent) [![Deluge](docs/torrenting_clients/deluge.png)](https://hub.docker.com/r/linuxserver/deluge) [![μTorrent](docs/torrenting_clients/utorrent-coming-soon.png)](https://www.utorrent.com/downloads) ( or none )
+[![qBittorrent](docs/torrenting_clients/qbittorrent.png)](https://hub.docker.com/r/linuxserver/qbittorrent) [![Deluge](docs/torrenting_clients/deluge.png)](https://hub.docker.com/r/linuxserver/deluge) [![μTorrent](docs/torrenting_clients/utorrent-coming-soon.png)](https://www.utorrent.com/downloads)
 
 ## Supported Media Servers
 
-[![Plex](docs/media_servers/plex.png)](https://hub.docker.com/r/linuxserver/plex) [![Jellyfin](docs/media_servers/jellyfin.png)](https://hub.docker.com/r/linuxserver/jellyfin) [![Emby](docs/media_servers/emby.png)](https://hub.docker.com/r/linuxserver/emby) ( or none ) ![asd](docs/media_servers/local_folder.png)
+[![Plex](docs/media_servers/plex.png)](https://hub.docker.com/r/linuxserver/plex) [![Jellyfin](docs/media_servers/jellyfin.png)](https://hub.docker.com/r/linuxserver/jellyfin) [![Emby](docs/media_servers/emby.png)](https://hub.docker.com/r/linuxserver/emby) ![asd](docs/media_servers/local_folder.png)
 
 ## Works anywhere
 
@@ -71,7 +71,7 @@ It supports all of the most popular torrenting clients (such as qBittorrent) and
 ## ✨ Features
 
 - **Automated Discovery:** Continuously pulls One Pace's RSS Release feed and
-  metadata to detect new episodes.
+  metadata to detect missing and new releases.
 - **Smart Library Scanning:** Scans your existing Media Server (Plex, Jellyfin, Emby) or Local Folder Library to compare latest episodes against your local files.
 - **File Verification (Optional):** Hashes existing files to ensure they match the latest
   releases and automatically re-downloads outdated versions.
@@ -86,13 +86,11 @@ It supports all of the most popular torrenting clients (such as qBittorrent) and
 
 ## 🧪 Pipeline
 
-The following diagram tries to explain the process in a simple way
+The following diagram synthesizes the pipeline:
 
 ![pipeline](docs/pipeline.png?cache=2)
 
-The RSS only refreshes when trying to get a magnetURI and it's not in RSS. This is possible because metadata is only updated after RSS is, so there's no need to refresh both periodically.
-
-tldr: the RSS Feed refresh is triggered by metadata having updates.
+The RSS Feed only refreshes when trying to get a magnetURI and it's not in RSS. This is possible because metadata is already updated after RSS is, so there's no need to refresh both periodically.
 
 ## 🚀 Getting Started
 
@@ -101,7 +99,7 @@ tldr: the RSS Feed refresh is triggered by metadata having updates.
 Before running OnePacerr, ensure you have the following services up and running:
 
 - **Docker & Docker Compose** (or k8s, or custom app in Truenas or equivalent)
-  - Alternatively you can run it locally with node.
+  - Alternatively you can run it locally with node:
     - create a `.env` file in root (use `sample.env` as example)
     - `npm install`
     - `npm start`
@@ -109,7 +107,7 @@ Before running OnePacerr, ensure you have the following services up and running:
   - [qBittorrent](https://hub.docker.com/r/linuxserver/qbittorrent) (Recommended)
   - [Deluge](https://hub.docker.com/r/linuxserver/deluge)
   - More torrenting clients coming
-- You can also just organize a Local Folder, but usually people use this to organize their media server:
+- You can simply organize a Local Folder, but the best use case is to organize your Media Server of choosing:
   - [**Plex Media Server**](https://hub.docker.com/r/linuxserver/plex)
   - [**Jellyfin**](https://hub.docker.com/r/linuxserver/jellyfin)
   - [**Emby**](https://hub.docker.com/r/linuxserver/emby)
@@ -118,7 +116,7 @@ Before running OnePacerr, ensure you have the following services up and running:
 
 #### 🐔 Base Operation
 
-If your files are nicely named and organized and if Plex has all the metadata, you can safely leave these as true (default) or not declare them at all:
+If your files are nicely named and organized and if your Media Server has all the metadata, you can safely leave these as true (default) or not declare them at all:
 
 ```dotenv
 # 🐔 BASE CONFIG WHEN YOUR LIBRARY IS ALREADY WELL ORGANIZED
@@ -127,11 +125,11 @@ PIPELINE_SKIP_ORGANIZE_PRESENT_FILES=true
 PIPELINE_SKIP_UPDATE_METADATA_PRESENT_FILES=true
 ```
 
-This will prevent the app to verify hash (CRC32 hashing can take a while depending on your machine), to verify plex file names (and rename where nexessary) and to update the metadata on plex for **the files that are already present on Plex**.
+This will prevent the app to verify hash (CRC32 hashing can take a while depending on your machine), to verify Media Server file names (and rename where necessary) and to update metadata for **the files that are already present on it**.
 
 #### 🐣 First Run
 
-My recommendation **when plex already has some/all of the episodes** is to run it once with the following configs, so that every file is gonna get verified to be up to date and all metadata is gonna be imported.
+My recommendation **when Media Server already has some/all of the episodes** is to run it once with the following configs, so that every file is gonna get verified to be up to date and all metadata is gonna be imported.
 
 ```dotenv
 # 🐣 RECOMMENDED CONFIG FOR FIRST RUN
@@ -153,7 +151,7 @@ The recommended way to deploy is via `docker-compose`.
 Create a `docker-compose.yml` file and copy the configuration below. Make sure to update
 the environment variables and volume mounts to match your server's setup.
 
-I listed all variables commenting out the defaults for convenience.
+I listed every env variable for convenience. All default are commented out, except the most critical.
 
 ```yaml
 services:
@@ -165,14 +163,15 @@ services:
       # Set the Timezone to yours
       - TZ=Europe/Zurich
       # Set the User/Group it should run as.
-      # This Group/User should have read access to torrent folder
-      # This Group/User should have read/write access to library folder
-      # Your Media Server User/Group should have read access to library folder
+      # This User/Group should have read access to torrent folder
+      # This User/Group should have read/write access to library folder
+      # Your Media Server User/Group should also have read access to library folder
       - PUID=568
       - PGID=568
 
       # General
-      #- DEBUGGING=false
+      #- LOG_LEVEL=info
+      #- LOG_OUTPUT=text
 
 
 
@@ -193,15 +192,6 @@ services:
       #- PIPELINE_FILTERS_EXCLUDE=S35,S36
 
       #- PIPELINE_RETRY_INTERVAL=10
-
-
-
-      # Cross-Mount Mappings (Uncomment if needed, defaults to nothing)
-      #- MOUNT_LIBRARY_MEDIA_SERVER=/mnt/Library/Series
-      #- MOUNT_LIBRARY_ONEPACERR=\\TRUENAS\series
-      #- MOUNT_DOWNLOADS_TORRENT=/mnt/Applications/Downloads
-      #- MOUNT_DOWNLOADS_ONEPACERR=\\TRUENAS\downloads
-
 
 
 
@@ -238,6 +228,7 @@ services:
 
 
 
+
       # Torrent Settings
       - TORRENT_URL=http://localhost:8080
       - TORRENT_USER=<your-username-here>
@@ -251,20 +242,27 @@ services:
 
 
 
+      # Cross-Mount Mappings (Uncomment if needed, defaults to nothing)
+      #- MOUNT_LIBRARY_MEDIA_SERVER=/mnt/Library/Series
+      #- MOUNT_LIBRARY_ONEPACERR=\\TRUENAS\series
+      #- MOUNT_DOWNLOADS_TORRENT=/mnt/Applications/Downloads
+      #- MOUNT_DOWNLOADS_ONEPACERR=\\TRUENAS\downloads
+
+
+
       # Metadata Settings
       #- METADATA_URL=https://raw.githubusercontent.com/ladyisatis/one-pace-metadata/refs/heads/v2/metadata/data.json
       #- METADATA_LANGUAGE=en
       #- METADATA_POSTER_SET=default
       #- METADATA_CHECK_INTERVAL=3600
     volumes:
-      - /mnt/Library/Movies:/mnt/Library/Movies
       - /mnt/Library/Series:/mnt/Library/Series
       - /mnt/Applications/Downloads:/mnt/Applications/Downloads
 ```
 
 ### 🟢 Running locally
 
-Install [node](https://nodejs.org/en/download) (>24 tested) on your machine then:
+Install [node](https://nodejs.org/en/download) (>=24 tested) on your machine then:
 
 - create a `.env` file in root (use `sample.env` as example)
 - run `npm install`
@@ -278,7 +276,7 @@ For developing first install dependencies:
 npm i
 ```
 
-I recommend opening two side-by side tabs in vs code terminal and running one of these in each:
+Then, I recommend opening two side-by side tabs in vs code terminal and running one of these in each:
 
 ```bash
 #Compiles typescript and watch for changes
@@ -299,14 +297,21 @@ Here is a breakdown of key optional variables you can adjust in your
 - 🍏 Useful
 - 💭 These configuration are specific to your chosen Media Server type (`$LIBRARY_MEDIA_SERVER`) so you only need to specify the ones for your case.
 
+### General
+
+| General Variables | Default | Description |
+| :--- | :--- | :--- |
+| `LOG_LEVEL` | `info` | Can be `critical`, `error`, `warning`, `info`, `debug`. |
+| `LOG_OUTPUT` | `text` | Can be set to `json` if you need to scrape your logs with Loki/Promtail for Grafana. |
+
 ### 🧪 Pipeline
 
 | Pipeline Variables | Default | Description |
 | :--- | :--- | :--- |
 | 🍏 `PIPELINE_SKIP_VERIFY_PRESENT_FILES` | `true` | If `false`, hashes files present in Plex upon metadata updates to ensure they are the latest/wanted versions. |
 | 🍏 `PIPELINE_SKIP_VERIFY_NOT_FOR_EXTENDED` | `false` | If `true`, PIPELINE_SKIP_VERIFY_PRESENT_FILES only applies to episodes without extended versions |
-| 🍏 `PIPELINE_SKIP_ORGANIZE_PRESENT_FILES` | `true` | If `false`, makes sure the files existing on plex are in the correct folder and named correctly. |
-| 🍏 `PIPELINE_SKIP_UPDATE_METADATA_PRESENT_FILES` | `true` | If `false`, automatically updates metadata for files already in your Plex library, otherwise only does so for new downloads. |
+| 🍏 `PIPELINE_SKIP_ORGANIZE_PRESENT_FILES` | `true` | If `false`, makes sure the files existing on your Library are in the correct folder and named correctly. |
+| 🍏 `PIPELINE_SKIP_UPDATE_METADATA_PRESENT_FILES` | `true` | If `false`, automatically updates metadata for files already in your Library, otherwise only does so for new downloads. |
 | 🍏 `PIPELINE_SKIP_DOWNLOADS` | `false` | If `true`, skips download. Use if you only want to organize your current files. |
 | 🍏 `PIPELINE_SKIP_DOWNLOADS_IMPORTS` | `false` | If `true`, skips updating posters when updating metadata. |
 | 🍏 `PIPELINE_SKIP_POSTERS` | `false` | If `true`, skips updating posters when updating metadata. |
@@ -323,36 +328,38 @@ Here is a breakdown of key optional variables you can adjust in your
 
 `PIPELINE_FILTERS_INCLUDE` and `PIPELINE_FILTERS_EXCLUDE` are lists of 'filters' as a comma separated string. For example: `filter1,filter2,filter3`.
 
-Each filter can either filter for specific season number, episode number or both. Meaning they can either be `Sxx`, `SxxExx` or `Exx`. For example `S01E06` would **match** only S01E06, whilst `S02` would **match** every episode in `S02`, and `E06` would **match** episode 6 of every season (don't ask why).
+Each filter can either match a specific season number, episode number or both. Meaning they can either be `Sxx`, `SxxExx` or `Exx`. For example `S01E06` would **match** only S01E06, whilst `S02` would **match** every episode in `S02`, and `E06` would **match** episode 6 of every season (don't ask why).
 
-This should give you flexibility to decide to only process whatever you want instead of the whole thing, here's a couple of setup examples:
+This should give you flexibility to decide to only process whatever you want instead of the whole thing, by combining the `_INCLUDE` and `_EXCLUDE` filters.
 
-#### Only S16E09 (Probably because you want to re-watch '32:54')
+Here's a couple of setup examples:
+
+#### Only monitor S16E09 (Probably because you want to re-watch '32:54')
 
 ```dotenv
 PIPELINE_FILTERS_INCLUDE=S16E09
 ```
 
-#### All seasons before Wano (S35)
+#### Monitor all seasons before Wano (S35)
 
 ```dotenv
 PIPELINE_FILTERS_EXCLUDE=S35,S36
 ```
 
-#### All first episodes of each Season
+#### Monitor all first episodes of each Season
 
 ```dotenv
 PIPELINE_FILTERS_INCLUDE=E01
 ```
 
-#### All first episodes of each Season, except Wano and Egghead (35,36)
+#### Monitor all first episodes of each Season, except Wano and Egghead (35,36)
 
 ```dotenv
 PIPELINE_FILTERS_INCLUDE=E01
 PIPELINE_FILTERS_EXCLUDE=S35,S36
 ```
 
-In order for an episode to be processed/downloaded/updated, it has to match BOTH filters.
+In order for an episode to be Monitored (processed/downloaded/updated/etc), it has to match BOTH filters.
 
 ---
 
@@ -372,8 +379,8 @@ In order for an episode to be processed/downloaded/updated, it has to match BOTH
 | Library Variables | Default | Description |
 | :--- | :--- | :--- |
 | ⭐ `LIBRARY_MEDIA_SERVER` | `plex` | Media server, can be either `plex`, `jellyfin`, `emby` or `none` if you just want to organize files in a folder. |
-| 🍤 `LIBRARY_SERIES_NAME` | `One Pace` | Name of the Series in Plex. |
-| `LIBRARY_SERIES_FOLDER_NAME` | `$LIBRARY_SERIES_NAME` | Override when the Plex folder needs to be called differently from `LIBRARY_SERIES_NAME`. |
+| 🍤 `LIBRARY_SERIES_NAME` | `One Pace` | Name of the Series in Media Server. |
+| `LIBRARY_SERIES_FOLDER_NAME` | `$LIBRARY_SERIES_NAME` | Override if Media Server folder needs to be called differently from `LIBRARY_SERIES_NAME`. |
 | `LIBRARY_FILENAME_FORMAT` | `{SERIES_NAME} - S{ARC}E{EPISODE} - {TITLE}.mkv` | Overrides the filename each file should have, `{SERIES_NAME}`, `{ARC}`, `{EPISODE}` and `{TITLE}` will be replaced with values. `.mkv` automatically added if not specified. |
 | `LIBRARY_CREATE_SHOW_IF_NOT_FOUND` | `true` | If `false`, the app crashes if "LIBRARY_SERIES_NAME" isn't already a Show in your Media Server (useful for catching typos on first setup). Leave `true` to auto-create the show. |
 
@@ -397,9 +404,9 @@ In order for an episode to be processed/downloaded/updated, it has to match BOTH
 | `PLEX_SKIP_METADATA_FILES` | `true` | If `false`, will generate `.nfo` and poster pngs even when Media Server is Plex. |
 | `PLEX_PLEXMATCH_EVEN_IF_NOT` | `false` | If `true`, will generate `.plexmatch` file even when using a different Media Sever. |
 
-**Note** on `PLEX_SKIP_METADATA_FILES`: Metadata for plex is set via API because doing so with just the files are unreliable at best. For this reason, when `LIBRARY_MEDIA_SERVER` is set to `plex`, by default (`LIBRARY_MEDIA_SERVER=true`) OnePacerr will not generate the `.nfo` and the various `poster.png` on the Media Server folder.
+**Note** on `PLEX_SKIP_METADATA_FILES`: Metadata for plex is set via API because doing so with just the files are unreliable at best. For this reason, when `LIBRARY_MEDIA_SERVER` is set to `plex`, by default (`PLEX_SKIP_METADATA_FILES=true`) OnePacerr will not generate the `.nfo` and the various `poster.png` on the Media Server folder.
 
-If you set `LIBRARY_MEDIA_SERVER=false`, you can instead generate those files regardless. This is useful if you want to use the same media folder for multiple Media Servers, or if you just would rather create all of the metadata in case you ever change Media Server (it doesn't take that much space anyways).
+If you set `PLEX_SKIP_METADATA_FILES=false`, you can instead generate those files regardless. This is useful if you want to use the same media folder for multiple Media Servers, or if you just would rather create all of the metadata in case you ever change Media Server (it doesn't take that much space anyways).
 
 ---
 

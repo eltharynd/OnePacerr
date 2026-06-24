@@ -7,7 +7,7 @@ import {
 	FormattedArc,
 	FormattedEpisode,
 	TorrentInfo,
-} from '../metadata/metada.model'
+} from '../metadata/metadata.model.js'
 import { QueueDownloadResult } from '../torrent/torrent.model.js'
 import { Context } from '../util/context.js'
 import getFileCrc32Hash from '../util/crc32.js'
@@ -178,7 +178,7 @@ export class PipelineController {
 
 			setTimeout(() => {
 				Context.pipeline.start()
-			}, environment.PIPELINE_RETRY_INTERVAL)
+			}, this.config.PIPELINE_RETRY_INTERVAL)
 		}
 
 		Logger.info(``)
@@ -262,7 +262,7 @@ export class PipelineController {
 
 		if (rsstitle.startsWith(`Skypiea 25`)) {
 			Logger.debug('Manual correction for 16. Skypeiea 25 Alternate G-8')
-			rsstitle = environment.PIPELINE_PREFER_G8
+			rsstitle = this.config.PIPELINE_PREFER_G8
 				? 'Skypiea 25 Alternate Cut (G-8)'
 				: 'Skypiea 25'
 		}
@@ -384,7 +384,7 @@ export class PipelineController {
 			Logger.debug(
 				`S${arc}E${String(episode).padStart(2, '0')} - Correctly formatted...`,
 			)
-			if (!environment.PIPELINE_SKIP_UPDATE_METADATA_PRESENT_FILES) {
+			if (!this.config.PIPELINE_SKIP_UPDATE_METADATA_PRESENT_FILES) {
 				await this.updatemetadata(arc, episode)
 			}
 		}
@@ -397,8 +397,8 @@ export class PipelineController {
 		)
 
 		const skipVerification =
-			environment.PIPELINE_SKIP_VERIFY_PRESENT_FILES &&
-			!(environment.PIPELINE_SKIP_VERIFY_NOT_FOR_EXTENDED && me.CRC32.extended)
+			this.config.PIPELINE_SKIP_VERIFY_PRESENT_FILES &&
+			!(this.config.PIPELINE_SKIP_VERIFY_NOT_FOR_EXTENDED && me.CRC32.extended)
 
 		if (me.CRC32.standard == '702231E9') {
 			Logger.debug(`Skypiea 14 manual correction`)
@@ -414,9 +414,9 @@ export class PipelineController {
 				Logger.debug(
 					`S${ma.arc}E${String(me.episode).padStart(2, '0')} - Present`,
 				)
-				if (!environment.PIPELINE_SKIP_ORGANIZE_PRESENT_FILES) {
+				if (!this.config.PIPELINE_SKIP_ORGANIZE_PRESENT_FILES) {
 					await this.organizeFile(ma.arc, me.episode)
-				} else if (!environment.PIPELINE_SKIP_UPDATE_METADATA_PRESENT_FILES) {
+				} else if (!this.config.PIPELINE_SKIP_UPDATE_METADATA_PRESENT_FILES) {
 					await this.updatemetadata(ma.arc, me.episode)
 				} else {
 					Logger.info(
@@ -437,13 +437,13 @@ export class PipelineController {
 				)
 
 				if (ma.arc == 16 && me.episode == 25) {
-					if (!environment.PIPELINE_PREFER_G8) {
+					if (!this.config.PIPELINE_PREFER_G8) {
 						Logger.debug(`Corrected 16. Skypiea 25 for alternate G-8 cut`)
 						me.CRC32.standard = 'C951349C'
 					}
 				}
 
-				if (!!me.CRC32.extended && environment.PIPELINE_PREFER_EXTENDED) {
+				if (!!me.CRC32.extended && this.config.PIPELINE_PREFER_EXTENDED) {
 					Logger.debug(
 						`S${ma.arc}E${String(me.episode).padStart(2, '0')} - Extended wanted`,
 					)
@@ -451,10 +451,10 @@ export class PipelineController {
 						Logger.debug(
 							`S${ma.arc}E${String(me.episode).padStart(2, '0')} - Extended present`,
 						)
-						if (!environment.PIPELINE_SKIP_ORGANIZE_PRESENT_FILES) {
+						if (!this.config.PIPELINE_SKIP_ORGANIZE_PRESENT_FILES) {
 							await this.organizeFile(ma.arc, me.episode)
 						} else if (
-							!environment.PIPELINE_SKIP_UPDATE_METADATA_PRESENT_FILES
+							!this.config.PIPELINE_SKIP_UPDATE_METADATA_PRESENT_FILES
 						) {
 							await this.updatemetadata(ma.arc, me.episode)
 						} else
@@ -465,7 +465,7 @@ export class PipelineController {
 						Logger.debug(
 							`S${ma.arc}E${String(me.episode).padStart(2, '0')} - Standard present`,
 						)
-						if (environment.PIPELINE_SKIP_DOWNLOADS) {
+						if (this.config.PIPELINE_SKIP_DOWNLOADS) {
 							Logger.info(
 								`S${ma.arc}E${String(me.episode).padStart(2, '0')} - Standard instead of extended [Download skipped]`,
 							)
@@ -478,7 +478,7 @@ export class PipelineController {
 					}
 				} else if (
 					!!me.CRC32.extended &&
-					!environment.PIPELINE_PREFER_EXTENDED
+					!this.config.PIPELINE_PREFER_EXTENDED
 				) {
 					Logger.debug(
 						`S${ma.arc}E${String(me.episode).padStart(2, '0')} - Standard wanted`,
@@ -487,10 +487,10 @@ export class PipelineController {
 						Logger.debug(
 							`S${ma.arc}E${String(me.episode).padStart(2, '0')} - Standard present`,
 						)
-						if (!environment.PIPELINE_SKIP_ORGANIZE_PRESENT_FILES) {
+						if (!this.config.PIPELINE_SKIP_ORGANIZE_PRESENT_FILES) {
 							await this.organizeFile(ma.arc, me.episode)
 						} else if (
-							!environment.PIPELINE_SKIP_UPDATE_METADATA_PRESENT_FILES
+							!this.config.PIPELINE_SKIP_UPDATE_METADATA_PRESENT_FILES
 						) {
 							await this.updatemetadata(ma.arc, me.episode)
 						} else
@@ -501,7 +501,7 @@ export class PipelineController {
 						Logger.debug(
 							`S${ma.arc}E${String(me.episode).padStart(2, '0')} - Extended present`,
 						)
-						if (environment.PIPELINE_SKIP_DOWNLOADS) {
+						if (this.config.PIPELINE_SKIP_DOWNLOADS) {
 							Logger.info(
 								`S${ma.arc}E${String(me.episode).padStart(2, '0')} - Extended instead of Standard [Download skipped]`,
 							)
@@ -516,9 +516,9 @@ export class PipelineController {
 					Logger.debug(
 						`S${ma.arc}E${String(me.episode).padStart(2, '0')} - Standard present`,
 					)
-					if (!environment.PIPELINE_SKIP_ORGANIZE_PRESENT_FILES) {
+					if (!this.config.PIPELINE_SKIP_ORGANIZE_PRESENT_FILES) {
 						await this.organizeFile(ma.arc, me.episode)
-					} else if (!environment.PIPELINE_SKIP_UPDATE_METADATA_PRESENT_FILES) {
+					} else if (!this.config.PIPELINE_SKIP_UPDATE_METADATA_PRESENT_FILES) {
 						await this.updatemetadata(ma.arc, me.episode)
 					} else
 						Logger.info(
@@ -528,7 +528,7 @@ export class PipelineController {
 					Logger.debug(
 						`S${ma.arc}E${String(me.episode).padStart(2, '0')} - Extended present`,
 					)
-					if (environment.PIPELINE_SKIP_DOWNLOADS) {
+					if (this.config.PIPELINE_SKIP_DOWNLOADS) {
 						Logger.info(
 							`S${ma.arc}E${String(me.episode).padStart(2, '0')} - Extended instead of Standard [Download skipped]`,
 						)
@@ -539,7 +539,7 @@ export class PipelineController {
 						)
 					}
 				} else {
-					if (environment.PIPELINE_SKIP_DOWNLOADS) {
+					if (this.config.PIPELINE_SKIP_DOWNLOADS) {
 						Logger.info(
 							`S${ma.arc}E${String(me.episode).padStart(2, '0')} - CRC32 Mismatch [Download skipped]`,
 						)
@@ -547,7 +547,7 @@ export class PipelineController {
 						const queueResult = await this.addToDownloadQueue(
 							ma,
 							me,
-							environment.PIPELINE_PREFER_EXTENDED && !!me.CRC32.extended,
+							this.config.PIPELINE_PREFER_EXTENDED && !!me.CRC32.extended,
 						)
 						Logger.info(
 							`S${ma.arc}E${String(me.episode).padStart(2, '0')} - CRC32 Mismatch [${this.formatDownloadQueueStatus(queueResult)}]`,
@@ -561,7 +561,7 @@ export class PipelineController {
 				`S${ma.arc}E${String(me.episode).padStart(2, '0')} - Missing`,
 			)
 
-			if (environment.PIPELINE_SKIP_DOWNLOADS) {
+			if (this.config.PIPELINE_SKIP_DOWNLOADS) {
 				Logger.info(
 					`S${ma.arc}E${String(me.episode).padStart(2, '0')} - Missing [Download skipped]`,
 				)
@@ -570,7 +570,7 @@ export class PipelineController {
 				const queueResult = await this.addToDownloadQueue(
 					ma,
 					me,
-					environment.PIPELINE_PREFER_EXTENDED && !!me.CRC32.extended,
+					this.config.PIPELINE_PREFER_EXTENDED && !!me.CRC32.extended,
 				)
 				Logger.info(
 					`S${ma.arc}E${String(me.episode).padStart(2, '0')} - Missing [${this.formatDownloadQueueStatus(queueResult)}]`,
