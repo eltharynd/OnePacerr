@@ -36,7 +36,7 @@ const startApp = async () => {
 		Logger.info(`##################################`)
 		Logger.info(`####                          ####`)
 		Logger.info(
-			`####     OnePacerr ${process.env.npm_package_version}      ####`,
+			`####     OnePacerr ${process.env.npm_package_version}${String('####').padStart(15 - process.env.npm_package_version.length, ' ')}`,
 		)
 		Logger.info(`####                          ####`)
 		Logger.info(`##################################`)

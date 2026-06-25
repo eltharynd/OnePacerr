@@ -183,7 +183,7 @@ export class PipelineController {
 			Logger.warn(``)
 			Logger.warn(`##################################`)
 			Logger.warn(
-				`#### Pipeline had ${failed.length == 1 ? `${failed.length} failure ` : failed.length > 9 ? `${failed.length} failures` : `${failed.length} failures `} ####`,
+				`#### Pipeline had ${failed.length}${String('####').padStart(16 - String(failed.length).length, ' ')}`,
 			)
 			Logger.warn(`#### Will retry next cycle    ####`)
 			Logger.warn(`##################################`)
