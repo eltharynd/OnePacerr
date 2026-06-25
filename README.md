@@ -320,7 +320,8 @@ Here is a breakdown of key optional variables you can adjust in your
 | 🍏 `PIPELINE_SKIP_UPDATE_METADATA_PRESENT_FILES` | `true` | If `false`, automatically updates metadata for files already in your Library, otherwise only does so for new downloads. |
 | 🍏 `PIPELINE_SKIP_DOWNLOADS` | `false` | If `true`, skips download. Use if you only want to organize your current files. |
 | 🍏 `PIPELINE_SKIP_DOWNLOADS_IMPORTS` | `false` | If `true`, skips updating posters when updating metadata. |
-| 🍏 `PIPELINE_SKIP_POSTERS` | `false` | If `true`, skips updating posters when updating metadata. |
+| `PIPELINE_FORCE_REDOWNLOAD` | `false` | If `true`, downloads and imports files even if already present. |
+| `PIPELINE_SKIP_POSTERS` | `false` | If `true`, skips updating posters when updating metadata. |
 | --- | --- | --- |
 | `PIPELINE_INCLUDE_SPECIALS` | `false` | Set to `true` to also process specials. |
 | `PIPELINE_PREFER_EXTENDED` | `false` | Set to `true` to prioritize extended cuts over standard releases. |
