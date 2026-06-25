@@ -198,7 +198,7 @@ export class PlexController implements ILibraryController {
 		title: string,
 		description: string,
 	) {
-		Logger.info(
+		Logger.debug(
 			`Episode ${arc}-${String(episode).padStart(2, '0')} - Updating Metadata`,
 		)
 
