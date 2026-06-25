@@ -102,6 +102,7 @@ Before running OnePacerr, ensure you have the following services up and running:
   - Alternatively you can run it locally with node:
     - create a `.env` file in root (use `sample.env` as example)
     - `npm install`
+    - `npm run build`
     - `npm start`
 - **one of these torrent clients** (with WebUI/APIs enabled)
   - [qBittorrent](https://hub.docker.com/r/linuxserver/qbittorrent) (Recommended)
@@ -266,6 +267,7 @@ Install [node](https://nodejs.org/en/download) (>=24 tested) on your machine the
 
 - create a `.env` file in root (use `sample.env` as example)
 - run `npm install`
+- run `npm run build`
 - run `npm start`
 
 ### 👩‍💻 Contributing to the development
@@ -279,8 +281,12 @@ npm i
 Then, I recommend opening two side-by side tabs in vs code terminal and running one of these in each:
 
 ```bash
-#Compiles typescript and watch for changes
+#Compile typescript and watch for changes
+#if you have typescript installed globally `npm i -g typescript`
 tsc -w
+#otherwise you can do
+npx tsc -w
+
 
 #Shortcut for nodemon --enable-source-maps dist/index.js
 #runs app and reloads any time tsc-w recompiles an edited file
