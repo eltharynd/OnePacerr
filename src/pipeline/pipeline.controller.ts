@@ -383,11 +383,15 @@ export class PipelineController {
 				episodeDescription.description,
 			)
 		} else {
-			Logger.debug(
-				`S${arc}E${String(episode).padStart(2, '0')} - Correctly formatted...`,
-			)
 			if (!this.config.PIPELINE_SKIP_UPDATE_METADATA_PRESENT_FILES) {
+				Logger.debug(
+					`S${arc}E${String(episode).padStart(2, '0')} - Correctly formatted...`,
+				)
 				await this.updatemetadata(arc, episode)
+			} else {
+				Logger.info(
+					`S${arc}E${String(episode).padStart(2, '0')} - Already present`,
+				)
 			}
 		}
 	}
