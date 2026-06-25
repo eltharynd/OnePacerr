@@ -103,7 +103,22 @@ export class MetadataController {
 
 		let target = this.metadata.arcs[environment.METADATA_LANGUAGE]
 			.find(a => a.part === arc)
-			.episodes.find(e => Number.parseInt(e.episode) == episode)
+			.episodes.find(e => {
+				return Number.parseInt(e.episode) == episode
+			})
+
+		if (arc == 16 && episode == 25) {
+			if (!environment.PIPELINE_PREFER_G8) {
+				Logger.debug(`Corrected 16. Skypiea 25 for alternate G-8 cut`)
+				target.standard = 'C951349C'
+			}
+		}
+
+		if (target.standard == '702231E9') {
+			Logger.debug(`Skypiea 14 manual correction`)
+			target.standard = '704F68EA'
+		}
+
 		return environment.PIPELINE_PREFER_EXTENDED && !!target.extended
 			? target.extended
 			: target.standard
@@ -111,13 +126,9 @@ export class MetadataController {
 
 	findEpisode(CRC32: string): Episode {
 		this.checkMetadataDownloaded()
-
-		let episode = this.metadata.episodes[CRC32]
+		let episode =
+			this.metadata.episodes[CRC32 == '704F68EA' ? '702231E9' : CRC32]
 		if (!episode) {
-			if (CRC32 == '704F68EA') {
-				Logger.debug(`Skypiea 14 manual correction`)
-				return { arc: 16, episode: 14 }
-			}
 			Logger.debug(
 				`CRC32 ${CRC32} not in metadata... Probably just an out of date release included in a batch...`,
 			)

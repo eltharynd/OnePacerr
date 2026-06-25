@@ -124,6 +124,7 @@ export class PipelineController {
 					Logger.error(
 						`S${ma.arc}E${String(me.episode).padStart(2, '0')} - Error processing file, requeueing...`,
 					)
+					Logger.error(e)
 					failed.push({ arc: ma.arc, episode: me.episode })
 				}
 			}
@@ -156,7 +157,6 @@ export class PipelineController {
 			let formattedFailed: FormattedArc[] = current.monitored.filter(ma =>
 				failedArcs.find(fa => fa.arc == ma.arc),
 			)
-
 			for (let a of formattedFailed) {
 				const failed = failedArcs.find(fa => fa.arc == a.arc).episodes
 
@@ -165,7 +165,6 @@ export class PipelineController {
 
 				a.episodes = filtered
 			}
-
 			next.monitored.push(...formattedFailed)
 			next.monitoredEpisodes += formattedFailed
 				.map(a => a.episodes.length)
@@ -175,25 +174,25 @@ export class PipelineController {
 			this.report = next
 
 			this.eventEmitter.emit('errored')
-
 			setTimeout(() => {
 				Context.pipeline.start()
 			}, this.config.PIPELINE_RETRY_INTERVAL)
 		}
 
-		Logger.info(``)
 		if (failed.length > 0) {
+			Logger.warn(``)
 			Logger.warn(`##################################`)
 			Logger.warn(
 				`#### Pipeline had ${failed.length == 1 ? `${failed.length} failure ` : failed.length > 9 ? `${failed.length} failures` : `${failed.length} failures `} ####`,
 			)
 			Logger.warn(`#### Will retry next cycle    ####`)
 			Logger.warn(`##################################`)
+			Logger.warn(``)
 		} else {
+			Logger.info(``)
 			Logger.info(`##################################`)
+			Logger.info(``)
 		}
-		Logger.info(``)
-
 		await Context.torrent.startWatching()
 	}
 
@@ -261,7 +260,7 @@ export class PipelineController {
 		} ${String(episode.episode).padStart(2, '0')}${extended ? ` Extended Cut` : ''}`
 
 		if (rsstitle.startsWith(`Skypiea 25`)) {
-			Logger.debug('Manual correction for 16. Skypeiea 25 Alternate G-8')
+			Logger.debug('Manual correction for 16. Skypiea 25 Alternate G-8')
 			rsstitle = this.config.PIPELINE_PREFER_G8
 				? 'Skypiea 25 Alternate Cut (G-8)'
 				: 'Skypiea 25'
@@ -405,6 +404,25 @@ export class PipelineController {
 			me.CRC32.standard = '704F68EA'
 		}
 
+		if (ma.arc == 16 && me.episode == 25) {
+			if (!this.config.PIPELINE_PREFER_G8) {
+				Logger.debug(`Corrected 16. Skypiea 25 for alternate G-8 cut`)
+				me.CRC32.standard = 'C951349C'
+			}
+		}
+
+		if (this.config.PIPELINE_FORCE_REDOWNLOAD) {
+			const queueResult = await this.addToDownloadQueue(
+				ma,
+				me,
+				!!me.CRC32.extended && this.config.PIPELINE_PREFER_EXTENDED,
+			)
+			Logger.info(
+				`S${ma.arc}E${String(me.episode).padStart(2, '0')} - Forced re-download from settings [${this.formatDownloadQueueStatus(queueResult)}]`,
+			)
+			return
+		}
+
 		let file = await Context.library.getExistingLibraryEpisodeFile(
 			ma.arc,
 			me.episode,
@@ -435,13 +453,6 @@ export class PipelineController {
 				Logger.debug(
 					`S${ma.arc}E${String(me.episode).padStart(2, '0')} - Hash complete (${CRC32})`,
 				)
-
-				if (ma.arc == 16 && me.episode == 25) {
-					if (!this.config.PIPELINE_PREFER_G8) {
-						Logger.debug(`Corrected 16. Skypiea 25 for alternate G-8 cut`)
-						me.CRC32.standard = 'C951349C'
-					}
-				}
 
 				if (!!me.CRC32.extended && this.config.PIPELINE_PREFER_EXTENDED) {
 					Logger.debug(
@@ -506,7 +517,7 @@ export class PipelineController {
 								`S${ma.arc}E${String(me.episode).padStart(2, '0')} - Extended instead of Standard [Download skipped]`,
 							)
 						} else {
-							const queueResult = await this.addToDownloadQueue(ma, me, true)
+							const queueResult = await this.addToDownloadQueue(ma, me)
 							Logger.info(
 								`S${ma.arc}E${String(me.episode).padStart(2, '0')} - Extended instead of Standard [${this.formatDownloadQueueStatus(queueResult)}]`,
 							)
@@ -533,7 +544,7 @@ export class PipelineController {
 							`S${ma.arc}E${String(me.episode).padStart(2, '0')} - Extended instead of Standard [Download skipped]`,
 						)
 					} else {
-						const queueResult = await this.addToDownloadQueue(ma, me, true)
+						const queueResult = await this.addToDownloadQueue(ma, me)
 						Logger.info(
 							`S${ma.arc}E${String(me.episode).padStart(2, '0')} - Extended instead of Standard [${this.formatDownloadQueueStatus(queueResult)}]`,
 						)

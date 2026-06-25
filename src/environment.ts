@@ -45,6 +45,9 @@ export default {
 	PIPELINE_SKIP_DOWNLOADS_IMPORTS: /true/i.test(
 		process.env.SKIP_DOWNLOADS_IMPORTS || 'false',
 	),
+	PIPELINE_FORCE_REDOWNLOAD: /true/i.test(
+		process.env.PIPELINE_FORCE_REDOWNLOAD || 'false',
+	),
 	PIPELINE_SKIP_POSTERS: /true/i.test(
 		process.env.PIPELINE_SKIP_POSTERS || process.env.SKIP_POSTERS || 'false',
 	),

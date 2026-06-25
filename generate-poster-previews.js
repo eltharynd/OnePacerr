@@ -36,7 +36,6 @@ const TEMPLATE_ITEM = `    <td align="center">
 
 readdir(POSTERS_ROOT).then(subfolders => {
 	subfolders.forEach(posterSet => {
-		console.log(`Organizing folders for '${posterSet}'`)
 		let setFolder = path.join(POSTERS_ROOT, posterSet)
 
 		let previewContents = PREVIEW_HEADER.replace(

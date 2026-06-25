@@ -72,8 +72,6 @@ export class RSSController {
 			}
 		}
 
-		Logger.debug(`Searching magnetURI for '${rssTitle}'...`)
-
 		let activeItems = this.feed.items.filter(i => {
 			for (let cat of i.categories)
 				if (cat._ === 'outdated') {
