@@ -107,6 +107,9 @@ export class PipelineController {
 		Logger.info(`##################################`)
 		Logger.info(`####                          ####`)
 		Logger.info(`####     PIPELINE RUNNING     ####`)
+		Logger.info(
+			`####   (monitored ep: ${String(this.report.monitored.length).padEnd(3, ' ')} )   ####`,
+		)
 		Logger.info(`####                          ####`)
 		Logger.info(`##################################`)
 		Logger.info(`##################################`)
