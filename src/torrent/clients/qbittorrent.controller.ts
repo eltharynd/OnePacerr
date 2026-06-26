@@ -5,7 +5,7 @@ import {
 } from '@ctrl/qbittorrent'
 import { Logger } from 'ez-ts-logger'
 import environment from '../../environment.js'
-import { TorrentInfo } from '../../metadata/metadata.model.js'
+import { FileMetadata } from '../../metadata/metadata.model.js'
 import {
 	ITorrentController,
 	Torrent,
@@ -29,11 +29,11 @@ export class qBittorrentController implements ITorrentController {
 	}
 
 	public async addTorrent(
-		torrentInfo: TorrentInfo,
+		torrentInfo: FileMetadata,
 		category: string,
 	): Promise<boolean> {
 		let torrent = (await this.getAllTorrents()).find(
-			t => t.hash === torrentInfo.infoHash,
+			t => t.hash === torrentInfo.hash,
 		)
 		if (torrent) {
 			Logger.debug(`MagnetURI already in qBittorrent...`)

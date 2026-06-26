@@ -4,11 +4,7 @@ import { mkdirSync, readdirSync, unlinkSync } from 'node:fs'
 import path from 'node:path'
 import environment from '../environment.js'
 import { TargetLibraryFile } from '../library/library.model'
-import {
-	FormattedArc,
-	FormattedEpisode,
-	TorrentInfo,
-} from '../metadata/metadata.model.js'
+import { ArcMetadata, EpisodeMetadata } from '../metadata/metadata.model.js'
 import { QueueDownloadResult } from '../torrent/torrent.model.js'
 import { Context } from '../util/context.js'
 import getFileCrc32Hash from '../util/crc32.js'
@@ -81,7 +77,7 @@ export class PipelineController {
 		}
 	}
 
-	addMonitored(monitored: FormattedArc[]) {
+	addMonitored(monitored: ArcMetadata[]) {
 		if (this.report && this.report.status == 'RUNNING') {
 			throw new PipelineNotDoneError('Pipeline not done')
 		} else if (!this.report || this.report.status != 'PRE') {
@@ -157,7 +153,7 @@ export class PipelineController {
 				}
 			}
 
-			let formattedFailed: FormattedArc[] = current.monitored.filter(ma =>
+			let formattedFailed: ArcMetadata[] = current.monitored.filter(ma =>
 				failedArcs.find(fa => fa.arc == ma.arc),
 			)
 			for (let a of formattedFailed) {
@@ -205,10 +201,7 @@ export class PipelineController {
 			`S${arc}E${String(episode).padStart(2, '0')} - Attempting Metadata Update`,
 		)
 
-		let episodeDescription = await Context.metadata.getEpisodeDescription(
-			arc,
-			episode,
-		)
+		let episodeDescription = await Context.metadata.getEpisode(arc, episode)
 		let targetLibraryFile: TargetLibraryFile =
 			await Context.library.getTargetLibraryEpisodeFile(
 				arc,
@@ -252,33 +245,16 @@ export class PipelineController {
 	}
 
 	private async addToDownloadQueue(
-		arc: FormattedArc,
-		episode: FormattedEpisode,
+		episode: EpisodeMetadata,
 		extended?: boolean,
 	): Promise<QueueDownloadResult> {
-		arc.title
-
-		let rsstitle = `${
-			arc.title
-		} ${String(episode.episode).padStart(2, '0')}${extended ? ` Extended Cut` : ''}`
-
-		if (rsstitle.startsWith(`Skypiea 25`)) {
-			Logger.debug('Manual correction for 16. Skypiea 25 Alternate G-8')
-			rsstitle = this.config.PIPELINE_PREFER_G8
-				? 'Skypiea 25 Alternate Cut (G-8)'
-				: 'Skypiea 25'
+		if (episode.files.alternate && this.config.PIPELINE_PREFER_G8) {
+			return await Context.torrent.queueDownload(episode.files.alternate)
+		} else if (episode.files.extended && extended) {
+			return await Context.torrent.queueDownload(episode.files.extended)
+		} else {
+			return await Context.torrent.queueDownload(episode.files.standard)
 		}
-
-		let torrentInfo: TorrentInfo
-		try {
-			torrentInfo = await Context.rss.getTorrentInfo(rsstitle)
-		} catch (e) {
-			Logger.debug(`Couldn't find MagnetURI in RSS, refreshing it...`)
-			await Context.rss.fetch()
-			torrentInfo = await Context.rss.getTorrentInfo(rsstitle)
-		}
-
-		return await Context.torrent.queueDownload(torrentInfo)
 	}
 
 	private formatDownloadQueueStatus(result: QueueDownloadResult): string {
@@ -304,10 +280,7 @@ export class PipelineController {
 			true,
 		)
 
-		let episodeDescription = await Context.metadata.getEpisodeDescription(
-			arc,
-			episode,
-		)
+		let episodeDescription = await Context.metadata.getEpisode(arc, episode)
 		let targetLibraryFile: TargetLibraryFile =
 			await Context.library.getTargetLibraryEpisodeFile(
 				arc,
@@ -396,7 +369,7 @@ export class PipelineController {
 		}
 	}
 
-	private async process(ma: FormattedArc, me: FormattedEpisode) {
+	private async process(ma: ArcMetadata, me: EpisodeMetadata) {
 		this.report.processedEpisodes++
 		Logger.debug(
 			`S${ma.arc}E${String(me.episode).padStart(2, '0')} - Processing`,
@@ -404,25 +377,24 @@ export class PipelineController {
 
 		const skipVerification =
 			this.config.PIPELINE_SKIP_VERIFY_PRESENT_FILES &&
-			!(this.config.PIPELINE_SKIP_VERIFY_NOT_FOR_EXTENDED && me.CRC32.extended)
+			!(this.config.PIPELINE_SKIP_VERIFY_NOT_FOR_EXTENDED && me.files.extended)
 
-		if (me.CRC32.standard == '702231E9') {
-			Logger.debug(`Skypiea 14 manual correction`)
-			me.CRC32.standard = '704F68EA'
-		}
+		// if (me.CRC32.standard == '702231E9') {
+		// 	Logger.debug(`Skypiea 14 manual correction`)
+		// 	me.CRC32.standard = '704F68EA'
+		// }
 
-		if (ma.arc == 16 && me.episode == 25) {
-			if (!this.config.PIPELINE_PREFER_G8) {
-				Logger.debug(`Corrected 16. Skypiea 25 for alternate G-8 cut`)
-				me.CRC32.standard = 'C951349C'
-			}
-		}
+		// if (ma.arc == 16 && me.episode == 25) {
+		// 	if (!this.config.PIPELINE_PREFER_G8) {
+		// 		Logger.debug(`Corrected 16. Skypiea 25 for alternate G-8 cut`)
+		// 		me.CRC32.standard = 'C951349C'
+		// 	}
+		// }
 
 		if (this.config.PIPELINE_FORCE_REDOWNLOAD) {
 			const queueResult = await this.addToDownloadQueue(
-				ma,
 				me,
-				!!me.CRC32.extended && this.config.PIPELINE_PREFER_EXTENDED,
+				!!me.files.extended && this.config.PIPELINE_PREFER_EXTENDED,
 			)
 			Logger.info(
 				`S${ma.arc}E${String(me.episode).padStart(2, '0')} - Forced re-download from settings [${this.formatDownloadQueueStatus(queueResult)}]`,
@@ -461,11 +433,14 @@ export class PipelineController {
 					`S${ma.arc}E${String(me.episode).padStart(2, '0')} - Hash complete (${CRC32})`,
 				)
 
-				if (!!me.CRC32.extended && this.config.PIPELINE_PREFER_EXTENDED) {
+				if (!!me.files.extended && this.config.PIPELINE_PREFER_EXTENDED) {
 					Logger.debug(
 						`S${ma.arc}E${String(me.episode).padStart(2, '0')} - Extended wanted`,
 					)
-					if (CRC32 == me.CRC32.extended) {
+					if (
+						CRC32 == me.files.extended.CRC32 ||
+						me.files.extended.CRC32_inFileName
+					) {
 						Logger.debug(
 							`S${ma.arc}E${String(me.episode).padStart(2, '0')} - Extended present`,
 						)
@@ -479,7 +454,10 @@ export class PipelineController {
 							Logger.info(
 								`S${ma.arc}E${String(me.episode).padStart(2, '0')} - Already present`,
 							)
-					} else if (CRC32 == me.CRC32.standard) {
+					} else if (
+						CRC32 == me.files.standard.CRC32 ||
+						me.files.standard.CRC32_inFileName
+					) {
 						Logger.debug(
 							`S${ma.arc}E${String(me.episode).padStart(2, '0')} - Standard present`,
 						)
@@ -488,20 +466,23 @@ export class PipelineController {
 								`S${ma.arc}E${String(me.episode).padStart(2, '0')} - Standard instead of extended [Download skipped]`,
 							)
 						} else {
-							const queueResult = await this.addToDownloadQueue(ma, me, true)
+							const queueResult = await this.addToDownloadQueue(me, true)
 							Logger.info(
 								`S${ma.arc}E${String(me.episode).padStart(2, '0')} - Standard instead of extended [${this.formatDownloadQueueStatus(queueResult)}]`,
 							)
 						}
 					}
 				} else if (
-					!!me.CRC32.extended &&
+					!!me.files.extended &&
 					!this.config.PIPELINE_PREFER_EXTENDED
 				) {
 					Logger.debug(
 						`S${ma.arc}E${String(me.episode).padStart(2, '0')} - Standard wanted`,
 					)
-					if (CRC32 == me.CRC32.standard) {
+					if (
+						CRC32 == me.files.standard.CRC32 ||
+						CRC32 == me.files.standard.CRC32_inFileName
+					) {
 						Logger.debug(
 							`S${ma.arc}E${String(me.episode).padStart(2, '0')} - Standard present`,
 						)
@@ -515,7 +496,10 @@ export class PipelineController {
 							Logger.info(
 								`S${ma.arc}E${String(me.episode).padStart(2, '0')} - Already present`,
 							)
-					} else if (CRC32 == me.CRC32.extended) {
+					} else if (
+						CRC32 == me.files.extended.CRC32 ||
+						CRC32 == me.files.extended.CRC32_inFileName
+					) {
 						Logger.debug(
 							`S${ma.arc}E${String(me.episode).padStart(2, '0')} - Extended present`,
 						)
@@ -524,13 +508,16 @@ export class PipelineController {
 								`S${ma.arc}E${String(me.episode).padStart(2, '0')} - Extended instead of Standard [Download skipped]`,
 							)
 						} else {
-							const queueResult = await this.addToDownloadQueue(ma, me)
+							const queueResult = await this.addToDownloadQueue(me)
 							Logger.info(
 								`S${ma.arc}E${String(me.episode).padStart(2, '0')} - Extended instead of Standard [${this.formatDownloadQueueStatus(queueResult)}]`,
 							)
 						}
 					}
-				} else if (CRC32 == me.CRC32.standard) {
+				} else if (
+					CRC32 == me.files.standard.CRC32 ||
+					CRC32 == me.files.standard.CRC32_inFileName
+				) {
 					Logger.debug(
 						`S${ma.arc}E${String(me.episode).padStart(2, '0')} - Standard present`,
 					)
@@ -542,7 +529,10 @@ export class PipelineController {
 						Logger.info(
 							`S${ma.arc}E${String(me.episode).padStart(2, '0')} - Already present`,
 						)
-				} else if (CRC32 == me.CRC32.extended) {
+				} else if (
+					CRC32 == me.files.extended.CRC32 ||
+					CRC32 == me.files.extended.CRC32_inFileName
+				) {
 					Logger.debug(
 						`S${ma.arc}E${String(me.episode).padStart(2, '0')} - Extended present`,
 					)
@@ -551,7 +541,7 @@ export class PipelineController {
 							`S${ma.arc}E${String(me.episode).padStart(2, '0')} - Extended instead of Standard [Download skipped]`,
 						)
 					} else {
-						const queueResult = await this.addToDownloadQueue(ma, me)
+						const queueResult = await this.addToDownloadQueue(me)
 						Logger.info(
 							`S${ma.arc}E${String(me.episode).padStart(2, '0')} - Extended instead of Standard [${this.formatDownloadQueueStatus(queueResult)}]`,
 						)
@@ -563,9 +553,8 @@ export class PipelineController {
 						)
 					} else {
 						const queueResult = await this.addToDownloadQueue(
-							ma,
 							me,
-							this.config.PIPELINE_PREFER_EXTENDED && !!me.CRC32.extended,
+							this.config.PIPELINE_PREFER_EXTENDED && !!me.files.extended,
 						)
 						Logger.info(
 							`S${ma.arc}E${String(me.episode).padStart(2, '0')} - CRC32 Mismatch [${this.formatDownloadQueueStatus(queueResult)}]`,
@@ -584,10 +573,12 @@ export class PipelineController {
 				)
 			} else {
 				const queueResult = await this.addToDownloadQueue(
-					ma,
 					me,
-					this.config.PIPELINE_PREFER_EXTENDED && !!me.CRC32.extended,
+					this.config.PIPELINE_PREFER_EXTENDED && !!me.files.extended,
 				)
+				if (ma.arc == 16 && me.episode == 14) {
+					console.log(me)
+				}
 				Logger.info(
 					`S${ma.arc}E${String(me.episode).padStart(2, '0')} - Missing [${this.formatDownloadQueueStatus(queueResult)}]`,
 				)

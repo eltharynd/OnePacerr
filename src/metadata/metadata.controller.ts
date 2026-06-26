@@ -7,19 +7,18 @@ import { Filter } from '../util/filters.js'
 import resolveSeasonPosterFileName from '../util/resolve-season-poster-filename.js'
 import resolveSeriesRootFolder from '../util/resolve-series-root-folder.js'
 import {
+	ArcMetadata,
 	CRCNotInMetadata,
-	Episode,
-	EpisodeDescription,
-	FormattedArc,
+	EpisodeMetadata,
+	Metadata,
 	MetadataAbsentError,
-	RawMetadataJson,
 } from './metadata.model.js'
 
 export class MetadataController {
-	private metadata: RawMetadataJson
+	private metadata: Metadata
 	private newMetadata: boolean = false
 
-	private monitored: FormattedArc[]
+	private monitored: ArcMetadata[]
 
 	private TVShowNFO
 	private seasonNFOs = {}
@@ -30,10 +29,8 @@ export class MetadataController {
 
 		try {
 			let metadata = (await axios.get(environment.METADATA_URL)).data
-			if (
-				!this.metadata ||
-				metadata.status.last_update > this.metadata.status.last_update
-			) {
+
+			if (!this.metadata || metadata.lastUpdate > this.metadata.lastUpdate) {
 				Logger.info(`Newer Metadata found!`)
 				this.metadata = metadata
 				this.newMetadata = true
@@ -60,81 +57,84 @@ export class MetadataController {
 		}
 	}
 
-	getMonitored(): FormattedArc[] {
+	getMonitored(): ArcMetadata[] {
+		this.checkMetadataDownloaded()
+
 		return this.monitored
 	}
 
 	getTVShowNFO() {
 		this.checkMetadataDownloaded()
+
 		return this.TVShowNFO
 	}
 
 	getSeasonNFO(arc: number) {
 		this.checkMetadataDownloaded()
+
 		return this.seasonNFOs[`${arc}`]
 	}
 
 	getEpisodeNFO(arc: number, episode: number) {
 		this.checkMetadataDownloaded()
+
 		return this.episodesNFOs[`${arc}`][`${episode}`]
 	}
 
-	getEpisodeDescription(arc: number, episode: number): EpisodeDescription {
+	getEpisode(arc: number, episode: number): EpisodeMetadata {
 		this.checkMetadataDownloaded()
-		return this.metadata.descriptions[environment.METADATA_LANGUAGE].find(
-			d => d.arc == arc && d.episode == episode,
-		)
+
+		return this.metadata.arcs
+			.find(a => a.arc == arc)
+			.episodes.find(e => e.episode == episode)
 	}
 
-	getSeasonDescription(arc: number) {
+	getArc(arc: number) {
 		this.checkMetadataDownloaded()
-		return this.metadata.arcs[environment.METADATA_LANGUAGE].find(
-			a => a.part === arc,
-		)
+
+		return this.metadata.arcs.find(a => a.arc)
 	}
 
-	getShowDescription() {
+	getShow(): Metadata {
 		this.checkMetadataDownloaded()
-		return this.metadata.tvshow[environment.METADATA_LANGUAGE]
+
+		return this.metadata
 	}
 
 	findCRC32(arc: number, episode: number): string {
 		this.checkMetadataDownloaded()
 
-		let target = this.metadata.arcs[environment.METADATA_LANGUAGE]
-			.find(a => a.part === arc)
-			.episodes.find(e => {
-				return Number.parseInt(e.episode) == episode
-			})
+		const target = this.metadata.arcs
+			.find(a => a.arc == arc)
+			.episodes.find(e => e.episode == episode)
 
-		if (arc == 16 && episode == 25) {
-			if (!environment.PIPELINE_PREFER_G8) {
-				Logger.debug(`Corrected 16. Skypiea 25 for alternate G-8 cut`)
-				target.standard = 'C951349C'
+		if (target.files.alternate && environment.PIPELINE_PREFER_G8) {
+			return target.files.alternate.CRC32
+		} else if (target.files.extended && environment.PIPELINE_PREFER_EXTENDED) {
+			return target.files.extended.CRC32
+		} else return target.files.standard.CRC32
+	}
+
+	findEpisodeByCRC32(CRC32: string): EpisodeMetadata | undefined {
+		this.checkMetadataDownloaded()
+
+		let episode: EpisodeMetadata
+
+		for (const arc of this.metadata.arcs) {
+			let tmp = arc.episodes.find(e =>
+				Object.values(e.files).some(
+					(variant: any) =>
+						variant.CRC32 === CRC32 || variant.CRC32_inFileName === CRC32,
+				),
+			)
+			if (tmp) {
+				episode = tmp
+				break
 			}
 		}
 
-		if (target.standard == '702231E9') {
-			Logger.debug(`Skypiea 14 manual correction`)
-			target.standard = '704F68EA'
-		}
-
-		return environment.PIPELINE_PREFER_EXTENDED && !!target.extended
-			? target.extended
-			: target.standard
-	}
-
-	findEpisode(CRC32: string): Episode {
-		this.checkMetadataDownloaded()
-		let episode =
-			this.metadata.episodes[CRC32 == '704F68EA' ? '702231E9' : CRC32]
-		if (!episode) {
-			Logger.debug(
-				`CRC32 ${CRC32} not in metadata... Probably just an out of date release included in a batch...`,
-			)
-			throw new CRCNotInMetadata(`CRC32 ${CRC32} not in metadata...`)
-		}
-		return episode
+		if (episode) return episode
+		else throw new CRCNotInMetadata(`CRC32 ${CRC32} not in metadata...`)
 	}
 
 	getReport() {
@@ -148,39 +148,7 @@ export class MetadataController {
 			},
 			downloaded: false,
 		}
-
-		if (!this.metadata) return base
-
-		return {
-			...base,
-			downloaded: true,
-			age: new Date(this.metadata?.status.last_update),
-
-			arcs: {
-				monitored: this.metadata.arcs[environment.METADATA_LANGUAGE].filter(
-					a =>
-						(a.part != 0 || environment.PIPELINE_INCLUDE_SPECIALS) &&
-						Filter({ arc: a.part }),
-				).length,
-				total: Object.keys(this.metadata.arcs[environment.METADATA_LANGUAGE])
-					.length,
-			},
-			episodes: {
-				monitored: this.metadata.arcs[environment.METADATA_LANGUAGE]
-					.filter(
-						a =>
-							(a.part != 0 || environment.PIPELINE_INCLUDE_SPECIALS) &&
-							Filter({ arc: a.part }),
-					)
-					.map(a => {
-						return a.episodes.filter(e =>
-							Filter({ arc: a.part, episode: e.episode }),
-						).length
-					})
-					.reduce((acc, curr) => acc + curr),
-				total: Object.keys(this.metadata.episodes).length,
-			},
-		}
+		return base
 	}
 
 	private async sendToPipeline() {
@@ -205,34 +173,19 @@ export class MetadataController {
 
 	private generateMonitored() {
 		this.checkMetadataDownloaded()
-		this.monitored = this.metadata.arcs[environment.METADATA_LANGUAGE]
+
+		this.monitored = this.metadata.arcs
 			.filter(
 				a =>
-					(a.part != 0 || environment.PIPELINE_INCLUDE_SPECIALS) &&
-					Filter({ arc: a.part }),
+					(a.arc != 0 || environment.PIPELINE_INCLUDE_SPECIALS) &&
+					Filter({ arc: a.arc }),
 			)
 			.map(a => {
 				return {
-					arc: a.part,
-					title: a.title,
-					description: a.description,
-					episodes: a.episodes
-						.filter(e => Filter({ arc: a.part, episode: e.episode }))
-						.map(e => {
-							const desc = this.getEpisodeDescription(
-								a.part,
-								Number.parseInt(e.episode),
-							)
-							return {
-								episode: Number.parseInt(e.episode),
-								title: desc?.title,
-								description: desc?.description,
-								CRC32: {
-									standard: e.standard,
-									extended: e.extended,
-								},
-							}
-						}),
+					...a,
+					episodes: a.episodes.filter(e =>
+						Filter({ arc: a.arc, episode: e.episode }),
+					),
 				}
 			})
 	}
@@ -240,36 +193,32 @@ export class MetadataController {
 	private async generateTVShowNFO() {
 		this.checkMetadataDownloaded()
 
-		let tvshow = JSON.parse(
-			JSON.stringify(this.metadata.tvshow[environment.METADATA_LANGUAGE]),
-		)
-		let namedseason = this.metadata.arcs[environment.METADATA_LANGUAGE].map(
-			a => {
-				return {
-					_attributes: {
-						number: a.part,
-					},
-					_text: `${a.part > 0 ? `${a.part}. ` : ''}${a.title}`,
-				}
-			},
-		)
-
-		delete tvshow.customrating
+		let namedseason = this.metadata.arcs.map(a => {
+			return {
+				_attributes: {
+					number: a.arc,
+				},
+				_text: `${a.arc > 0 ? `${a.arc}. ` : ''}${a.title}`,
+			}
+		})
 
 		let path = resolveSeriesRootFolder(await Context.library.getLibraryFolder())
 		path += path.includes('/') ? '/' : '\\'
 		path += 'poster.png'
 
-		tvshow.title = tvshow.title.replace('One Piece', 'One Pace')
-		tvshow.originaltitle = tvshow.title
-		tvshow.sorttitle = tvshow.title
+		const title = this.metadata.title.replace(
+			'One Pace',
+			environment.LIBRARY_SERIES_NAME,
+		)
+
 		this.TVShowNFO = `<?xml version='1.0' encoding='utf-8'?>\n${js2xml(
 			{
 				tvshow: {
-					...tvshow,
-					outline: tvshow.plot,
-					customrating:
-						this.metadata.tvshow[environment.METADATA_LANGUAGE].customrating,
+					title: title,
+					originaltitle: title,
+					sorttitle: title,
+					outline: this.metadata.description,
+					customrating: this.metadata.customRating,
 					lockdata: false,
 					namedseason: namedseason,
 					art: {
@@ -288,19 +237,15 @@ export class MetadataController {
 	private async generateSeasonNFOs() {
 		this.checkMetadataDownloaded()
 
-		let arcs = JSON.parse(
-			JSON.stringify(this.metadata.arcs[environment.METADATA_LANGUAGE]),
-		)
-
-		for (let a of arcs) {
+		for (let arc of this.metadata.arcs) {
 			let path = resolveSeriesRootFolder(
 				await Context.library.getLibraryFolder(),
 			)
 			path += path.includes('/') ? '/' : '\\'
 			if (environment.LIBRARY_MEDIA_SERVER === 'none') {
-				path += resolveSeasonPosterFileName(a.part)
+				path += resolveSeasonPosterFileName(arc.arc)
 			} else {
-				path += `Season ${String(a.part).padStart(2, '0')}`
+				path += `Season ${String(arc.arc).padStart(2, '0')}`
 				path += path.includes('/') ? '/' : '\\'
 				path += `poster.png`
 			}
@@ -308,12 +253,12 @@ export class MetadataController {
 			let NFO = `<?xml version='1.0' encoding='utf-8'?>\n${js2xml(
 				{
 					season: {
-						title: a.part == 0 ? a.title : `${a.part}. ${a.title}`,
-						sorttitle: a.part == 0 ? a.title : `${a.part}. ${a.title}`,
-						seasonnumber: a.part,
-						plot: a.description,
-						outline: a.description,
-						overview: a.description,
+						title: arc.arc == 0 ? arc.title : `${arc.arc}. ${arc.title}`,
+						sorttitle: arc.arc == 0 ? arc.title : `${arc.arc}. ${arc.title}`,
+						seasonnumber: arc.arc,
+						plot: arc.description,
+						outline: arc.description,
+						overview: arc.description,
 						customrating: 'TV-14',
 						lockdata: false,
 						art: {
@@ -328,53 +273,52 @@ export class MetadataController {
 				},
 			)}`
 
-			this.seasonNFOs[`${a.part}`] = NFO
+			this.seasonNFOs[`${arc.arc}`] = NFO
 		}
 	}
 
 	private async generateEpisodeNFOs() {
 		this.checkMetadataDownloaded()
 
-		let descriptions = JSON.parse(
-			JSON.stringify(this.metadata.descriptions[environment.METADATA_LANGUAGE]),
-		)
 		this.episodesNFOs = {}
+		for (let arc of this.metadata.arcs) {
+			for (let episode of arc.episodes) {
+				let NFO = `<?xml version='1.0' encoding='utf-8'?>\n${js2xml(
+					{
+						episodedetails: {
+							title: episode.title,
+							//////////////////
+							//Implement when Jellyfin updates to allow for multiple versions of an episode
+							//Not sure if it's gonna be called displayversion, that's the one for movies
+							//displayversion: Standard/Extended/G-8
+							////////////////
+							originaltitle: episode.title,
+							sorttitle: episode.title,
 
-		for (let ed of descriptions) {
-			let NFO = `<?xml version='1.0' encoding='utf-8'?>\n${js2xml(
-				{
-					episodedetails: {
-						title: ed.title,
-						//////////////////
-						//Implement when Jellyfin updates to allow for multiple versions of an episode
-						//Not sure if it's gonna be called displayversion, that's the one for movies
-						//displayversion: Standard/Extended/G-8
-						////////////////
-						originaltitle: ed.title,
-						sorttitle: ed.title,
+							plot: episode.description,
 
-						plot: ed.description,
+							showtitle: environment.LIBRARY_SERIES_NAME,
 
-						showtitle: environment.LIBRARY_SERIES_NAME,
+							season: arc.arc,
+							displayseason: arc.arc,
+							episode: episode.episode,
+							displayepisode: episode.episode,
 
-						season: ed.arc,
-						displayseason: ed.arc,
-						episode: ed.episode,
-						displayepisode: ed.episode,
-
-						customrating: 'TV-14',
-						lockdata: false,
+							customrating: this.metadata.customRating,
+							lockdata: false,
+						},
 					},
-				},
-				{
-					compact: true,
-					ignoreComment: true,
-					spaces: 2,
-				},
-			)}`
+					{
+						compact: true,
+						ignoreComment: true,
+						spaces: 2,
+					},
+				)}`
 
-			if (!this.episodesNFOs[`${ed.arc}`]) this.episodesNFOs[`${ed.arc}`] = {}
-			this.episodesNFOs[`${ed.arc}`][`${ed.episode}`] = NFO
+				if (!this.episodesNFOs[`${arc.arc}`])
+					this.episodesNFOs[`${arc.arc}`] = {}
+				this.episodesNFOs[`${arc.arc}`][`${episode.episode}`] = NFO
+			}
 		}
 	}
 

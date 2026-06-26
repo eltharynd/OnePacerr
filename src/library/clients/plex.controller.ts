@@ -117,10 +117,7 @@ export class PlexController implements ILibraryController {
 		episodeDescription?: { title: string; description: string },
 	): Promise<TargetLibraryFile> {
 		if (!episodeDescription) {
-			episodeDescription = await Context.metadata.getEpisodeDescription(
-				arc,
-				episode,
-			)
+			episodeDescription = await Context.metadata.getEpisode(arc, episode)
 		}
 
 		let plexLibraryPath = await Context.library.getLibraryFolder()
@@ -239,7 +236,7 @@ export class PlexController implements ILibraryController {
 
 	async updateSeasonMetadata(arc: number) {
 		Logger.debug(`Updating Season ${arc} Metadata in Plex...`)
-		let description = await Context.metadata.getSeasonDescription(arc)
+		let description = await Context.metadata.getArc(arc)
 
 		let season = await this.show.season(arc)
 
@@ -266,10 +263,10 @@ export class PlexController implements ILibraryController {
 
 	async updateShowMetadata() {
 		Logger.debug(`Updating Show Metadata in Plex...`)
-		let description = await Context.metadata.getShowDescription()
+		let show = await Context.metadata.getShow()
 
 		await this.show.editTitle(environment.LIBRARY_SERIES_NAME)
-		await this.show.editSummary(description.plot)
+		await this.show.editSummary(show.description)
 
 		if (!environment.PIPELINE_SKIP_POSTERS) {
 			Logger.debug(`Updating Show poster in Plex...`)

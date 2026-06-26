@@ -1,4 +1,4 @@
-import { FormattedArc } from '../metadata/metadata.model'
+import { ArcMetadata } from '../metadata/metadata.model'
 
 export type PipelineControllerConfig = {
 	PIPELINE_SKIP_VERIFY_PRESENT_FILES: boolean
@@ -21,7 +21,7 @@ export class PipelineReport {
 	created: Date = new Date()
 	started: Date
 	ended: Date
-	monitored: FormattedArc[] = []
+	monitored: ArcMetadata[] = []
 	processedEpisodes: number = 0
 	monitoredEpisodes: number = 0
 	status: PipelineStatus = 'PRE'

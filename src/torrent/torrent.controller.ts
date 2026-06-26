@@ -5,9 +5,9 @@ import environment from '../environment.js'
 import { TargetLibraryFile } from '../library/library.model.js'
 import {
 	CRCNotInMetadata,
-	Episode,
+	EpisodeMetadata,
+	FileMetadata,
 	MetadataAbsentError,
-	TorrentInfo,
 } from '../metadata/metadata.model.js'
 import { Context } from '../util/context.js'
 import { Filter } from '../util/filters.js'
@@ -113,7 +113,7 @@ export class TorrentController {
 	}
 
 	public async queueDownload(
-		torrentInfo: TorrentInfo,
+		torrentInfo: FileMetadata,
 	): Promise<QueueDownloadResult> {
 		if (environment.PIPELINE_SKIP_DOWNLOADS) {
 			Logger.debug(`Downloads disabled by env vars`)
@@ -122,7 +122,7 @@ export class TorrentController {
 
 		Logger.debug(`Adding magnetURI to ${this.client.torrentClient}...`)
 		let torrents = await this.client.getAllTorrents()
-		if (torrents.find(t => t.hash === torrentInfo.infoHash)) {
+		if (torrents.find(t => t.hash === torrentInfo.hash)) {
 			Logger.debug(`Torrent already in ${this.client.torrentClient}...`)
 			return 'already_present'
 		}
@@ -222,9 +222,9 @@ export class TorrentController {
 				const CRC32 = match[1].toUpperCase()
 				Logger.debug(`Parsed CRC32: ${CRC32}`)
 
-				let episode: Episode
+				let episode: EpisodeMetadata
 				try {
-					episode = await Context.metadata.findEpisode(CRC32)
+					episode = await Context.metadata.findEpisodeByCRC32(CRC32)
 				} catch (e) {
 					if (e instanceof MetadataAbsentError) {
 						throw e

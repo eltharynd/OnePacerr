@@ -1,69 +1,82 @@
-export type TorrentInfo = {
-	magnetURI: string
-	infoHash: string
+export type Metadata = {
+	lastUpdate: string
+
+	title: string
+	description: string
+
+	genre: string[]
+	customRating: string
+
+	arcs: ArcMetadata[]
+}
+export type ArcMetadata = {
+	arc: number
+
+	saga: string
+	title: string
+	description: string
+
+	status: 'complete' | 'tbr' | 'wip'
+
+	mangaChapters: string
+	mangaChaptersCount: number
+
+	animeEpisodes: string
+	animeEpisodesCount: number
+
+	fillerEpisodes: string
+	paceEpisodesCount: number
+
+	animeMinutes: number
+	paceMinutes: number
+	savedMinutes: number
+	savedPercentage: number
+
+	audioLanguages: string[]
+	subLanguages: string[]
+	subLanguagesPixeldrain: string[]
+
+	resolution: string
+
+	episodes: EpisodeMetadata[]
 }
 
-export type Episode = {
+export type EpisodeMetadata = {
 	arc: number
 	episode: number
-}
-export type EpisodeDescription = {
+
 	title: string
 	description: string
+
+	audioLanguages: string[]
+	subLanguages: string[]
+	subLanguagesPixeldrain: string[]
+
+	mangaChapters: string
+	animeEpisodes: string
+
+	released: string
+
+	files: EpisodeFilesMetadata
 }
 
-export type RawMetadataJson = {
-	status: {
-		last_update: string
-		last_update_ts: number
-	}
-	tvshow: any
-	arcs: {
-		[key: string]: {
-			part: number
-			saga: string
-			title: string
-			description: string
-			episodes: {
-				episode: string
-				standard: string
-				extended: string
-			}[]
-		}[]
-	}
-	descriptions: {
-		[key: string]: {
-			arc: number
-			episode: number
-			title: string
-			description: string
-		}[]
-	}
-	episodes: {
-		[key: string]: {
-			arc: number
-			episode: number
-			extended: boolean
-		}
-	}
-	other_edits: any
-}
+export type EpisodeFilesMetadata = {
+	standard: FileMetadata
+	extended?: FileMetadata
+	alternate?: FileMetadata
 
-export type FormattedArc = {
-	arc: number
-	title: string
-	description: string
-	episodes: FormattedEpisode[]
+	archived?: FileMetadata[] //missing
 }
+export type FileMetadata = {
+	CRC32: string
+	CRC32_inFileName?: string
 
-export type FormattedEpisode = {
-	episode: number
-	title: string
-	description: string
-	CRC32: {
-		standard: string
-		extended: string
-	}
+	hash: string //missing
+	magnetURI: string //missing
+
+	duration: number
+
+	partOfBundle?: boolean //missing
 }
 
 export class MetadataAbsentError extends Error {
