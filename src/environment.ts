@@ -52,11 +52,13 @@ export default {
 		process.env.PIPELINE_SKIP_POSTERS || process.env.SKIP_POSTERS || 'false',
 	),
 
-	PIPELINE_INCLUDE_SPECIALS: /true/i.test(
-		process.env.PIPELINE_INCLUDE_SPECIALS ||
-			process.env.INCLUDE_SPECIALS ||
-			'false',
-	),
+	// TODO reimplement
+	// PIPELINE_INCLUDE_SPECIALS: /true/i.test(
+	// 	process.env.PIPELINE_INCLUDE_SPECIALS ||
+	// 		process.env.INCLUDE_SPECIALS ||
+	// 		'false',
+	// ),
+	PIPELINE_INCLUDE_SPECIALS: false,
 	PIPELINE_PREFER_EXTENDED: /true/i.test(
 		process.env.PIPELINE_PREFER_EXTENDED ||
 			process.env.PREFER_EXTENDED ||
