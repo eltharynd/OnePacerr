@@ -172,7 +172,7 @@ export default {
 	 */
 	METADATA_URL:
 		process.env.METADATA_URL ||
-		`https://raw.githubusercontent.com/ladyisatis/one-pace-metadata/refs/heads/v2/metadata/data.json`,
+		`https://raw.githubusercontent.com/eltharynd/one-pace-api/refs/heads/main/output/metadata.json`,
 	METADATA_LANGUAGE: process.env.METADATA_LANGUAGE || 'en',
 	METADATA_POSTER_SET: process.env.METADATA_POSTER_SET || 'default',
 	METADATA_CHECK_INTERVAL:

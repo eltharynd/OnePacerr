@@ -47,4 +47,21 @@ export default function deprecatedWarnings() {
 	if (process.env['DEBUGGING']) {
 		Logger.changeConfigs({ LOG_LEVEL: 'debug' })
 	}
+
+	if (
+		process.env['METADATA_URL'] ==
+		'https://raw.githubusercontent.com/ladyisatis/one-pace-metadata/refs/heads/v2/metadata/data.json'
+	) {
+		const message = `You're using the old url for metadata. That stopped being supported starting with v1.6.0`
+
+		Logger.critical(message)
+		throw new UnsupportedMetadataError(message)
+	}
+}
+
+export class UnsupportedMetadataError extends Error {
+	constructor(message?: string, options?: { cause?: unknown }) {
+		super(message, options)
+		this.name = 'UnsupportedMetadataError'
+	}
 }

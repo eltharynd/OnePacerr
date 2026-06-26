@@ -86,6 +86,13 @@ It supports the most popular torrenting clients (qBittorrent, deluge and µTorre
 
 ## 🧪 Pipeline
 
+> [!IMPORTANT]  
+> This is currently slightly out of date due to che metadata changes.
+>
+> I moved to fetching metadata from [one-pace-api](https://github.com/eltharynd/one-pace-api), this means that we get all of the metadata at once and we don't need to check RSS feed anymore.
+>
+> When I have time to finish [one-pace-api](https://github.com/eltharynd/one-pace-api) and deploy it for the public, I will be able to just connect via WebSocket and get notifications without polling constantly.
+
 The following diagram synthesizes the pipeline:
 
 ![pipeline](docs/pipeline.png?cache=2)
@@ -253,7 +260,7 @@ services:
 
 
       # Metadata Settings
-      #- METADATA_URL=https://raw.githubusercontent.com/ladyisatis/one-pace-metadata/refs/heads/v2/metadata/data.json
+      #- METADATA_URL=https://raw.githubusercontent.com/eltharynd/one-pace-api/refs/heads/main/output/metadata.json
       #- METADATA_LANGUAGE=en
       #- METADATA_POSTER_SET=default
       #- METADATA_CHECK_INTERVAL=3600
@@ -473,7 +480,7 @@ If you're not sure what Mount Path Mappings are you can have a read on [TRaSH Gu
 
 | Metadata Variables | Default | Description |
 | :--- | :--- | :--- |
-| `METADATA_URL` | `https://raw.githubusercontent.com/ladyisatis/one-pace-metadata/refs/heads/v2/metadata/data.json` | Metadata url (untested with different ones). |
+| `METADATA_URL` | `https://raw.githubusercontent.com/eltharynd/one-pace-api/refs/heads/main/output/metadata.json` | Metadata url (untested with different ones). |
 | `METADATA_LANGUAGE` | `en` | Currently only language supported. |
 | `METADATA_POSTER_SET` | `default` | Currently `default` equals `piratezekk`. There are also `official` and `mizzoufan523` available. If a set is missing a poster it uses `default`. |
 | `METADATA_CHECK_INTERVAL` | 3600 | Seconds between checking for new metadata. |
@@ -513,8 +520,6 @@ If you want to contribute to the posters or create an entire new set, first of a
 This project wouldn't be possible without the incredible work of the community:
 
 - **[One Pace](https://onepace.net/en):** The incredible team behind the unofficial fan edits.
-- **[Ladyisatis](https://github.com/ladyisatis):** For maintaining the
-  [one-pace-metadata](https://github.com/ladyisatis/one-pace-metadata) repository.
 - For the custom poster artwork sets:
   - `piratezekk` (default) by **[/u/piratezekk](https://reddit.com/user/piratezekk)**.
   - `mizzoufan523` by **[/u/Mizzoufan523](https://reddit.com/user/Mizzoufan523)**.
