@@ -7,7 +7,7 @@
 	"scripts": {
 		"build": "tsc",
 		"start": "node --enable-source-maps dist/index.js",
-		"dev": "nodemon --enable-source-maps dist/index.js --ignore rss.json",
+		"dev": "nodemon dist/index.js",
 		"test": "vitest run",
 		"test:dev": "vitest",
 		"test:coverage": "vitest run --coverage"
