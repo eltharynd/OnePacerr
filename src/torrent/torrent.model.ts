@@ -1,4 +1,4 @@
-import { TorrentInfo } from '../metadata/metadata.model.js'
+import { FileMetadata } from '../metadata/metadata.model'
 
 export type TorrentClient = 'qbittorrent' | 'utorrent' | 'deluge'
 export type QueueDownloadResult = 'added' | 'already_present' | 'skipped'
@@ -14,7 +14,7 @@ export type Torrent = {
 export interface ITorrentController {
 	readonly torrentClient: TorrentClient
 
-	addTorrent(torrentInfo: TorrentInfo, category: string): Promise<boolean>
+	addTorrent(torrentInfo: FileMetadata, category: string): Promise<boolean>
 	getAllTorrents(category?: string): Promise<Torrent[]>
 	getCompletedTorrents(category?: string): Promise<Torrent[]>
 	updateTorrentCategory(torrent: Torrent, category: string): Promise<void>

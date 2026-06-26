@@ -111,10 +111,7 @@ export class JellyfinController implements ILibraryController {
 		episodeDescription?: { title: string; description: string },
 	): Promise<TargetLibraryFile> {
 		if (!episodeDescription) {
-			episodeDescription = await Context.metadata.getEpisodeDescription(
-				arc,
-				episode,
-			)
+			episodeDescription = await Context.metadata.getEpisode(arc, episode)
 		}
 
 		let jellyfinLibraryPath = await Context.library.getLibraryFolder()

@@ -52,11 +52,13 @@ export default {
 		process.env.PIPELINE_SKIP_POSTERS || process.env.SKIP_POSTERS || 'false',
 	),
 
-	PIPELINE_INCLUDE_SPECIALS: /true/i.test(
-		process.env.PIPELINE_INCLUDE_SPECIALS ||
-			process.env.INCLUDE_SPECIALS ||
-			'false',
-	),
+	// TODO reimplement
+	// PIPELINE_INCLUDE_SPECIALS: /true/i.test(
+	// 	process.env.PIPELINE_INCLUDE_SPECIALS ||
+	// 		process.env.INCLUDE_SPECIALS ||
+	// 		'false',
+	// ),
+	PIPELINE_INCLUDE_SPECIALS: false,
 	PIPELINE_PREFER_EXTENDED: /true/i.test(
 		process.env.PIPELINE_PREFER_EXTENDED ||
 			process.env.PREFER_EXTENDED ||
@@ -172,7 +174,7 @@ export default {
 	 */
 	METADATA_URL:
 		process.env.METADATA_URL ||
-		`https://raw.githubusercontent.com/ladyisatis/one-pace-metadata/refs/heads/v2/metadata/data.json`,
+		`https://raw.githubusercontent.com/eltharynd/one-pace-api/refs/heads/main/output/metadata.json`,
 	METADATA_LANGUAGE: process.env.METADATA_LANGUAGE || 'en',
 	METADATA_POSTER_SET: process.env.METADATA_POSTER_SET || 'default',
 	METADATA_CHECK_INTERVAL:

@@ -7,7 +7,6 @@ import { Express } from './api/express.js'
 import { LibraryController } from './library/library.controller.js'
 import { MetadataController } from './metadata/metadata.controller.js'
 import { PipelineController } from './pipeline/pipeline.controller.js'
-import { RSSController } from './rss/rss.controller.js'
 import { LabelsDisabledInDelugeError } from './torrent/clients/deluge.controller.js'
 import { TorrentController } from './torrent/torrent.controller.js'
 import { TorrentConnectionError } from './torrent/torrent.model.js'
@@ -67,7 +66,6 @@ const startApp = async () => {
 			PIPELINE_RETRY_INTERVAL: environment.PIPELINE_RETRY_INTERVAL,
 		})
 		Context.metadata = new MetadataController()
-		Context.rss = new RSSController()
 		Context.library = new LibraryController()
 		Context.torrent = new TorrentController()
 

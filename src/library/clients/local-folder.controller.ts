@@ -46,10 +46,7 @@ export class LocalFolderController implements ILibraryController {
 		)
 		mkdirSync(targetPath, { recursive: true })
 
-		let episodeDescription = await Context.metadata.getEpisodeDescription(
-			arc,
-			episode,
-		)
+		let episodeDescription = await Context.metadata.getEpisode(arc, episode)
 		let targetFileName = LibraryController.resolveEpisodeTargetFileName(
 			arc,
 			episode,
@@ -93,10 +90,7 @@ export class LocalFolderController implements ILibraryController {
 		episodeDescription?: { title: string; description: string },
 	): Promise<TargetLibraryFile> {
 		if (!episodeDescription) {
-			episodeDescription = await Context.metadata.getEpisodeDescription(
-				arc,
-				episode,
-			)
+			episodeDescription = await Context.metadata.getEpisode(arc, episode)
 		}
 
 		let targetPath = `${path.resolve(
