@@ -1,5 +1,3 @@
-import { Logger } from 'ez-ts-logger'
-
 export function formatConnectionError(
 	label: string,
 	url: string,
@@ -25,16 +23,4 @@ export function formatConnectionError(
 	}
 
 	return parts.join(' — ')
-}
-
-export function logErrorCause(error: unknown) {
-	if (!(error instanceof Error) || !error.cause) return
-
-	if (error.cause instanceof Error) {
-		Logger.error(`Caused by: ${error.cause.message}`)
-		const code = (error.cause as NodeJS.ErrnoException).code
-		if (code) Logger.error(`Error code: ${code}`)
-	} else {
-		Logger.error(`Caused by: ${error.cause}`)
-	}
 }
