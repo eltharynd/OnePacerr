@@ -10,8 +10,7 @@
 		"dev": "nodemon --enable-source-maps dist/index.js --ignore rss.json",
 		"test": "vitest run",
 		"test:dev": "vitest",
-		"test:coverage": "vitest run --coverage",
-		"package": "node docker-build.js"
+		"test:coverage": "vitest run --coverage"
 	},
 	"author": "eltharynd",
 	"license": "MIT",
