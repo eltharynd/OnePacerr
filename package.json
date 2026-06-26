@@ -8,7 +8,8 @@
 		"build": "tsc",
 		"start": "node --enable-source-maps dist/index.js",
 		"dev": "nodemon --enable-source-maps dist/index.js --ignore rss.json",
-		"test": "vitest",
+		"test": "vitest run",
+		"test:dev": "vitest",
 		"test:coverage": "vitest run --coverage",
 		"package": "node docker-build.js"
 	},
@@ -23,7 +24,6 @@
 		"body-parser": "^2.3.0",
 		"buffer-crc32": "^1.0.0",
 		"capitalize": "^2.0.4",
-		"chalk": "^5.6.2",
 		"class-transformer": "^0.5.1",
 		"class-validator": "^0.14.1",
 		"cors": "^2.8.6",
@@ -35,7 +35,6 @@
 		"reflect-metadata": "^0.2.2",
 		"routing-controllers": "^0.11.3",
 		"rss-parser": "^3.13.0",
-		"rxjs": "^7.8.2",
 		"xml-js": "^1.6.11"
 	},
 	"devDependencies": {
