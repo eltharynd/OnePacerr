@@ -31,7 +31,6 @@
 		"express": "^5.2.1",
 		"ez-ts-logger": "^1.0.8",
 		"multer": "^2.2.0",
-		"node-json-logger": "^0.3.0",
 		"reflect-metadata": "^0.2.2",
 		"routing-controllers": "^0.11.3",
 		"rss-parser": "^3.13.0",
