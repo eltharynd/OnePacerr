@@ -377,7 +377,7 @@ export class PipelineController {
 
 		const skipVerification =
 			this.config.PIPELINE_SKIP_VERIFY_PRESENT_FILES &&
-			!(this.config.PIPELINE_SKIP_VERIFY_NOT_FOR_EXTENDED && me.files.extended)
+			!(this.config.PIPELINE_SKIP_VERIFY_NOT_FOR_EXTENDED && me.files?.extended)
 
 		// if (me.CRC32.standard == '702231E9') {
 		// 	Logger.debug(`Skypiea 14 manual correction`)
@@ -394,7 +394,7 @@ export class PipelineController {
 		if (this.config.PIPELINE_FORCE_REDOWNLOAD) {
 			const queueResult = await this.addToDownloadQueue(
 				me,
-				!!me.files.extended && this.config.PIPELINE_PREFER_EXTENDED,
+				!!me.files?.extended && this.config.PIPELINE_PREFER_EXTENDED,
 			)
 			Logger.info(
 				`S${ma.arc}E${String(me.episode).padStart(2, '0')} - Forced re-download from settings [${this.formatDownloadQueueStatus(queueResult)}]`,
@@ -433,13 +433,13 @@ export class PipelineController {
 					`S${ma.arc}E${String(me.episode).padStart(2, '0')} - Hash complete (${CRC32})`,
 				)
 
-				if (!!me.files.extended && this.config.PIPELINE_PREFER_EXTENDED) {
+				if (!!me.files?.extended && this.config.PIPELINE_PREFER_EXTENDED) {
 					Logger.debug(
 						`S${ma.arc}E${String(me.episode).padStart(2, '0')} - Extended wanted`,
 					)
 					if (
-						CRC32 == me.files.extended.CRC32 ||
-						me.files.extended.CRC32_inFileName
+						CRC32 == me.files?.extended.CRC32 ||
+						me.files?.extended.CRC32_inFileName
 					) {
 						Logger.debug(
 							`S${ma.arc}E${String(me.episode).padStart(2, '0')} - Extended present`,
@@ -455,8 +455,8 @@ export class PipelineController {
 								`S${ma.arc}E${String(me.episode).padStart(2, '0')} - Already present`,
 							)
 					} else if (
-						CRC32 == me.files.standard.CRC32 ||
-						me.files.standard.CRC32_inFileName
+						CRC32 == me.files?.standard.CRC32 ||
+						me.files?.standard.CRC32_inFileName
 					) {
 						Logger.debug(
 							`S${ma.arc}E${String(me.episode).padStart(2, '0')} - Standard present`,
@@ -473,15 +473,15 @@ export class PipelineController {
 						}
 					}
 				} else if (
-					!!me.files.extended &&
+					!!me.files?.extended &&
 					!this.config.PIPELINE_PREFER_EXTENDED
 				) {
 					Logger.debug(
 						`S${ma.arc}E${String(me.episode).padStart(2, '0')} - Standard wanted`,
 					)
 					if (
-						CRC32 == me.files.standard.CRC32 ||
-						CRC32 == me.files.standard.CRC32_inFileName
+						CRC32 == me.files?.standard.CRC32 ||
+						CRC32 == me.files?.standard.CRC32_inFileName
 					) {
 						Logger.debug(
 							`S${ma.arc}E${String(me.episode).padStart(2, '0')} - Standard present`,
@@ -497,8 +497,8 @@ export class PipelineController {
 								`S${ma.arc}E${String(me.episode).padStart(2, '0')} - Already present`,
 							)
 					} else if (
-						CRC32 == me.files.extended.CRC32 ||
-						CRC32 == me.files.extended.CRC32_inFileName
+						CRC32 == me.files?.extended.CRC32 ||
+						CRC32 == me.files?.extended.CRC32_inFileName
 					) {
 						Logger.debug(
 							`S${ma.arc}E${String(me.episode).padStart(2, '0')} - Extended present`,
@@ -515,8 +515,8 @@ export class PipelineController {
 						}
 					}
 				} else if (
-					CRC32 == me.files.standard.CRC32 ||
-					CRC32 == me.files.standard.CRC32_inFileName
+					CRC32 == me.files?.standard.CRC32 ||
+					CRC32 == me.files?.standard.CRC32_inFileName
 				) {
 					Logger.debug(
 						`S${ma.arc}E${String(me.episode).padStart(2, '0')} - Standard present`,
@@ -530,8 +530,8 @@ export class PipelineController {
 							`S${ma.arc}E${String(me.episode).padStart(2, '0')} - Already present`,
 						)
 				} else if (
-					CRC32 == me.files.extended.CRC32 ||
-					CRC32 == me.files.extended.CRC32_inFileName
+					CRC32 == me.files?.extended.CRC32 ||
+					CRC32 == me.files?.extended.CRC32_inFileName
 				) {
 					Logger.debug(
 						`S${ma.arc}E${String(me.episode).padStart(2, '0')} - Extended present`,
@@ -554,7 +554,7 @@ export class PipelineController {
 					} else {
 						const queueResult = await this.addToDownloadQueue(
 							me,
-							this.config.PIPELINE_PREFER_EXTENDED && !!me.files.extended,
+							this.config.PIPELINE_PREFER_EXTENDED && !!me.files?.extended,
 						)
 						Logger.info(
 							`S${ma.arc}E${String(me.episode).padStart(2, '0')} - CRC32 Mismatch [${this.formatDownloadQueueStatus(queueResult)}]`,
@@ -574,7 +574,7 @@ export class PipelineController {
 			} else {
 				const queueResult = await this.addToDownloadQueue(
 					me,
-					this.config.PIPELINE_PREFER_EXTENDED && !!me.files.extended,
+					this.config.PIPELINE_PREFER_EXTENDED && !!me.files?.extended,
 				)
 				if (ma.arc == 16 && me.episode == 14) {
 					console.log(me)

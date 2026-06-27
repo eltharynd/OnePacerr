@@ -214,8 +214,8 @@ export class MetadataController {
 			.map(a => {
 				return {
 					...a,
-					episodes: a.episodes.filter(e =>
-						Filter({ arc: a.arc, episode: e.episode }),
+					episodes: a.episodes.filter(
+						e => !!e.released && Filter({ arc: a.arc, episode: e.episode }),
 					),
 				}
 			})
