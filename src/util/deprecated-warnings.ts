@@ -57,6 +57,16 @@ export default function deprecatedWarnings() {
 		Logger.critical(message)
 		throw new UnsupportedMetadataError(message)
 	}
+
+	if (
+		process.env['METADATA_URL'] ==
+		'https://raw.githubusercontent.com/eltharynd/one-pace-api/refs/heads/main/output/metadata.json'
+	) {
+		const message = `You're using the old url for metadata. That stopped being supported starting with v1.7.0 in favour of API/WebSocket`
+
+		Logger.critical(message)
+		throw new UnsupportedMetadataError(message)
+	}
 }
 
 export class UnsupportedMetadataError extends Error {

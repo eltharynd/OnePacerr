@@ -172,11 +172,12 @@ export default {
 	/**
 	 * METADATA
 	 */
-	METADATA_URL:
-		process.env.METADATA_URL ||
-		`https://raw.githubusercontent.com/eltharynd/one-pace-api/refs/heads/main/output/metadata.json`,
+	METADATA_URL: process.env.METADATA_URL || `https://onepacerr.com/api/v1`,
 	METADATA_LANGUAGE: process.env.METADATA_LANGUAGE || 'en',
 	METADATA_POSTER_SET: process.env.METADATA_POSTER_SET || 'default',
+	METADATA_DISABLE_WEBSOCKET: /true/i.test(
+		process.env.METADATA_DISABLE_WEBSOCKET || 'false',
+	),
 	METADATA_CHECK_INTERVAL:
 		Number.parseInt(process.env.METADATA_CHECK_INTERVAL || '3600') * 1000,
 }

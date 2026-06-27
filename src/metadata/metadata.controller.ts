@@ -1,5 +1,6 @@
 import axios from 'axios'
 import { Logger } from 'ez-ts-logger'
+import { io } from 'socket.io-client'
 import { js2xml } from 'xml-js'
 import environment from '../environment.js'
 import { Context } from '../util/context.js'
@@ -18,6 +19,8 @@ export class MetadataController {
 	private metadata: Metadata
 	private newMetadata: boolean = false
 
+	private socket
+
 	private monitored: ArcMetadata[]
 
 	private TVShowNFO
@@ -28,7 +31,8 @@ export class MetadataController {
 		Logger.info(`Refreshing Metadata...`)
 
 		try {
-			let metadata = (await axios.get(environment.METADATA_URL)).data
+			let metadata = (await axios.get(`${environment.METADATA_URL}/metadata`))
+				.data
 
 			if (!this.metadata || metadata.lastUpdate > this.metadata.lastUpdate) {
 				Logger.info(`Newer Metadata found!`)
@@ -51,9 +55,34 @@ export class MetadataController {
 				`Retry in ${environment.METADATA_CHECK_INTERVAL / 1000} seconds`,
 			)
 		} finally {
-			setTimeout(async () => {
-				await this.refreshMetadata()
-			}, environment.METADATA_CHECK_INTERVAL)
+			if (environment.METADATA_DISABLE_WEBSOCKET) {
+				setTimeout(async () => {
+					await this.refreshMetadata()
+				}, environment.METADATA_CHECK_INTERVAL)
+			} else {
+				if (!this.socket) {
+					Logger.debug(`Connecting WebSocket`)
+					this.socket = io('https://onepacerr.com')
+
+					this.socket.on('connect', () => {
+						Logger.debug(`Connected with id: '${this.socket.id}'`)
+						this.socket.emit('subscribe_to_updates')
+
+						Logger.info(
+							`Websocket connected and listening for Metadata updates`,
+						)
+					})
+
+					this.socket.on('disconnect', () => {
+						Logger.debug(`Disconnected from server`)
+					})
+
+					this.socket.on('updates', async data => {
+						Logger.info(`Metadata updates received! Processing...`)
+						await this.sendToPipeline()
+					})
+				}
+			}
 		}
 	}
 
@@ -120,21 +149,23 @@ export class MetadataController {
 
 		let episode: EpisodeMetadata
 
-		for (const arc of this.metadata.arcs) {
-			let tmp = arc.episodes.find(e =>
-				Object.values(e.files).some(
-					(variant: any) =>
-						variant.CRC32 === CRC32 || variant.CRC32_inFileName === CRC32,
-				),
+		let _found = this.metadata.arcs.find(a => {
+			const _found = a.episodes.find(
+				e =>
+					e.files?.standard?.CRC32 == CRC32 ||
+					e.files?.extended?.CRC32 == CRC32 ||
+					e.files?.alternate?.CRC32 == CRC32 ||
+					!!e.files?.archived?.find(a => a.CRC32 == CRC32),
 			)
-			if (tmp) {
-				episode = tmp
-				break
+			if (_found) {
+				a.episodes = [_found]
+				return true
 			}
-		}
+			return false
+		})
 
-		if (episode) return episode
-		else throw new CRCNotInMetadata(`CRC32 ${CRC32} not in metadata...`)
+		if (!_found) throw new CRCNotInMetadata(`CRC32 ${CRC32} not in metadata...`)
+		else return _found.episodes[0]
 	}
 
 	getReport() {

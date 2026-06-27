@@ -262,9 +262,10 @@ services:
 
 
       # Metadata Settings
-      #- METADATA_URL=https://raw.githubusercontent.com/eltharynd/one-pace-api/refs/heads/main/output/metadata.json
+      #- METADATA_URL=https://onepacerr.com/api/v1
       #- METADATA_LANGUAGE=en
       #- METADATA_POSTER_SET=default
+      #- METADATA_DISABLE_WEBSOCKET=false
       #- METADATA_CHECK_INTERVAL=3600
     volumes:
       - /mnt/Library/Series:/mnt/Library/Series
@@ -482,10 +483,11 @@ If you're not sure what Mount Path Mappings are you can have a read on [TRaSH Gu
 
 | Metadata Variables | Default | Description |
 | :--- | :--- | :--- |
-| `METADATA_URL` | `https://raw.githubusercontent.com/eltharynd/one-pace-api/refs/heads/main/output/metadata.json` | Metadata url (untested with different ones). |
+| `METADATA_URL` | `https://onepacerr.com/api/v1` | Metadata API url (untested with different ones). |
 | `METADATA_LANGUAGE` | `en` | Currently only language supported. |
 | `METADATA_POSTER_SET` | `default` | Currently `default` equals `piratezekk`. There are also `official` and `mizzoufan523` available. If a set is missing a poster it uses `default`. |
-| `METADATA_CHECK_INTERVAL` | 3600 | Seconds between checking for new metadata. |
+| `METADATA_DISABLE_WEBSOCKET` | `false` | If `true`, disables WebSocket mode. NOT recommended but available if your setup doesn't allow WebSockets or Long Polling (also supported). |
+| `METADATA_CHECK_INTERVAL` | 3600 | Ignored if METADATA_DISABLE_WEBSOCKET is false (default). Seconds between checking for new metadata. |
 
 ---
 
