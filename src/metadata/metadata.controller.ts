@@ -137,8 +137,8 @@ export class MetadataController {
 			.find(a => a.arc == arc)
 			.episodes.find(e => e.episode == episode)
 
-		if (target.files.alternate && environment.PIPELINE_PREFER_G8) {
-			return target.files.alternate.CRC32
+		if (target.files?.alternate && environment.PIPELINE_PREFER_G8) {
+			return target.files?.alternate.CRC32
 		} else if (target.files?.extended && environment.PIPELINE_PREFER_EXTENDED) {
 			return target.files?.extended?.CRC32
 		} else return target.files?.standard?.CRC32

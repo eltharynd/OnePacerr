@@ -248,7 +248,7 @@ export class PipelineController {
 		episode: EpisodeMetadata,
 		extended?: boolean,
 	): Promise<QueueDownloadResult> {
-		if (episode.files.alternate && this.config.PIPELINE_PREFER_G8) {
+		if (episode.files?.alternate && this.config.PIPELINE_PREFER_G8) {
 			return await Context.torrent.queueDownload(episode.files.alternate)
 		} else if (episode.files?.extended && extended) {
 			return await Context.torrent.queueDownload(episode.files?.extended)
