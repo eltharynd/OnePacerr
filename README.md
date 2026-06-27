@@ -17,6 +17,8 @@ Other than organizing your episode files, it also updates metadata and posters s
 
 It supports the most popular torrenting clients (qBittorrent, deluge and µTorrent) and the most popular Media Servers (Plex, Jellyfin, Emby), or it can even be used without a torrenting client or a Media Server at all.
 
+Not affiliated with One Pace's team.
+
 ### Supported Torrenting Clients
 
 [![qBittorrent](docs/torrenting_clients/qbittorrent.png)](https://hub.docker.com/r/linuxserver/qbittorrent) [![Deluge](docs/torrenting_clients/deluge.png)](https://hub.docker.com/r/linuxserver/deluge) [![μTorrent](docs/torrenting_clients/utorrent-coming-soon.png)](https://www.utorrent.com/downloads)
