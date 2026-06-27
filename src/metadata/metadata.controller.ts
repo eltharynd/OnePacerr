@@ -139,9 +139,9 @@ export class MetadataController {
 
 		if (target.files.alternate && environment.PIPELINE_PREFER_G8) {
 			return target.files.alternate.CRC32
-		} else if (target.files.extended && environment.PIPELINE_PREFER_EXTENDED) {
-			return target.files.extended.CRC32
-		} else return target.files.standard.CRC32
+		} else if (target.files?.extended && environment.PIPELINE_PREFER_EXTENDED) {
+			return target.files?.extended?.CRC32
+		} else return target.files?.standard?.CRC32
 	}
 
 	findEpisodeByCRC32(CRC32: string): EpisodeMetadata | undefined {

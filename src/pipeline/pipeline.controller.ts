@@ -250,10 +250,10 @@ export class PipelineController {
 	): Promise<QueueDownloadResult> {
 		if (episode.files.alternate && this.config.PIPELINE_PREFER_G8) {
 			return await Context.torrent.queueDownload(episode.files.alternate)
-		} else if (episode.files.extended && extended) {
-			return await Context.torrent.queueDownload(episode.files.extended)
+		} else if (episode.files?.extended && extended) {
+			return await Context.torrent.queueDownload(episode.files?.extended)
 		} else {
-			return await Context.torrent.queueDownload(episode.files.standard)
+			return await Context.torrent.queueDownload(episode.files?.standard)
 		}
 	}
 
@@ -438,8 +438,8 @@ export class PipelineController {
 						`S${ma.arc}E${String(me.episode).padStart(2, '0')} - Extended wanted`,
 					)
 					if (
-						CRC32 == me.files?.extended.CRC32 ||
-						me.files?.extended.CRC32_inFileName
+						CRC32 == me.files?.extended?.CRC32 ||
+						me.files?.extended?.CRC32_inFileName
 					) {
 						Logger.debug(
 							`S${ma.arc}E${String(me.episode).padStart(2, '0')} - Extended present`,
@@ -455,8 +455,8 @@ export class PipelineController {
 								`S${ma.arc}E${String(me.episode).padStart(2, '0')} - Already present`,
 							)
 					} else if (
-						CRC32 == me.files?.standard.CRC32 ||
-						me.files?.standard.CRC32_inFileName
+						CRC32 == me.files?.standard?.CRC32 ||
+						me.files?.standard?.CRC32_inFileName
 					) {
 						Logger.debug(
 							`S${ma.arc}E${String(me.episode).padStart(2, '0')} - Standard present`,
@@ -480,8 +480,8 @@ export class PipelineController {
 						`S${ma.arc}E${String(me.episode).padStart(2, '0')} - Standard wanted`,
 					)
 					if (
-						CRC32 == me.files?.standard.CRC32 ||
-						CRC32 == me.files?.standard.CRC32_inFileName
+						CRC32 == me.files?.standard?.CRC32 ||
+						CRC32 == me.files?.standard?.CRC32_inFileName
 					) {
 						Logger.debug(
 							`S${ma.arc}E${String(me.episode).padStart(2, '0')} - Standard present`,
@@ -497,8 +497,8 @@ export class PipelineController {
 								`S${ma.arc}E${String(me.episode).padStart(2, '0')} - Already present`,
 							)
 					} else if (
-						CRC32 == me.files?.extended.CRC32 ||
-						CRC32 == me.files?.extended.CRC32_inFileName
+						CRC32 == me.files?.extended?.CRC32 ||
+						CRC32 == me.files?.extended?.CRC32_inFileName
 					) {
 						Logger.debug(
 							`S${ma.arc}E${String(me.episode).padStart(2, '0')} - Extended present`,
@@ -515,8 +515,8 @@ export class PipelineController {
 						}
 					}
 				} else if (
-					CRC32 == me.files?.standard.CRC32 ||
-					CRC32 == me.files?.standard.CRC32_inFileName
+					CRC32 == me.files?.standard?.CRC32 ||
+					CRC32 == me.files?.standard?.CRC32_inFileName
 				) {
 					Logger.debug(
 						`S${ma.arc}E${String(me.episode).padStart(2, '0')} - Standard present`,
@@ -530,8 +530,8 @@ export class PipelineController {
 							`S${ma.arc}E${String(me.episode).padStart(2, '0')} - Already present`,
 						)
 				} else if (
-					CRC32 == me.files?.extended.CRC32 ||
-					CRC32 == me.files?.extended.CRC32_inFileName
+					CRC32 == me.files?.extended?.CRC32 ||
+					CRC32 == me.files?.extended?.CRC32_inFileName
 				) {
 					Logger.debug(
 						`S${ma.arc}E${String(me.episode).padStart(2, '0')} - Extended present`,
