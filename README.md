@@ -69,7 +69,7 @@ Not affiliated with One Pace's team.
 - 🖼️ [Poster Sets](#️-poster-sets)
   - 🔍 [Previews](#-previews)
   - 📥 [Adding/Updating Sets](#-addingupdating-sets)
-- 🧪 [Pipeline](#-pipeline)
+- 🧪 [Pipeline Diagram](#-pipeline-diagram)
 - 📅 [Roadmap](#-roadmap)
 - 🤝 [Credits & Acknowledgements](#-credits--acknowledgements)
 - 💗 [Support (One Pace, not me!)](#-support-one-pace-not-me)
@@ -498,7 +498,7 @@ When updating metadata, a missing poster results in falling back to default.
 
 If you want to contribute to the posters or create an entire new set, first of all I love you, then please [read this](POSTER-SETS.md#how-to-contribute-to-poster-sets).
 
-## 🧪 Pipeline
+## 🧪 Pipeline Diagram
 
 The following diagram synthesizes the pipeline:
 
