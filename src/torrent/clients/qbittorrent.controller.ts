@@ -17,13 +17,15 @@ export class qBittorrentController implements ITorrentController {
 	readonly torrentClient: TorrentClient = 'qbittorrent'
 	private client: QBittorrent
 
-	constructor(options: {
-		baseUrl: string
-		username: string
-		password: string
-	}) {
+	constructor(
+		private configs: {
+			baseUrl: string
+			username: string
+			password: string
+		},
+	) {
 		this.client = new QBittorrent({
-			...options,
+			...configs,
 			timeout: environment.TORRENT_CLIENT_TIMEOUT,
 		})
 	}

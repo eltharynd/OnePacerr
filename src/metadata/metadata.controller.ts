@@ -1,6 +1,6 @@
 import axios from 'axios'
 import { Logger } from 'ez-ts-logger'
-import { io } from 'socket.io-client'
+import { io, Socket } from 'socket.io-client'
 import { js2xml } from 'xml-js'
 import environment from '../environment.js'
 import { Context } from '../util/context.js'
@@ -18,8 +18,9 @@ import {
 export class MetadataController {
 	private metadata: Metadata
 	private newMetadata: boolean = false
+	private firstRun: boolean = true
 
-	private socket
+	private socket: Socket
 
 	private monitored: ArcMetadata[]
 
@@ -62,10 +63,28 @@ export class MetadataController {
 			} else {
 				if (!this.socket) {
 					Logger.debug(`Connecting WebSocket`)
-					this.socket = io('https://onepacerr.com')
+
+					this.socket = io('https://onepacerr.com', { timeout: 1000 })
+
+					const timeout = setTimeout(() => {
+						if (!this.socket?.connected) {
+							Logger.error(`Socket connection could not be estabilished...`)
+							Logger.error(`Please check your Stack settings`)
+							Logger.error(
+								`If your environment doesn't allow for WebSockets, you can always turn METADATA_DISABLE_WEBSOCKET=true`,
+							)
+							Logger.criticalAndThrow(
+								new SocketConnectionError(
+									`Socket connection could not be estabilished...`,
+								),
+							)
+						}
+					}, 10000)
 
 					this.socket.on('connect', () => {
 						Logger.debug(`Connected with id: '${this.socket.id}'`)
+						clearTimeout(timeout)
+
 						this.socket.emit('subscribe_to_updates')
 
 						Logger.info(
@@ -198,6 +217,11 @@ export class MetadataController {
 		Context.pipeline.addMonitored(structuredClone(this.monitored))
 
 		Context.pipeline.start()
+
+		if (this.firstRun && Context.pipeline.isRunning()) {
+			this.firstRun = false
+			await Context.pipeline.waitForFinished()
+		}
 	}
 
 	private generateMonitored() {
@@ -356,5 +380,12 @@ export class MetadataController {
 			Logger.warn(`Metadata missing, something went wrong with import...`)
 			throw new MetadataAbsentError()
 		}
+	}
+}
+
+export class SocketConnectionError extends Error {
+	constructor(message?: string, options?: { cause?: unknown }) {
+		super(message, options)
+		this.name = 'SocketConnectionError'
 	}
 }

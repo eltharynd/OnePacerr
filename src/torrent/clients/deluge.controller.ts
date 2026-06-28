@@ -13,15 +13,30 @@ export class DelugeController implements ITorrentController {
 	readonly torrentClient: TorrentClient = 'deluge'
 	private client: Deluge
 
-	constructor(options: {
-		baseUrl: string
-		username: string
-		password: string
-	}) {
+	constructor(
+		private configs: {
+			baseUrl: string
+			username: string
+			password: string
+		},
+	) {
 		this.client = new Deluge({
-			...options,
+			...configs,
 			timeout: environment.TORRENT_CLIENT_TIMEOUT,
 		})
+
+		this.client
+			.getPlugins()
+			.then(({ result, error }) => {
+				if (error) throw error
+				if (!result.enabled_plugins.find(p => p == 'Label'))
+					throw new LabelsDisabledInDelugeError(
+						`Deluge Label plugin is required for operations, but deluge reports it disabled`,
+					)
+			})
+			.catch(e => {
+				Logger.errorAndThrow(e)
+			})
 	}
 
 	public async addTorrent(
@@ -32,7 +47,7 @@ export class DelugeController implements ITorrentController {
 			t => t.hash === torrentInfo.hash,
 		)
 		if (torrent) {
-			Logger.debug(`MagnetURI already in qBittorrent...`)
+			Logger.debug(`MagnetURI already in Deluge...`)
 			if (torrent.category == category || !environment.TORRENT_CATEGORY_FORCE)
 				return false
 			else {

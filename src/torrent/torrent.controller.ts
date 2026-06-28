@@ -14,6 +14,7 @@ import { Filter } from '../util/filters.js'
 import safeCopyFileSync from '../util/safe-copy-file.js'
 import { DelugeController } from './clients/deluge.controller.js'
 import { qBittorrentController } from './clients/qbittorrent.controller.js'
+import { UTorrentController } from './clients/utorrent.controller.js'
 import {
 	ITorrentController,
 	QueueDownloadResult,
@@ -47,6 +48,12 @@ export class TorrentController {
 				})
 				break
 			case 'utorrent':
+				this.client = new UTorrentController({
+					baseUrl: environment.TORRENT_URL,
+					username: environment.TORRENT_USER,
+					password: environment.TORRENT_PASSWORD,
+				})
+				break
 			default:
 				Logger.error(
 					`Torrent client '${environment.TORRENT_CLIENT}' not implemented yet...`,

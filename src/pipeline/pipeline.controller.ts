@@ -576,9 +576,6 @@ export class PipelineController {
 					me,
 					this.config.PIPELINE_PREFER_EXTENDED && !!me.files?.extended,
 				)
-				if (ma.arc == 16 && me.episode == 14) {
-					console.log(me)
-				}
 				Logger.info(
 					`S${ma.arc}E${String(me.episode).padStart(2, '0')} - Missing [${this.formatDownloadQueueStatus(queueResult)}]`,
 				)
