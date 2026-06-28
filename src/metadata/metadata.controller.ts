@@ -133,21 +133,21 @@ export class MetadataController {
 	getEpisode(arc: number, episode: number): EpisodeMetadata {
 		this.checkMetadataDownloaded()
 
-		return this.metadata.arcs
-			.find(a => a.arc == arc)
+		return structuredClone(this.metadata)
+			.arcs.find(a => a.arc == arc)
 			.episodes.find(e => e.episode == episode)
 	}
 
 	getArc(arc: number) {
 		this.checkMetadataDownloaded()
 
-		return this.metadata.arcs.find(a => a.arc)
+		return structuredClone(this.metadata).arcs.find(a => a.arc == arc)
 	}
 
 	getShow(): Metadata {
 		this.checkMetadataDownloaded()
 
-		return this.metadata
+		return structuredClone(this.metadata)
 	}
 
 	findCRC32(arc: number, episode: number): string {

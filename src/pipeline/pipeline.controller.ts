@@ -84,9 +84,10 @@ export class PipelineController {
 			throw new NoActivePipelineError('Pipiline not initialized')
 		}
 		this.report.monitored.push(...monitored)
-		this.report.monitoredEpisodes += monitored
-			.map(a => a.episodes.length)
-			.reduce((acc, curr) => acc + curr)
+		if (monitored.length > 0)
+			this.report.monitoredEpisodes += monitored
+				.map(a => a.episodes.length)
+				.reduce((acc, curr) => acc + curr)
 		this.report.status = 'READY'
 	}
 

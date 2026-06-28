@@ -60,9 +60,9 @@ class FiltersContainer {
 		let tobeExcluded =
 			this.excludes.length > 0 &&
 			this.excludes.find(
-				inc =>
-					(!isNumber(inc.arc) || inc.arc == filter.arc) &&
-					(!isNumber(inc.episode) || inc.episode == filter.episode),
+				exc =>
+					(!isNumber(exc.arc) || exc.arc == filter.arc) &&
+					(!isNumber(exc.episode) || exc.episode == filter.episode),
 			)
 
 		return !tobeExcluded
@@ -77,7 +77,7 @@ class FiltersContainer {
 
 		let tobeExcluded =
 			this.excludes.length > 0 &&
-			this.excludes.find(inc => isNumber(inc.arc) && inc.arc == filter.arc)
+			this.excludes.find(exc => isNumber(exc.arc) && exc.arc == filter.arc)
 
 		return !tobeExcluded
 	}

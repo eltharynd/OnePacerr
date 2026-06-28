@@ -232,7 +232,7 @@ export class PlexController implements ILibraryController {
 
 	async updateSeasonMetadata(arc: number) {
 		Logger.debug(`Updating Season ${arc} Metadata in Plex...`)
-		let description = await Context.metadata.getArc(arc)
+		let _arc = await Context.metadata.getArc(arc)
 
 		let season = await this.show.season(arc)
 
@@ -243,8 +243,8 @@ export class PlexController implements ILibraryController {
 			configurable: true,
 		})
 
-		await season.editTitle(`${arc}. ${description.title}`)
-		await season.editSummary(description.description)
+		await season.editTitle(`${arc}. ${_arc.title}`)
+		await season.editSummary(_arc.description)
 
 		if (!environment.PIPELINE_SKIP_POSTERS) {
 			Logger.debug(`Updating Season ${arc} poster in Plex...`)
