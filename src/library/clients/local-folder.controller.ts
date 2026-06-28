@@ -2,7 +2,7 @@ import { Logger } from 'ez-ts-logger'
 import { existsSync, mkdirSync, readdirSync } from 'fs'
 import path from 'path'
 import environment from '../../environment.js'
-import { Context } from '../../util/context.js'
+import { EpisodeMetadata } from '../../metadata/metadata.model.js'
 import sanitizeWindowsFileName from '../../util/sanitize-windows-filename.js'
 import { LibraryController } from '../library.controller.js'
 import {
@@ -36,21 +36,19 @@ export class LocalFolderController implements ILibraryController {
 	}
 
 	async getExistingLibraryEpisodeFile(
-		arc: number,
-		episode: number,
+		episode: EpisodeMetadata,
 		pathAccordingToMediaServer?: boolean,
 	): Promise<string> {
 		let targetPath = path.resolve(
 			this.showFolder,
-			`Season ${String(arc).padStart(2, '0')}`,
+			`Season ${String(episode.arc).padStart(2, '0')}`,
 		)
 		mkdirSync(targetPath, { recursive: true })
 
-		let episodeDescription = await Context.metadata.getEpisode(arc, episode)
 		let targetFileName = LibraryController.resolveEpisodeTargetFileName(
-			arc,
-			episode,
-			episodeDescription.title,
+			episode.arc,
+			episode.episode,
+			episode.title,
 		)
 
 		let file = path.resolve(targetPath, targetFileName)
@@ -62,21 +60,21 @@ export class LocalFolderController implements ILibraryController {
 
 		file = files.find(f =>
 			f.includes(
-				`S${String(arc).padStart(2, '0')}E${String(episode).padStart(2, '0')}`,
+				`S${String(episode.arc).padStart(2, '0')}E${String(episode.episode).padStart(2, '0')}`,
 			),
 		)
 		if (file) return path.resolve(targetPath, file)
 
 		file = files.find(f =>
 			f.includes(
-				`S${String(arc).padStart(2, '0')}-E${String(episode).padStart(2, '0')}`,
+				`S${String(episode.arc).padStart(2, '0')}-E${String(episode.episode).padStart(2, '0')}`,
 			),
 		)
 		if (file) return path.resolve(targetPath, file)
 
 		file = files.find(f =>
 			f.includes(
-				`${String(arc).padStart(2, '0')}-${String(episode).padStart(2, '0')}`,
+				`${String(episode.arc).padStart(2, '0')}-${String(episode.episode).padStart(2, '0')}`,
 			),
 		)
 		if (file) return path.resolve(targetPath, file)
@@ -85,22 +83,16 @@ export class LocalFolderController implements ILibraryController {
 	}
 
 	async getTargetLibraryEpisodeFile(
-		arc: number,
-		episode: number,
-		episodeDescription?: { title: string; description: string },
+		episode: EpisodeMetadata,
 	): Promise<TargetLibraryFile> {
-		if (!episodeDescription) {
-			episodeDescription = await Context.metadata.getEpisode(arc, episode)
-		}
-
 		let targetPath = `${path.resolve(
 			this.showFolder,
-			`Season ${String(arc).padStart(2, '0')}`,
+			`Season ${String(episode.arc).padStart(2, '0')}`,
 		)}${path.sep}`
 		let targetFileName = LibraryController.resolveEpisodeTargetFileName(
-			arc,
-			episode,
-			episodeDescription.title,
+			episode.arc,
+			episode.episode,
+			episode.title,
 		)
 
 		return {
@@ -113,12 +105,7 @@ export class LocalFolderController implements ILibraryController {
 		Logger.debug(`No need to scan Local Folder Library`)
 	}
 
-	updateEpisodeMetadata(
-		arc: number,
-		episode: number,
-		title: string,
-		description: string,
-	) {
+	updateEpisodeMetadata(episode: EpisodeMetadata) {
 		Logger.debug(`updateEpisodeMetadata`)
 	}
 

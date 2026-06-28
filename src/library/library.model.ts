@@ -1,3 +1,5 @@
+import { EpisodeMetadata } from '../metadata/metadata.model'
+
 export type LibraryClient = 'none' | 'plex' | 'jellyfin' | 'emby'
 export type TargetLibraryFile = {
 	readonly path: string
@@ -19,25 +21,17 @@ export interface ILibraryController {
 	getLibraryFolder()
 
 	getExistingLibraryEpisodeFile(
-		season: number,
-		episode: number,
+		episode: EpisodeMetadata,
 		pathAccordingToMediaServer?: boolean,
 	): Promise<string> | string
 
 	getTargetLibraryEpisodeFile(
-		arc: number,
-		episode: number,
-		episodeDescription?: { title: string; description: string },
+		episode: EpisodeMetadata,
 	): Promise<TargetLibraryFile> | TargetLibraryFile
 
 	scanLibrary(folder: string, arc: number)
 
-	updateEpisodeMetadata(
-		arc: number,
-		episode: number,
-		title: string,
-		description: string,
-	)
+	updateEpisodeMetadata(episode: EpisodeMetadata)
 
 	updateSeasonMetadata(arc: number)
 

@@ -201,22 +201,14 @@ export class PipelineController {
 			`S${arc}E${String(episode).padStart(2, '0')} - Attempting Metadata Update`,
 		)
 
-		let episodeDescription = await Context.metadata.getEpisode(arc, episode)
+		let _episode = await Context.metadata.getEpisode(arc, episode)
+
 		let targetLibraryFile: TargetLibraryFile =
-			await Context.library.getTargetLibraryEpisodeFile(
-				arc,
-				episode,
-				episodeDescription,
-			)
+			await Context.library.getTargetLibraryEpisodeFile(_episode)
 
-		await Context.library.scanLibrary(targetLibraryFile.path, arc)
+		await Context.library.scanLibrary(targetLibraryFile.path, _episode.arc)
 
-		await Context.library.updateEpisodeMetadata(
-			arc,
-			episode,
-			episodeDescription.title,
-			episodeDescription.description,
-		)
+		await Context.library.updateEpisodeMetadata(_episode)
 		await Context.library.updateSeasonMetadata(arc)
 		await Context.library.updateShowMetadata()
 		Logger[suppressLog ? 'debug' : 'info'](
@@ -274,27 +266,20 @@ export class PipelineController {
 			`S${arc}E${String(episode).padStart(2, '0')} - Verifying path format...`,
 		)
 
+		let _episode = await Context.metadata.getEpisode(arc, episode)
 		let libraryFile = await Context.library.getExistingLibraryEpisodeFile(
-			arc,
-			episode,
+			_episode,
 			true,
 		)
 
-		let episodeDescription = await Context.metadata.getEpisode(arc, episode)
 		let targetLibraryFile: TargetLibraryFile =
-			await Context.library.getTargetLibraryEpisodeFile(
-				arc,
-				episode,
-				episodeDescription,
-			)
+			await Context.library.getTargetLibraryEpisodeFile(_episode)
 
 		if (
 			libraryFile != `${targetLibraryFile.path}${targetLibraryFile.filename}`
 		) {
-			let serverFile = await Context.library.getExistingLibraryEpisodeFile(
-				arc,
-				episode,
-			)
+			let serverFile =
+				await Context.library.getExistingLibraryEpisodeFile(_episode)
 			let serverFolder = path.resolve(serverFile, '..')
 			let serverFileName = serverFile.replace(`${serverFolder}${path.sep}`, '')
 
@@ -349,12 +334,7 @@ export class PipelineController {
 				libraryFile.replace(/[\\/]+[^\\/]+$/, ''),
 				arc,
 			)
-			await Context.library.updateEpisodeMetadata(
-				arc,
-				episode,
-				episodeDescription.title,
-				episodeDescription.description,
-			)
+			await Context.library.updateEpisodeMetadata(_episode)
 		} else {
 			if (!this.config.PIPELINE_SKIP_UPDATE_METADATA_PRESENT_FILES) {
 				Logger.debug(
@@ -402,10 +382,9 @@ export class PipelineController {
 			return
 		}
 
-		let file = await Context.library.getExistingLibraryEpisodeFile(
-			ma.arc,
-			me.episode,
-		)
+		let _episode = await Context.metadata.getEpisode(ma.arc, me.episode)
+
+		let file = await Context.library.getExistingLibraryEpisodeFile(_episode)
 		if (file) {
 			if (skipVerification) {
 				Logger.debug(

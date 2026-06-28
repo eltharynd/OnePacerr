@@ -55,6 +55,7 @@ export class MetadataController {
 			Logger.error(
 				`Retry in ${environment.METADATA_CHECK_INTERVAL / 1000} seconds`,
 			)
+			Logger.error(e)
 		} finally {
 			if (environment.METADATA_DISABLE_WEBSOCKET) {
 				setTimeout(async () => {
@@ -334,32 +335,38 @@ export class MetadataController {
 		this.checkMetadataDownloaded()
 
 		this.episodesNFOs = {}
+
 		for (let arc of this.metadata.arcs) {
 			for (let episode of arc.episodes) {
-				let NFO = `<?xml version='1.0' encoding='utf-8'?>\n${js2xml(
+				let episodeDetails: any = {
+					title: episode.title,
+					//////////////////
+					//Implement when Jellyfin updates to allow for multiple versions of an episode
+					//Not sure if it's gonna be called displayversion, that's the one for movies
+					//displayversion: Standard/Extended/G-8
+					////////////////
+					originaltitle: episode.title,
+					sorttitle: episode.title,
+
+					plot: episode.description,
+
+					showtitle: environment.LIBRARY_SERIES_NAME,
+
+					season: arc.arc,
+					displayseason: arc.arc,
+					episode: episode.episode,
+					displayepisode: episode.episode,
+
+					customrating: this.metadata.customRating,
+					lockdata: false,
+				}
+
+				if (episode.released)
+					episodeDetails.aired = episode.released.split('T')[0]
+
+				const NFO = `<?xml version='1.0' encoding='utf-8'?>\n${js2xml(
 					{
-						episodedetails: {
-							title: episode.title,
-							//////////////////
-							//Implement when Jellyfin updates to allow for multiple versions of an episode
-							//Not sure if it's gonna be called displayversion, that's the one for movies
-							//displayversion: Standard/Extended/G-8
-							////////////////
-							originaltitle: episode.title,
-							sorttitle: episode.title,
-
-							plot: episode.description,
-
-							showtitle: environment.LIBRARY_SERIES_NAME,
-
-							season: arc.arc,
-							displayseason: arc.arc,
-							episode: episode.episode,
-							displayepisode: episode.episode,
-
-							customrating: this.metadata.customRating,
-							lockdata: false,
-						},
+						episodedetails: episodeDetails,
 					},
 					{
 						compact: true,

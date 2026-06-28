@@ -4,6 +4,7 @@ import { readFileSync, writeFileSync } from 'fs'
 import path from 'path'
 import WebSocket from 'ws'
 import environment from '../../environment.js'
+import { EpisodeMetadata } from '../../metadata/metadata.model.js'
 import { Context } from '../../util/context.js'
 import resolvePosterPath from '../../util/resolve-poster-path.js'
 import sanitizeWindowsFileName from '../../util/sanitize-windows-filename.js'
@@ -69,32 +70,34 @@ export class PlexController implements ILibraryController {
 	}
 
 	async getExistingLibraryEpisodeFile(
-		season: number,
-		episode: number,
+		episode: EpisodeMetadata,
 		pathAccordingToMediaServer?: boolean,
 	): Promise<string> {
 		let _episode
 		try {
-			_episode = await this.show.episode({ season: season, episode: episode })
+			_episode = await this.show.episode({
+				season: episode.arc,
+				episode: episode.episode,
+			})
 		} catch (e) {
 			Logger.info(
-				`Episode ${season}-${String(episode).padStart(2, '0')} does not exists on Plex...`,
+				`Episode ${episode.arc}-${String(episode.episode).padStart(2, '0')} does not exists on Plex...`,
 			)
 			return null
 		}
 
 		if (_episode.media.length > 1) {
 			Logger.error(
-				`Episode ${season}-${String(episode).padStart(2, '0')} has multiple files in Plex, you should probably manually scan the library, delete the trash then relaunch...`,
+				`Episode ${episode.arc}-${String(episode.episode).padStart(2, '0')} has multiple files in Plex, you should probably manually scan the library, delete the trash then relaunch...`,
 			)
 			//TODO handle automatic resolution perhaps
 			throw new Error(
-				`Multiple files on plex for Episode ${season}-${String(episode).padStart(2, '0')}`,
+				`Multiple files on plex for Episode ${episode.arc}-${String(episode.episode).padStart(2, '0')}`,
 			)
 		}
 		if (_episode.media.length < 1 || _episode.media[0].parts.length < 1) {
 			Logger.info(
-				`Episode ${season}-${String(episode).padStart(2, '0')} exists on plex with no file...`,
+				`Episode ${episode.arc}-${String(episode.episode).padStart(2, '0')} exists on plex with no file...`,
 			)
 			return null
 		}
@@ -112,23 +115,17 @@ export class PlexController implements ILibraryController {
 	}
 
 	async getTargetLibraryEpisodeFile(
-		arc: number,
-		episode: number,
-		episodeDescription?: { title: string; description: string },
+		episode: EpisodeMetadata,
 	): Promise<TargetLibraryFile> {
-		if (!episodeDescription) {
-			episodeDescription = await Context.metadata.getEpisode(arc, episode)
-		}
-
 		let plexLibraryPath = await Context.library.getLibraryFolder()
 		let plexSeparator = plexLibraryPath.includes('/') ? '/' : '\\'
 
 		let targetPlexFileName = LibraryController.resolveEpisodeTargetFileName(
-			arc,
-			episode,
-			episodeDescription.title,
+			episode.arc,
+			episode.episode,
+			episode.title,
 		)
-		let targetPlexPath = `${plexLibraryPath}${plexSeparator}${environment.LIBRARY_SERIES_FOLDER_NAME}${plexSeparator}Season ${String(arc).padStart(2, '0')}${plexSeparator}`
+		let targetPlexPath = `${plexLibraryPath}${plexSeparator}${environment.LIBRARY_SERIES_FOLDER_NAME}${plexSeparator}Season ${String(episode.arc).padStart(2, '0')}${plexSeparator}`
 
 		return {
 			path: targetPlexPath,
@@ -189,26 +186,25 @@ export class PlexController implements ILibraryController {
 		}
 	}
 
-	async updateEpisodeMetadata(
-		arc: number,
-		episode: number,
-		title: string,
-		description: string,
-	) {
+	async updateEpisodeMetadata(episode: EpisodeMetadata) {
 		Logger.debug(
-			`Episode ${arc}-${String(episode).padStart(2, '0')} - Updating Metadata`,
+			`Episode ${episode.arc}-${String(episode.episode).padStart(2, '0')} - Updating Metadata`,
 		)
 
 		const attempt = async (attemptsLeft: number) => {
 			try {
 				Logger.debug(`Metadata update attempt`)
 				let _episode = await this.show.episode({
-					season: arc,
-					episode: episode,
+					season: episode.arc,
+					episode: episode.episode,
 				})
 
-				await _episode.editTitle(title)
-				await _episode.editSummary(description)
+				await _episode.editTitle(episode.title)
+				await _episode.editSummary(episode.description)
+				if (episode.released)
+					await _episode.editOriginallyAvailableAt(
+						episode.released.split('T')[0],
+					)
 				return true
 			} catch (e) {
 				if (attemptsLeft > 1) {

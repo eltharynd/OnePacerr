@@ -273,10 +273,7 @@ export class TorrentController {
 				}
 
 				let targetLibraryFile: TargetLibraryFile =
-					await Context.library.getTargetLibraryEpisodeFile(
-						episode.arc,
-						episode.episode,
-					)
+					await Context.library.getTargetLibraryEpisodeFile(episode)
 
 				let previousLibraryFileName
 

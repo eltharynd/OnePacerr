@@ -1,6 +1,7 @@
 import { Logger } from 'ez-ts-logger'
 import path from 'node:path'
 import environment from '../../environment.js'
+import { EpisodeMetadata } from '../../metadata/metadata.model.js'
 import { Context } from '../../util/context.js'
 import sanitizeWindowsFileName from '../../util/sanitize-windows-filename.js'
 import { LibraryController } from '../library.controller.js'
@@ -75,15 +76,17 @@ export class EmbyController implements ILibraryController {
 	}
 
 	async getExistingLibraryEpisodeFile(
-		arc: number,
-		episode: number,
-		pathAccordingToMediaServer?: boolean,
+		episode: EpisodeMetadata,
+		pathAccordingToMediaServer?,
 	): Promise<string> {
 		let _episode
 		try {
 			_episode = (await this.emby.getEpisodes(this.show.Id, ['Path'])).find(
 				e => {
-					return e.IndexNumber == episode && e.ParentIndexNumber == arc
+					return (
+						e.IndexNumber == episode.episode &&
+						e.ParentIndexNumber == episode.arc
+					)
 				},
 			)
 
@@ -99,30 +102,24 @@ export class EmbyController implements ILibraryController {
 				)
 		} catch (e) {
 			Logger.info(
-				`Episode ${arc}-${String(episode).padStart(2, '0')} does not exists on Emby...`,
+				`Episode ${episode.arc}-${String(episode.episode).padStart(2, '0')} does not exists on Emby...`,
 			)
 			return null
 		}
 	}
 
 	async getTargetLibraryEpisodeFile(
-		arc: number,
-		episode: number,
-		episodeDescription?: { title: string; description: string },
+		episode: EpisodeMetadata,
 	): Promise<TargetLibraryFile> {
-		if (!episodeDescription) {
-			episodeDescription = await Context.metadata.getEpisode(arc, episode)
-		}
-
 		let embyLibraryPath = await Context.library.getLibraryFolder()
 		let embySeparator = embyLibraryPath.includes('/') ? '/' : '\\'
 
 		let targetEmbyFileName = LibraryController.resolveEpisodeTargetFileName(
-			arc,
-			episode,
-			episodeDescription.title,
+			episode.arc,
+			episode.episode,
+			episode.title,
 		)
-		let targetEmbyPath = `${embyLibraryPath}${embySeparator}${environment.LIBRARY_SERIES_FOLDER_NAME}${embySeparator}Season ${String(arc).padStart(2, '0')}${embySeparator}`
+		let targetEmbyPath = `${embyLibraryPath}${embySeparator}${environment.LIBRARY_SERIES_FOLDER_NAME}${embySeparator}Season ${String(episode.arc).padStart(2, '0')}${embySeparator}`
 
 		return {
 			path: targetEmbyPath,
@@ -183,12 +180,7 @@ export class EmbyController implements ILibraryController {
 		}
 	}
 
-	async updateEpisodeMetadata(
-		arc: number,
-		episode: number,
-		title: string,
-		description: string,
-	) {
+	async updateEpisodeMetadata(episode: EpisodeMetadata) {
 		//throw new Error('updateEpisodeMetadata')
 	}
 

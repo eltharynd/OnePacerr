@@ -2,6 +2,7 @@ import { Logger } from 'ez-ts-logger'
 import { mkdirSync, writeFileSync } from 'node:fs'
 import path from 'node:path'
 import environment from '../environment.js'
+import { EpisodeMetadata } from '../metadata/metadata.model.js'
 import { Context } from '../util/context.js'
 import resolvePosterPath from '../util/resolve-poster-path.js'
 import resolveSeasonPosterFileName from '../util/resolve-season-poster-filename.js'
@@ -67,27 +68,19 @@ export class LibraryController {
 	}
 
 	async getExistingLibraryEpisodeFile(
-		season: number,
-		episode: number,
+		episode: EpisodeMetadata,
 		pathAccordingToMediaServer?: boolean,
 	): Promise<string> {
 		return await this.client.getExistingLibraryEpisodeFile(
-			season,
 			episode,
 			pathAccordingToMediaServer,
 		)
 	}
 
 	async getTargetLibraryEpisodeFile(
-		arc: number,
-		episode: number,
-		episodeDescription?: { title: string; description: string },
+		episode: EpisodeMetadata,
 	): Promise<TargetLibraryFile> {
-		return await this.client.getTargetLibraryEpisodeFile(
-			arc,
-			episode,
-			episodeDescription,
-		)
+		return await this.client.getTargetLibraryEpisodeFile(episode)
 	}
 
 	async scanLibrary(folder: string, arc: number) {
@@ -121,28 +114,26 @@ export class LibraryController {
 		await this.client.scanLibrary(folder, arc)
 	}
 
-	async updateEpisodeMetadata(
-		arc: number,
-		episode: number,
-		title: string,
-		description: string,
-	) {
+	async updateEpisodeMetadata(episode: EpisodeMetadata) {
 		if (
 			this.client.libraryClient != 'plex' ||
 			!environment.PLEX_SKIP_METADATA_FILES
 		) {
-			let folder = resolveSeasonFolder(await this.getLibraryFolder(), arc)
+			let folder = resolveSeasonFolder(
+				await this.getLibraryFolder(),
+				episode.arc,
+			)
 
 			mkdirSync(
 				`${path.resolve(`${folder.replace(environment.MOUNT_LIBRARY_MEDIA_SERVER, environment.MOUNT_LIBRARY_ONEPACERR)}`)}${path.sep}`,
 				{ recursive: true },
 			)
 			writeFileSync(
-				`${path.resolve(`${folder.replace(environment.MOUNT_LIBRARY_MEDIA_SERVER, environment.MOUNT_LIBRARY_ONEPACERR)}`)}${path.sep}${sanitizeWindowsFileName(await LibraryController.resolveEpisodeTargetFileName(arc, episode, title)).replace('.mkv', '.nfo')}`,
-				await Context.metadata.getEpisodeNFO(arc, episode),
+				`${path.resolve(`${folder.replace(environment.MOUNT_LIBRARY_MEDIA_SERVER, environment.MOUNT_LIBRARY_ONEPACERR)}`)}${path.sep}${sanitizeWindowsFileName(await LibraryController.resolveEpisodeTargetFileName(episode.arc, episode.episode, episode.title)).replace('.mkv', '.nfo')}`,
+				await Context.metadata.getEpisodeNFO(episode.arc, episode.episode),
 			)
 		}
-		await this.client.updateEpisodeMetadata(arc, episode, title, description)
+		await this.client.updateEpisodeMetadata(episode)
 	}
 
 	async updateSeasonMetadata(arc: number) {
