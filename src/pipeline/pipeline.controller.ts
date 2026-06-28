@@ -240,7 +240,7 @@ export class PipelineController {
 		episode: EpisodeMetadata,
 		extended?: boolean,
 	): Promise<QueueDownloadResult> {
-		if (episode.files?.alternate && this.config.PIPELINE_PREFER_G8) {
+		if (episode.files?.alternate && this.config.PIPELINE_PREFER_ALTERNATE) {
 			return await Context.torrent.queueDownload(episode.files.alternate)
 		} else if (episode.files?.extended && extended) {
 			return await Context.torrent.queueDownload(episode.files?.extended)
@@ -368,7 +368,7 @@ export class PipelineController {
 		// }
 
 		// if (ma.arc == 16 && me.episode == 25) {
-		// 	if (!this.config.PIPELINE_PREFER_G8) {
+		// 	if (!this.config.PIPELINE_PREFER_ALTERNATE) {
 		// 		Logger.debug(`Corrected 16. Skypiea 25 for alternate G-8 cut`)
 		// 		me.CRC32.standard = 'C951349C'
 		// 	}

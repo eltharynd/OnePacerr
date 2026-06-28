@@ -11,7 +11,7 @@ export type PipelineControllerConfig = {
 	PIPELINE_SKIP_POSTERS: boolean
 	PIPELINE_INCLUDE_SPECIALS: boolean
 	PIPELINE_PREFER_EXTENDED: boolean
-	PIPELINE_PREFER_G8: boolean
+	PIPELINE_PREFER_ALTERNATE: boolean
 	PIPELINE_RETRY_INTERVAL: number
 }
 

@@ -62,8 +62,11 @@ export default {
 			process.env.PREFER_EXTENDED ||
 			'false',
 	),
-	PIPELINE_PREFER_G8: /true/i.test(
-		process.env.PREFER_G8 || process.env.PIPELINE_PREFER_G8 || 'false',
+	PIPELINE_PREFER_ALTERNATE: /true/i.test(
+		process.env.PIPELINE_PREFER_ALTERNATE ||
+			process.env.PIPELINE_PREFER_G8 ||
+			process.env.PREFER_G8 ||
+			'false',
 	),
 
 	PIPELINE_FILTERS_INCLUDE:

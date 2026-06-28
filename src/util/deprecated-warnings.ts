@@ -31,10 +31,11 @@ export default function deprecatedWarnings() {
 		{ old: 'SKIP_POSTERS', new: 'PIPELINE_SKIP_POSTERS' },
 		{ old: 'INCLUDE_SPECIALS', new: 'PIPELINE_INCLUDE_SPECIALS' },
 		{ old: 'PREFER_EXTENDED', new: 'PIPELINE_PREFER_EXTENDED' },
-		{ old: 'PREFER_G8', new: 'PIPELINE_PREFER_G8' },
+		{ old: 'PREFER_G8', new: 'PIPELINE_PREFER_ALTERNATE' },
 		{ old: 'FILTERS_INCLUDE', new: 'PIPELINE_FILTERS_INCLUDE' },
 		{ old: 'FILTERS_EXCLUDE', new: 'PIPELINE_FILTERS_EXCLUDE' },
 		{ old: 'DEBUGGING', new: `LOG_LEVEL': 'debug` },
+		{ old: 'PIPELINE_PREFER_G8', new: `PIPELINE_PREFER_ALTERNATE` },
 	]
 
 	for (let renamed of renamedEnv) {

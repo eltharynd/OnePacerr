@@ -186,7 +186,7 @@ services:
 
       #- PIPELINE_INCLUDE_SPECIALS=false
       - PIPELINE_PREFER_EXTENDED=true
-      - PIPELINE_PREFER_G8=true
+      - PIPELINE_PREFER_ALTERNATE=true
 
       #- PIPELINE_FILTERS_INCLUDE=S01
       #- PIPELINE_FILTERS_EXCLUDE=S35,S36
@@ -325,7 +325,7 @@ Here is a breakdown of key optional variables you can adjust in your
 | --- | --- | --- |
 | `PIPELINE_INCLUDE_SPECIALS` | `false` | Set to `true` to also process specials. |
 | `PIPELINE_PREFER_EXTENDED` | `false` | Set to `true` to prioritize extended cuts over standard releases. |
-| `PIPELINE_PREFER_G8` | `false` | Set to `true` to prefer the G-8 cut at the end of Skypiea. |
+| `PIPELINE_PREFER_ALTERNATE` | `false` | Set to `true` to prefer the G-8 cut at the end of Skypiea. |
 | --- | --- | --- |
 | `PIPELINE_FILTERS_INCLUDE` | _None_ | Only process seasons/episodes that match these [filters](#-filters). |
 | `PIPELINE_FILTERS_EXCLUDE` | _None_ | Only process seasons/episodes that don't match these [filters](#-filters). |
