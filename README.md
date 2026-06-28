@@ -315,7 +315,7 @@ Here is a breakdown of key optional variables you can adjust in your
 | Pipeline Variables | Default | Description |
 | :--- | :--- | :--- |
 | 🍏 `PIPELINE_SKIP_VERIFY_PRESENT_FILES` | `true` | If `false`, hashes files present in Plex upon metadata updates to ensure they are the latest/wanted versions. |
-| 🍏 `PIPELINE_SKIP_VERIFY_NOT_FOR_EXTENDED` | `false` | If `true`, PIPELINE_SKIP_VERIFY_PRESENT_FILES only applies to episodes without extended versions |
+| 🍏 `PIPELINE_SKIP_VERIFY_NOT_FOR_EXTENDED` | `false` | If `true`, PIPELINE_SKIP_VERIFY_PRESENT_FILES only applies to episodes without extended or alternate versions |
 | 🍏 `PIPELINE_SKIP_ORGANIZE_PRESENT_FILES` | `true` | If `false`, makes sure the files existing on your Library are in the correct folder and named correctly. |
 | 🍏 `PIPELINE_SKIP_UPDATE_METADATA_PRESENT_FILES` | `true` | If `false`, automatically updates metadata for files already in your Library, otherwise only does so for new downloads. |
 | 🍏 `PIPELINE_SKIP_DOWNLOADS` | `false` | If `true`, skips download. Use if you only want to organize your current files. |
