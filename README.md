@@ -6,7 +6,9 @@
 [![GitHub Last Commit](https://img.shields.io/github/last-commit/eltharynd/onepacerr?style=flat-square)](https://github.com/eltharynd/OnePacerr/commits/main/)
 [![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)](https://github.com/eltharynd/OnePacerr?tab=MIT-1-ov-file)
 
-## Automated One Pace downloads and metadata for Plex, Jellyfin, and Emby. Built to complement your Sonarr stack.
+## Automated One Pace downloads and metadata for Plex, Jellyfin, and Emby
+
+### Built to complement your Sonarr stack
 
 Because Sonarr does not natively support [One
 Pace](https://onepace.net/) (the fan-edited, manga-accurate version of One Piece), this app
@@ -23,7 +25,7 @@ Not affiliated with One Pace's team.
 
 ### Supported Torrenting Clients
 
-[![qBittorrent](docs/torrenting_clients/qbittorrent.png)](https://hub.docker.com/r/linuxserver/qbittorrent) [![Deluge](docs/torrenting_clients/deluge.png)](https://hub.docker.com/r/linuxserver/deluge) [![μTorrent](docs/torrenting_clients/utorrent-coming-soon.png)](https://www.utorrent.com/downloads)
+[![qBittorrent](docs/torrenting_clients/qbittorrent.png)](https://hub.docker.com/r/linuxserver/qbittorrent) [![Deluge](docs/torrenting_clients/deluge.png)](https://hub.docker.com/r/linuxserver/deluge) [![μTorrent](docs/torrenting_clients/utorrent.png)](https://www.utorrent.com/downloads) [![Transmission](docs/torrenting_clients/transmission.png)](https://hub.docker.com/r/linuxserver/transmission)
 
 ### Supported Media Servers
 
@@ -43,7 +45,6 @@ Not affiliated with One Pace's team.
 ## 📃 Table of Contents
 
 - ✨ [Features](#-features)
-- 🧪 [Pipeline](#-pipeline)
 - 🚀 [Getting Started](#-getting-started)
   - 🧳 [Prerequisites](#-prerequisites)
   - 📝 [Recommended configs](#-recommended-configs)
@@ -68,6 +69,7 @@ Not affiliated with One Pace's team.
 - 🖼️ [Poster Sets](#️-poster-sets)
   - 🔍 [Previews](#-previews)
   - 📥 [Adding/Updating Sets](#-addingupdating-sets)
+- 🧪 [Pipeline](#-pipeline)
 - 📅 [Roadmap](#-roadmap)
 - 🤝 [Credits & Acknowledgements](#-credits--acknowledgements)
 - 💗 [Support (One Pace, not me!)](#-support-one-pace-not-me)
@@ -87,21 +89,6 @@ Not affiliated with One Pace's team.
   - Copies and renames the file to your designated Library folder.
   - Updates the metadata either directly on your Media Server (Plex, Jellyfin, Emby) or creates the files on your Local Folder for later imports.
   - Assigns a custom (`completed`) category to the processed torrents.
-
-## 🧪 Pipeline
-
-> [!IMPORTANT]  
-> This is currently slightly out of date due to che metadata changes.
->
-> I moved to fetching metadata from [one-pace-api](https://github.com/eltharynd/one-pace-api), this means that we get all of the metadata at once and we don't need to check RSS feed anymore.
->
-> When I have time to finish [one-pace-api](https://github.com/eltharynd/one-pace-api) and deploy it for the public, I will be able to just connect via WebSocket and get notifications without polling constantly.
-
-The following diagram synthesizes the pipeline:
-
-![pipeline](docs/pipeline.png?cache=2)
-
-The RSS Feed only refreshes when trying to get a magnetURI and it's not in RSS. This is possible because metadata is already updated after RSS is, so there's no need to refresh both periodically.
 
 ## 🚀 Getting Started
 
@@ -456,7 +443,7 @@ If you set `PLEX_SKIP_METADATA_FILES=false`, you can instead generate those file
 
 | Torrent Variables | Default | Description |
 | :--- | :--- | :--- |
-| 🍤 `TORRENT_CLIENT` | `qbittorrent` | Your torrent client between: `qbittorrent` or `deluge`. |
+| 🍤 `TORRENT_CLIENT` | `qbittorrent` | Your torrent client between: `qbittorrent`, `deluge`, `transmisson` or `utorrent`. |
 | ⭐ `TORRENT_URL` | `http://localhost:8080` | Your torrent API URL. |
 | ⭐ `TORRENT_USER` | _None_ | Your torrent API username. |
 | ⭐ `TORRENT_PASSWORD` | _None_ | Your torrent API password. |
@@ -511,10 +498,17 @@ When updating metadata, a missing poster results in falling back to default.
 
 If you want to contribute to the posters or create an entire new set, first of all I love you, then please [read this](POSTER-SETS.md#how-to-contribute-to-poster-sets).
 
+## 🧪 Pipeline
+
+The following diagram synthesizes the pipeline:
+
+![pipeline](docs/pipeline.png?cache=2)
+
 ## 📅 Roadmap
 
+- [X] **Support uTorrent** since [v1.7.5](https://github.com/eltharynd/OnePacerr/releases/tag/v1.7.5)
+- [X] **Support Transmission** since [v1.7.5](https://github.com/eltharynd/OnePacerr/releases/tag/v1.7.5)
 - [ ] **Docusaurus** documentation
-- [ ] **Support uTorrent**
 - [ ] **Rest API** Manual execution/status/configuration endpoints
 - [ ] **Support hard/softlinks**
 - [ ] **Support Libraries with multiple folders** (currently only gets the first result from API)

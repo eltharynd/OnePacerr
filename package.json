@@ -18,6 +18,7 @@
 		"@ctrl/deluge": "^8.0.0",
 		"@ctrl/plex": "^6.0.0",
 		"@ctrl/qbittorrent": "^9.14.0",
+		"@ctrl/rtorrent": "^1.1.0",
 		"@ctrl/transmission": "^7.4.0",
 		"@ctrl/utorrent": "^6.6.2",
 		"@jellyfin/sdk": "^0.13.0",
