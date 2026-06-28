@@ -82,7 +82,8 @@ export class DelugeController implements ITorrentController {
 				}) as T[]
 		} catch (e: any) {
 			Logger.error(`Could not connect to Deluge: ${e.message}`)
-			throw new TorrentConnectionError()
+			if (e instanceof Error) throw e
+			else throw new TorrentConnectionError()
 		}
 	}
 

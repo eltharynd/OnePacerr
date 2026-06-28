@@ -14,6 +14,7 @@ import { Filter } from '../util/filters.js'
 import safeCopyFileSync from '../util/safe-copy-file.js'
 import { DelugeController } from './clients/deluge.controller.js'
 import { qBittorrentController } from './clients/qbittorrent.controller.js'
+import { TransmissionController } from './clients/transmission.controller.js'
 import { UTorrentController } from './clients/utorrent.controller.js'
 import {
 	ITorrentController,
@@ -49,6 +50,13 @@ export class TorrentController {
 				break
 			case 'utorrent':
 				this.client = new UTorrentController({
+					baseUrl: environment.TORRENT_URL,
+					username: environment.TORRENT_USER,
+					password: environment.TORRENT_PASSWORD,
+				})
+				break
+			case 'transmission':
+				this.client = new TransmissionController({
 					baseUrl: environment.TORRENT_URL,
 					username: environment.TORRENT_USER,
 					password: environment.TORRENT_PASSWORD,
@@ -128,7 +136,9 @@ export class TorrentController {
 		}
 
 		Logger.debug(`Adding magnetURI to ${this.client.torrentClient}...`)
-		let torrents = await this.client.getAllTorrents()
+		let torrents = await this.client.getAllTorrents(
+			environment.TORRENT_CATEGORY,
+		)
 		if (torrents.find(t => t.hash === torrentInfo.hash)) {
 			Logger.debug(`Torrent already in ${this.client.torrentClient}...`)
 			return 'already_present'

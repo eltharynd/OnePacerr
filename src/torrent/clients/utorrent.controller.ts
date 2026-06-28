@@ -71,7 +71,8 @@ export class UTorrentController implements ITorrentController {
 		} catch (e: any) {
 			Logger.error(`Could not connect to uTorrent: ${e.message}`)
 			Logger.error(e)
-			throw new TorrentConnectionError()
+			if (e instanceof Error) throw e
+			else throw new TorrentConnectionError()
 		}
 	}
 

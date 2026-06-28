@@ -1,8 +1,4 @@
-import {
-	QBittorrent,
-	Torrent as qbTorrent,
-	TorrentCategories,
-} from '@ctrl/qbittorrent'
+import { Transmission } from '@ctrl/transmission'
 import { Logger } from 'ez-ts-logger'
 import environment from '../../environment.js'
 import { FileMetadata } from '../../metadata/metadata.model.js'
@@ -13,9 +9,9 @@ import {
 	TorrentConnectionError,
 } from '../torrent.model.js'
 
-export class qBittorrentController implements ITorrentController {
-	readonly torrentClient: TorrentClient = 'qbittorrent'
-	private client: QBittorrent
+export class TransmissionController implements ITorrentController {
+	readonly torrentClient: TorrentClient = 'transmission'
+	private client: Transmission
 
 	constructor(
 		private configs: {
@@ -24,7 +20,7 @@ export class qBittorrentController implements ITorrentController {
 			password: string
 		},
 	) {
-		this.client = new QBittorrent({
+		this.client = new Transmission({
 			...configs,
 			timeout: environment.TORRENT_CLIENT_TIMEOUT,
 		})
@@ -38,7 +34,7 @@ export class qBittorrentController implements ITorrentController {
 			t => t.hash === torrentInfo.hash,
 		)
 		if (torrent) {
-			Logger.debug(`MagnetURI already in qBittorrent...`)
+			Logger.debug(`MagnetURI already in Trasmission...`)
 			if (torrent.category == category || !environment.TORRENT_CATEGORY_FORCE)
 				return false
 			else {
@@ -46,15 +42,39 @@ export class qBittorrentController implements ITorrentController {
 				await this.updateTorrentCategory({ hash: torrent.hash }, category)
 			}
 		} else {
-			return await this.client.addMagnet(torrentInfo.magnetURI, { category })
+			const downloadDir = (await this.client.getSession()).arguments[
+				'download-dir'
+			]
+			let added = await this.client.addMagnet(torrentInfo.magnetURI, {
+				'download-dir': downloadDir,
+			})
+			if (added) {
+				await this.updateTorrentCategory({ hash: torrent.hash }, category)
+			}
+			return !!added
 		}
 	}
 
 	public async getAllTorrents<T = Torrent>(category?: string): Promise<T[]> {
 		try {
-			return (await this.client.listTorrents({ category })) as T[]
+			return (await this.client.getAllData()).torrents
+				.filter(
+					t =>
+						!environment.TORRENT_CATEGORY_FORCE ||
+						!category ||
+						t.label == category,
+				)
+				.map(t => {
+					return {
+						hash: t.id,
+						content_path: `${t.savePath}${t.savePath.includes('/') ? '/' : '\\'}${t.name}`,
+						name: t.name,
+						category: t.label,
+						progress: t.progress,
+					}
+				}) as T[]
 		} catch (e: any) {
-			Logger.error(`Could not connect to qBittorrent: ${e.message}`)
+			Logger.error(`Could not connect to Transmission: ${e.message}`)
 			if (e instanceof Error) throw e
 			else throw new TorrentConnectionError()
 		}
@@ -63,7 +83,7 @@ export class qBittorrentController implements ITorrentController {
 	public async getCompletedTorrents<T = Torrent>(
 		category?: string,
 	): Promise<T[]> {
-		return ((await this.getAllTorrents<qbTorrent>()) as qbTorrent[]).filter(
+		return (await this.getAllTorrents<Torrent>()).filter(
 			t => (!category || t.category == category) && t.progress >= 1,
 		) as T[]
 	}
@@ -73,15 +93,10 @@ export class qBittorrentController implements ITorrentController {
 		category: string,
 	): Promise<void> {
 		try {
-			await this.client.setTorrentCategory(torrent.hash, category)
+			await this.client.setTorrent(torrent.hash, { labels: [category] })
 		} catch (e) {
-			let categories: TorrentCategories = await this.client.getCategories()
-
-			if (!categories[category]) {
-				Logger.debug(`Creating '${category}' qBittorrent category`)
-				await this.client.createCategory(category)
-			}
-			await this.client.setTorrentCategory(torrent.hash, category)
+			Logger.error(`Error updating torrent categories`)
+			Logger.errorAndThrow(e)
 		}
 	}
 }

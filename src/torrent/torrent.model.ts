@@ -1,6 +1,10 @@
 import { FileMetadata } from '../metadata/metadata.model'
 
-export type TorrentClient = 'qbittorrent' | 'utorrent' | 'deluge'
+export type TorrentClient =
+	| 'qbittorrent'
+	| 'utorrent'
+	| 'deluge'
+	| 'transmission'
 export type QueueDownloadResult = 'added' | 'already_present' | 'skipped'
 export type Torrent = {
 	readonly hash: string
