@@ -33,8 +33,8 @@ export class PipelineController {
 		)
 	}
 
-	async waitForFinished() {
-		Logger.info(`Waiting for active pipeline to finish...`)
+	async waitForFinished(suppressLog?: boolean) {
+		if (!suppressLog) Logger.info(`Waiting for active pipeline to finish...`)
 
 		return await new Promise<void>(resolve => {
 			const listener = () => {

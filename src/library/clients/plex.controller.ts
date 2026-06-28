@@ -199,8 +199,8 @@ export class PlexController implements ILibraryController {
 					episode: episode.episode,
 				})
 
-				await _episode.editTitle(episode.title)
-				await _episode.editSummary(episode.description)
+				if (episode.title) await _episode.editTitle(episode.title)
+				if (episode.description) await _episode.editSummary(episode.description)
 				if (episode.released)
 					await _episode.editOriginallyAvailableAt(
 						episode.released.split('T')[0],

@@ -221,15 +221,15 @@ export class MetadataController {
 
 		if (this.firstRun && Context.pipeline.isRunning()) {
 			this.firstRun = false
-			await Context.pipeline.waitForFinished()
+			await Context.pipeline.waitForFinished(true)
 		}
 	}
 
 	private generateMonitored() {
 		this.checkMetadataDownloaded()
 
-		this.monitored = this.metadata.arcs
-			.filter(
+		this.monitored = structuredClone(this.metadata)
+			.arcs.filter(
 				a =>
 					(a.arc != 0 || environment.PIPELINE_INCLUDE_SPECIALS) &&
 					Filter({ arc: a.arc }),
@@ -238,7 +238,11 @@ export class MetadataController {
 				return {
 					...a,
 					episodes: a.episodes.filter(
-						e => !!e.released && Filter({ arc: a.arc, episode: e.episode }),
+						e =>
+							(Filter({ arc: a.arc, episode: e.episode }) &&
+								e.files?.standard?.hash) ||
+							e.files?.extended?.hash ||
+							e.files?.alternate?.hash,
 					),
 				}
 			})

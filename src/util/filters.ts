@@ -50,7 +50,7 @@ class FiltersContainer {
 			this.includes.length == 0 ||
 			this.includes.find(inc => {
 				return (
-					(!inc.arc || inc.arc == filter.arc) &&
+					(!isNumber(inc.arc) || inc.arc == filter.arc) &&
 					(!isNumber(inc.episode) || inc.episode == filter.episode)
 				)
 			})
@@ -61,7 +61,7 @@ class FiltersContainer {
 			this.excludes.length > 0 &&
 			this.excludes.find(
 				inc =>
-					(!inc.arc || inc.arc == filter.arc) &&
+					(!isNumber(inc.arc) || inc.arc == filter.arc) &&
 					(!isNumber(inc.episode) || inc.episode == filter.episode),
 			)
 
@@ -71,13 +71,13 @@ class FiltersContainer {
 	public testSeason(filter: Partial<IFilterInternal>): boolean {
 		let toBeIncluded =
 			this.includes.length == 0 ||
-			this.includes.find(inc => inc.arc && inc.arc == filter.arc)
+			this.includes.find(inc => isNumber(inc.arc) && inc.arc == filter.arc)
 
 		if (!toBeIncluded) return false
 
 		let tobeExcluded =
 			this.excludes.length > 0 &&
-			this.excludes.find(inc => inc.arc && inc.arc == filter.arc)
+			this.excludes.find(inc => isNumber(inc.arc) && inc.arc == filter.arc)
 
 		return !tobeExcluded
 	}
@@ -89,11 +89,11 @@ export const Filter = (filter: IFilter) => {
 	let arc = Number.parseInt(`${filter.arc}`)
 	let episode = Number.parseInt(`${filter.episode}`)
 
-	if (isNaN(episode))
+	if (isNaN(episode)) {
 		return Filters.testSeason({
 			arc: arc,
 		})
-	else
+	} else
 		return Filters.testEpisode({
 			arc: arc,
 			episode: episode,

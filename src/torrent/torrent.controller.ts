@@ -313,7 +313,7 @@ export class TorrentController {
 				)
 
 				Logger.debug(
-					`File for ${episode.arc}-${String(episode.episode).padStart(2, '0')} detected`,
+					`File for S${String(episode.arc).padStart(2, '0')}-${String(episode.episode).padStart(2, '0')} detected`,
 				)
 				if (!environment.PIPELINE_SKIP_DOWNLOADS_IMPORTS) {
 					if (previousLibraryFileName) {
@@ -326,7 +326,7 @@ export class TorrentController {
 						try {
 							unlinkSync(toDelete)
 							Logger.debug(
-								`Pre-existing file for ${episode.arc}-${String(episode.episode).padStart(2, '0')} deleted`,
+								`Pre-existing file for S${String(episode.arc).padStart(2, '0')}-${String(episode.episode).padStart(2, '0')} deleted`,
 							)
 						} catch (e) {
 							Logger.error(
@@ -336,7 +336,7 @@ export class TorrentController {
 					}
 
 					Logger.debug(
-						`Copying file for ${episode.arc}-${String(episode.episode).padStart(2, '0')}`,
+						`Copying file for S${String(episode.arc).padStart(2, '0')}-${String(episode.episode).padStart(2, '0')}`,
 					)
 
 					mkdirSync(destinationFolder, {
@@ -346,7 +346,7 @@ export class TorrentController {
 					await safeCopyFileSync(source, destination)
 
 					Logger.info(
-						`File for ${episode.arc}-${String(episode.episode).padStart(2, '0')} imported successfully`,
+						`File for S${String(episode.arc).padStart(2, '0')}-${String(episode.episode).padStart(2, '0')} imported successfully`,
 					)
 					await Context.pipeline.updatemetadata(
 						episode.arc,
@@ -355,7 +355,7 @@ export class TorrentController {
 					)
 				} else {
 					Logger.info(
-						`File for ${episode.arc}-${String(episode.episode).padStart(2, '0')} skipped due to 'PIPELINE_SKIP_DOWNLOADS_IMPORTS'...`,
+						`File for S${String(episode.arc).padStart(2, '0')}-${String(episode.episode).padStart(2, '0')} skipped due to 'PIPELINE_SKIP_DOWNLOADS_IMPORTS'...`,
 					)
 				}
 			} else {
