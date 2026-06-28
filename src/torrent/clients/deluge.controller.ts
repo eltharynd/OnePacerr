@@ -59,11 +59,10 @@ export class DelugeController implements ITorrentController {
 				.map(t => {
 					return {
 						hash: t.id,
-						content_path: t.savePath,
-						save_path: t.savePath,
+						content_path: `${t.savePath}${t.savePath.includes('/') ? '/' : '\\'}${t.name}`,
 						name: t.name,
 						category: t.label,
-						progress: t.isCompleted ? 1 : t.progress / 100,
+						progress: t.progress,
 					}
 				}) as T[]
 		} catch (e: any) {

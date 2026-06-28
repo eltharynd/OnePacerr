@@ -147,9 +147,7 @@ export class MetadataController {
 	findEpisodeByCRC32(CRC32: string): EpisodeMetadata | undefined {
 		this.checkMetadataDownloaded()
 
-		let episode: EpisodeMetadata
-
-		let _found = this.metadata.arcs.find(a => {
+		let _found = structuredClone(this.metadata).arcs.find(a => {
 			const _found = a.episodes.find(
 				e =>
 					e.files?.standard?.CRC32 == CRC32 ||
@@ -197,7 +195,7 @@ export class MetadataController {
 		await this.generateEpisodeNFOs()
 
 		Logger.debug(`Adding monitored to pipeline`)
-		Context.pipeline.addMonitored(this.monitored)
+		Context.pipeline.addMonitored(structuredClone(this.monitored))
 
 		Context.pipeline.start()
 	}
