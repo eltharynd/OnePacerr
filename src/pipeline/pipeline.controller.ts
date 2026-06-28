@@ -357,7 +357,10 @@ export class PipelineController {
 
 		const skipVerification =
 			this.config.PIPELINE_SKIP_VERIFY_PRESENT_FILES &&
-			!(this.config.PIPELINE_SKIP_VERIFY_NOT_FOR_EXTENDED && me.files?.extended)
+			!(
+				this.config.PIPELINE_SKIP_VERIFY_NOT_FOR_EXTENDED &&
+				(me.files?.extended || me.files?.alternate)
+			)
 
 		// if (me.CRC32.standard == '702231E9') {
 		// 	Logger.debug(`Skypiea 14 manual correction`)
