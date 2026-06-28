@@ -17,6 +17,8 @@ Other than organizing your episode files, it also updates metadata and posters s
 
 It supports the most popular torrenting clients (qBittorrent, deluge and µTorrent) and the most popular Media Servers (Plex, Jellyfin, Emby), or it can even be used without a torrenting client or a Media Server at all.
 
+Also check [One Pace public API](https://github.com/eltharynd/one-pace-api).
+
 Not affiliated with One Pace's team.
 
 ### Supported Torrenting Clients
@@ -528,6 +530,7 @@ This project wouldn't be possible without the incredible work of the community:
   - `piratezekk` (default) by **[/u/piratezekk](https://reddit.com/user/piratezekk)**.
   - `mizzoufan523` by **[/u/Mizzoufan523](https://reddit.com/user/Mizzoufan523)**.
   - `official` by **[One Pace's Team](https://onepace.net/en)**
+- [One Pace public API](https://github.com/eltharynd/one-pace-api)
 
 ## 💗 Support (One Pace, not me!)
 
