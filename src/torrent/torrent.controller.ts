@@ -214,11 +214,13 @@ export class TorrentController {
 
 		let files: string[] = []
 
-		if (contentPath.endsWith('.mkv')) {
+		if (contentPath.endsWith('.mkv') || contentPath.endsWith('.mp4')) {
 			files = [contentPath]
 			Logger.debug(`Processing 1 torrent file...`)
 		} else {
-			let mkvs = readdirSync(contentPath).filter(f => f.endsWith('.mkv'))
+			let mkvs = readdirSync(contentPath).filter(
+				f => f.endsWith('.mkv') || f.endsWith('.mp4'),
+			)
 			if (mkvs.length > 0)
 				Logger.debug(`Processing ${mkvs.length} torrent files...`)
 			for (let f of mkvs) {
@@ -232,7 +234,7 @@ export class TorrentController {
 			if (!match && file.includes('316829437')) {
 				match = file
 					.replace('316829437', '964FB36B')
-					.match(/\[([0-9A-F]{8})\]\.mkv$/i)
+					.match(/\[([0-9A-F]{8})\]\.(mkv|mp4)$/i)
 				Logger.debug(`Punk Hazard 13 manual correction attempt`)
 			}
 			if (match) {
@@ -286,8 +288,8 @@ export class TorrentController {
 							),
 						),
 					)
-					for (let existingFile of existingLibraryFiles.filter(f =>
-						f.endsWith('.mkv'),
+					for (let existingFile of existingLibraryFiles.filter(
+						f => f.endsWith('.mkv') || f.endsWith('.mp4'),
 					)) {
 						let episodeNumber = existingFile
 							.replace(/^.+S[0-9][0-9]E/, '')

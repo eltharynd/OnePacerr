@@ -129,7 +129,15 @@ export class LibraryController {
 				{ recursive: true },
 			)
 			writeFileSync(
-				`${path.resolve(`${folder.replace(environment.MOUNT_LIBRARY_MEDIA_SERVER, environment.MOUNT_LIBRARY_ONEPACERR)}`)}${path.sep}${sanitizeWindowsFileName(await LibraryController.resolveEpisodeTargetFileName(episode.arc, episode.episode, episode.title)).replace('.mkv', '.nfo')}`,
+				`${path.resolve(`${folder.replace(environment.MOUNT_LIBRARY_MEDIA_SERVER, environment.MOUNT_LIBRARY_ONEPACERR)}`)}${path.sep}${sanitizeWindowsFileName(
+					await LibraryController.resolveEpisodeTargetFileName(
+						episode.arc,
+						episode.episode,
+						episode.title,
+					),
+				)
+					.replace('.mkv', '.nfo')
+					.replace('.mp4', '.nfo')}`,
 				await Context.metadata.getEpisodeNFO(episode.arc, episode.episode),
 			)
 		}
@@ -221,7 +229,9 @@ export class LibraryController {
 			}
 			return variables[key]
 		})
-		targetFileName = targetFileName.replace(/(\.mkv)*$/, '.mkv')
-		return targetFileName
+
+		if (targetFileName.endsWith('.mkv')) return targetFileName
+		else if (targetFileName.endsWith('.mp4')) return targetFileName
+		else return targetFileName.replace(/(\.mkv)*$/, '.mkv')
 	}
 }

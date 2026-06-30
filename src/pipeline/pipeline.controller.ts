@@ -313,8 +313,8 @@ export class PipelineController {
 			)
 			let trashFiles = filesInFolder.filter(f => {
 				return (
-					f.replace(/\.(nfo|mkv)$/, '') ==
-						serverFileName.replace(/\.mkv$/, '') ||
+					f.replace(/\.(nfo|mkv|mp4)$/, '') ==
+						serverFileName.replace(/\.(mkv|mp4)$/, '') ||
 					(f.includes(environment.LIBRARY_SERIES_NAME) &&
 						f.includes(
 							`S${String(arc).padStart(2, '0')}E${String(episode).padStart(2, '0')}`,

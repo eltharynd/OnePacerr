@@ -55,7 +55,9 @@ export class LocalFolderController implements ILibraryController {
 
 		if (existsSync(file)) return file
 
-		let files = readdirSync(targetPath).filter(f => f.endsWith(`.mkv`))
+		let files = readdirSync(targetPath).filter(
+			f => f.endsWith(`.mkv`) || f.endsWith(`.mp4`),
+		)
 		if (files.length < 1) return null
 
 		file = files.find(f =>
