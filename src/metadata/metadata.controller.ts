@@ -99,7 +99,7 @@ export class MetadataController {
 
 					this.socket.on('updates', async data => {
 						Logger.info(`Metadata updates received! Processing...`)
-						await this.sendToPipeline()
+						await this.sendToPipeline(true)
 					})
 				}
 			}
@@ -200,7 +200,7 @@ export class MetadataController {
 		return base
 	}
 
-	private async sendToPipeline() {
+	private async sendToPipeline(updateNotificationReceived?: boolean) {
 		this.checkMetadataDownloaded()
 
 		if (Context.pipeline.isRunning()) await Context.pipeline.waitForFinished()
@@ -217,7 +217,7 @@ export class MetadataController {
 		Logger.debug(`Adding monitored to pipeline`)
 		Context.pipeline.addMonitored(structuredClone(this.monitored))
 
-		Context.pipeline.start()
+		Context.pipeline.start(updateNotificationReceived)
 
 		if (this.firstRun && Context.pipeline.isRunning()) {
 			this.firstRun = false
@@ -276,7 +276,9 @@ export class MetadataController {
 					originaltitle: title,
 					sorttitle: title,
 					outline: this.metadata.description,
-					customrating: this.metadata.customRating,
+					//@ts-ignore
+					mpaa: this.metadata.mpaa || this.metadata.customRating,
+					customRating: this.metadata.mpaa || this.metadata.customRating,
 					lockdata: false,
 					namedseason: namedseason,
 					art: {
@@ -308,21 +310,34 @@ export class MetadataController {
 				path += `poster.png`
 			}
 
+			const season: any = {
+				title: arc.arc == 0 ? arc.title : `${arc.arc}. ${arc.title}`,
+				sorttitle: arc.arc,
+				seasonnumber: arc.arc,
+				plot:
+					arc.arc > 0
+						? `**[${arc.saga}]**\n\n${arc.description}`
+						: arc.description,
+				outline: arc.description,
+				mpaa: this.metadata.mpaa || this.metadata.customRating,
+				customRating: this.metadata.mpaa || this.metadata.customRating,
+				lockdata: false,
+				art: {
+					poster: path,
+				},
+			}
+
+			if (arc.mangaChapters) {
+				season.title = `[${arc.mangaChapters}] ${arc.title}`
+				season.originaltitle = `Manga Chapters ${arc.mangaChapters}`
+			}
+			if (arc.animeEpisodes) {
+				season.originaltitle = `${season.originaltitle}, AnimeEpisodes ${arc.animeEpisodes}`
+			}
+
 			let NFO = `<?xml version='1.0' encoding='utf-8'?>\n${js2xml(
 				{
-					season: {
-						title: arc.arc == 0 ? arc.title : `${arc.arc}. ${arc.title}`,
-						sorttitle: arc.arc == 0 ? arc.title : `${arc.arc}. ${arc.title}`,
-						seasonnumber: arc.arc,
-						plot: arc.description,
-						outline: arc.description,
-						overview: arc.description,
-						customrating: 'TV-14',
-						lockdata: false,
-						art: {
-							poster: path,
-						},
-					},
+					season: season,
 				},
 				{
 					compact: true,
@@ -361,7 +376,8 @@ export class MetadataController {
 					episode: episode.episode,
 					displayepisode: episode.episode,
 
-					customrating: this.metadata.customRating,
+					mpaa: this.metadata.mpaa || this.metadata.customRating,
+					customrating: this.metadata.mpaa || this.metadata.customRating,
 					lockdata: false,
 				}
 

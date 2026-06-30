@@ -91,7 +91,7 @@ export class PipelineController {
 		this.report.status = 'READY'
 	}
 
-	async start() {
+	async start(updateNotificationReceived?: boolean) {
 		if (!this.report || this.report.status != 'READY') {
 			throw new PipelineNotReadyError('Pipeline not ready')
 		}
@@ -118,7 +118,7 @@ export class PipelineController {
 		for (let ma of this.report.monitored) {
 			for (let me of ma.episodes) {
 				try {
-					await this.process(ma, me)
+					await this.process(ma, me, updateNotificationReceived)
 					successfull.push({ arc: ma.arc, episode: me.episode })
 				} catch (e: any) {
 					Logger.error(
@@ -261,7 +261,11 @@ export class PipelineController {
 		}
 	}
 
-	private async organizeFile(arc: number, episode: number) {
+	private async organizeFile(
+		arc: number,
+		episode: number,
+		updateNotificationReceived?: boolean,
+	) {
 		Context.metadata.checkMetadataDownloaded()
 		Logger.debug(
 			`S${arc}E${String(episode).padStart(2, '0')} - Verifying path format...`,
@@ -337,7 +341,10 @@ export class PipelineController {
 			)
 			await Context.library.updateEpisodeMetadata(_episode)
 		} else {
-			if (!this.config.PIPELINE_SKIP_UPDATE_METADATA_PRESENT_FILES) {
+			if (
+				!this.config.PIPELINE_SKIP_UPDATE_METADATA_PRESENT_FILES ||
+				updateNotificationReceived
+			) {
 				Logger.debug(
 					`S${arc}E${String(episode).padStart(2, '0')} - Correctly formatted...`,
 				)
@@ -350,7 +357,11 @@ export class PipelineController {
 		}
 	}
 
-	private async process(ma: ArcMetadata, me: EpisodeMetadata) {
+	private async process(
+		ma: ArcMetadata,
+		me: EpisodeMetadata,
+		updateNotificationReceived?: boolean,
+	) {
 		this.report.processedEpisodes++
 		Logger.debug(
 			`S${ma.arc}E${String(me.episode).padStart(2, '0')} - Processing`,
@@ -395,8 +406,15 @@ export class PipelineController {
 					`S${ma.arc}E${String(me.episode).padStart(2, '0')} - Present`,
 				)
 				if (!this.config.PIPELINE_SKIP_ORGANIZE_PRESENT_FILES) {
-					await this.organizeFile(ma.arc, me.episode)
-				} else if (!this.config.PIPELINE_SKIP_UPDATE_METADATA_PRESENT_FILES) {
+					await this.organizeFile(
+						ma.arc,
+						me.episode,
+						updateNotificationReceived,
+					)
+				} else if (
+					!this.config.PIPELINE_SKIP_UPDATE_METADATA_PRESENT_FILES ||
+					updateNotificationReceived
+				) {
 					await this.updatemetadata(ma.arc, me.episode)
 				} else {
 					Logger.info(
@@ -428,9 +446,14 @@ export class PipelineController {
 							`S${ma.arc}E${String(me.episode).padStart(2, '0')} - Extended present`,
 						)
 						if (!this.config.PIPELINE_SKIP_ORGANIZE_PRESENT_FILES) {
-							await this.organizeFile(ma.arc, me.episode)
+							await this.organizeFile(
+								ma.arc,
+								me.episode,
+								updateNotificationReceived,
+							)
 						} else if (
-							!this.config.PIPELINE_SKIP_UPDATE_METADATA_PRESENT_FILES
+							!this.config.PIPELINE_SKIP_UPDATE_METADATA_PRESENT_FILES ||
+							updateNotificationReceived
 						) {
 							await this.updatemetadata(ma.arc, me.episode)
 						} else
@@ -470,9 +493,14 @@ export class PipelineController {
 							`S${ma.arc}E${String(me.episode).padStart(2, '0')} - Standard present`,
 						)
 						if (!this.config.PIPELINE_SKIP_ORGANIZE_PRESENT_FILES) {
-							await this.organizeFile(ma.arc, me.episode)
+							await this.organizeFile(
+								ma.arc,
+								me.episode,
+								updateNotificationReceived,
+							)
 						} else if (
-							!this.config.PIPELINE_SKIP_UPDATE_METADATA_PRESENT_FILES
+							!this.config.PIPELINE_SKIP_UPDATE_METADATA_PRESENT_FILES ||
+							updateNotificationReceived
 						) {
 							await this.updatemetadata(ma.arc, me.episode)
 						} else
@@ -505,8 +533,15 @@ export class PipelineController {
 						`S${ma.arc}E${String(me.episode).padStart(2, '0')} - Standard present`,
 					)
 					if (!this.config.PIPELINE_SKIP_ORGANIZE_PRESENT_FILES) {
-						await this.organizeFile(ma.arc, me.episode)
-					} else if (!this.config.PIPELINE_SKIP_UPDATE_METADATA_PRESENT_FILES) {
+						await this.organizeFile(
+							ma.arc,
+							me.episode,
+							updateNotificationReceived,
+						)
+					} else if (
+						!this.config.PIPELINE_SKIP_UPDATE_METADATA_PRESENT_FILES ||
+						updateNotificationReceived
+					) {
 						await this.updatemetadata(ma.arc, me.episode)
 					} else
 						Logger.info(

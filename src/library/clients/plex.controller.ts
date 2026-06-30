@@ -199,7 +199,14 @@ export class PlexController implements ILibraryController {
 					episode: episode.episode,
 				})
 
-				if (episode.title) await _episode.editTitle(episode.title)
+				if (episode.title) {
+					if (episode.mangaChapters)
+						await _episode.editTitle(
+							`[${episode.mangaChapters}] ${episode.title}`,
+						)
+					else await _episode.editTitle(episode.title)
+				}
+				await _episode.editSortTitle(`${episode.episode}`)
 				if (episode.description) await _episode.editSummary(episode.description)
 				if (episode.released)
 					await _episode.editOriginallyAvailableAt(
@@ -243,8 +250,21 @@ export class PlexController implements ILibraryController {
 			configurable: true,
 		})
 
-		await season.editTitle(`${arc}. ${_arc.title}`)
-		await season.editSummary(_arc.description)
+		if (arc > 0) {
+			const _arc = Context.metadata.getArc(arc)
+			if (_arc.mangaChapters)
+				await season.editTitle(`[${_arc.mangaChapters}] ${_arc.title}`)
+			else await season.editTitle(`${arc}. ${_arc.title}`)
+			await season.editSummary(`[${_arc.saga} Saga]\n${_arc.description}`)
+		} else {
+			await season.editTitle(`${_arc.title}`)
+			await season.editSummary(_arc.description)
+		}
+
+		await season.editSortTitle(`${arc}`)
+
+		const meta = Context.metadata.getShow()
+		await season.editContentRating(meta.mpaa ? meta.mpaa : meta.customRating)
 
 		if (!environment.PIPELINE_SKIP_POSTERS) {
 			Logger.debug(`Updating Season ${arc} poster in Plex...`)

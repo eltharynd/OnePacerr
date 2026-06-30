@@ -5,6 +5,7 @@ export type Metadata = {
 	description: string
 
 	genre: string[]
+	mpaa: string
 	customRating: string
 
 	arcs: ArcMetadata[]
@@ -47,10 +48,6 @@ export type EpisodeMetadata = {
 
 	title: string
 	description: string
-
-	audioLanguages: string[]
-	subLanguages: string[]
-	subLanguagesPixeldrain: string[]
 
 	mangaChapters: string
 	animeEpisodes: string
