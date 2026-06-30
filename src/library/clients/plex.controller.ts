@@ -80,7 +80,7 @@ export class PlexController implements ILibraryController {
 				episode: episode.episode,
 			})
 		} catch (e) {
-			Logger.info(
+			Logger.debug(
 				`Episode ${episode.arc}-${String(episode.episode).padStart(2, '0')} does not exists on Plex...`,
 			)
 			return null

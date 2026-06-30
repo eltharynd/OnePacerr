@@ -101,7 +101,7 @@ export class JellyfinController implements ILibraryController {
 					),
 				)
 		} catch (e) {
-			Logger.info(
+			Logger.debug(
 				`Episode ${episode.arc}-${String(episode.episode).padStart(2, '0')} does not exists on Jellyfin...`,
 			)
 			return null
