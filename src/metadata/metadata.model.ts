@@ -88,3 +88,9 @@ export class CRCNotInMetadata extends Error {
 		this.name = 'CRCNotInMetadata'
 	}
 }
+export class HashNotInMetadata extends Error {
+	constructor(message?: string, options?: { cause?: unknown }) {
+		super(message, options)
+		this.name = 'HashNotInMetadata'
+	}
+}

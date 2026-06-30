@@ -7,6 +7,7 @@ import {
 	CRCNotInMetadata,
 	EpisodeMetadata,
 	FileMetadata,
+	HashNotInMetadata,
 	MetadataAbsentError,
 } from '../metadata/metadata.model.js'
 import { Context } from '../util/context.js'
@@ -237,11 +238,32 @@ export class TorrentController {
 					.match(/\[([0-9A-F]{8})\]\.(mkv|mp4)$/i)
 				Logger.debug(`Punk Hazard 13 manual correction attempt`)
 			}
-			if (match) {
-				const CRC32 = match[1].toUpperCase()
+
+			let episode: EpisodeMetadata
+			let CRC32
+
+			if (!match) {
+				try {
+					episode = await Context.metadata.findEpisodeByHash(torrent.hash)
+					CRC32 = Context.metadata.findCRC32(episode.arc, episode.episode)
+				} catch (e) {
+					if (e instanceof MetadataAbsentError) {
+						throw e
+					} else if (e instanceof HashNotInMetadata) {
+						Logger.debug(
+							`File '${file}' is not most up to date (probably part of an outdated batch)... Skipping import`,
+						)
+						continue
+					}
+				}
+				if (!episode) {
+					Logger.error(`No CRC32 found in file name: ${file}`)
+					continue
+				}
+			} else {
+				CRC32 = match[1].toUpperCase()
 				Logger.debug(`Parsed CRC32: ${CRC32}`)
 
-				let episode: EpisodeMetadata
 				try {
 					episode = await Context.metadata.findEpisodeByCRC32(CRC32)
 				} catch (e) {
@@ -254,114 +276,112 @@ export class TorrentController {
 						continue
 					}
 				}
+			}
 
-				if (!Filter(episode)) {
-					Logger.debug(
-						`File for S${String(episode.arc).padStart(2, '0')}E${String(episode.episode).padStart(2, '0')} skipped due to filters...`,
-					)
-					continue
-				}
-
-				let targetCRC32 = await Context.metadata.findCRC32(
-					episode.arc,
-					episode.episode,
+			if (!Filter(episode)) {
+				Logger.debug(
+					`File for S${String(episode.arc).padStart(2, '0')}E${String(episode.episode).padStart(2, '0')} skipped due to filters...`,
 				)
+				continue
+			}
 
-				if (targetCRC32 != CRC32) {
-					Logger.debug(
-						`File '${file}' is not most up to date (probably part of an outdated batch)... Skipping import`,
-					)
-					continue
-				}
+			let targetCRC32 = await Context.metadata.findCRC32(
+				episode.arc,
+				episode.episode,
+			)
 
-				let targetLibraryFile: TargetLibraryFile =
-					await Context.library.getTargetLibraryEpisodeFile(episode)
+			if (targetCRC32 != CRC32) {
+				Logger.debug(
+					`File '${file}' is not most up to date (probably part of an outdated batch)... Skipping import`,
+				)
+				continue
+			}
 
-				let previousLibraryFileName
+			let targetLibraryFile: TargetLibraryFile =
+				await Context.library.getTargetLibraryEpisodeFile(episode)
 
-				try {
-					let existingLibraryFiles = readdirSync(
-						path.resolve(
-							targetLibraryFile.path.replace(
-								environment.MOUNT_LIBRARY_MEDIA_SERVER,
-								environment.MOUNT_LIBRARY_ONEPACERR,
-							),
+			let previousLibraryFileName
+
+			try {
+				let existingLibraryFiles = readdirSync(
+					path.resolve(
+						targetLibraryFile.path.replace(
+							environment.MOUNT_LIBRARY_MEDIA_SERVER,
+							environment.MOUNT_LIBRARY_ONEPACERR,
 						),
-					)
-					for (let existingFile of existingLibraryFiles.filter(
-						f => f.endsWith('.mkv') || f.endsWith('.mp4'),
-					)) {
-						let episodeNumber = existingFile
-							.replace(/^.+S[0-9][0-9]E/, '')
-							.replace(/\ .+$/, '')
-						if (Number.parseInt(episodeNumber) == episode.episode) {
-							previousLibraryFileName = existingFile
-						}
-					}
-				} catch (e) {
-					Logger.debug('File did not exist on Media Server...')
-				}
-
-				const source = file
-				const destinationFolder = path.resolve(
-					targetLibraryFile.path.replace(
-						environment.MOUNT_LIBRARY_MEDIA_SERVER,
-						environment.MOUNT_LIBRARY_ONEPACERR,
 					),
 				)
-				const destination = path.resolve(
-					destinationFolder,
-					targetLibraryFile.filename,
-				)
+				for (let existingFile of existingLibraryFiles.filter(
+					f => f.endsWith('.mkv') || f.endsWith('.mp4'),
+				)) {
+					let episodeNumber = existingFile
+						.replace(/^.+S[0-9][0-9]E/, '')
+						.replace(/\ .+$/, '')
+					if (Number.parseInt(episodeNumber) == episode.episode) {
+						previousLibraryFileName = existingFile
+					}
+				}
+			} catch (e) {
+				Logger.debug('File did not exist on Media Server...')
+			}
+
+			const source = file
+			const destinationFolder = path.resolve(
+				targetLibraryFile.path.replace(
+					environment.MOUNT_LIBRARY_MEDIA_SERVER,
+					environment.MOUNT_LIBRARY_ONEPACERR,
+				),
+			)
+			const destination = path.resolve(
+				destinationFolder,
+				targetLibraryFile.filename,
+			)
+
+			Logger.debug(
+				`File for S${String(episode.arc).padStart(2, '0')}-${String(episode.episode).padStart(2, '0')} detected`,
+			)
+			if (!environment.PIPELINE_SKIP_DOWNLOADS_IMPORTS) {
+				if (previousLibraryFileName) {
+					const toDelete = path.resolve(
+						`${targetLibraryFile.path}${previousLibraryFileName}`.replaceAll(
+							environment.MOUNT_LIBRARY_MEDIA_SERVER,
+							environment.MOUNT_LIBRARY_ONEPACERR,
+						),
+					)
+					try {
+						unlinkSync(toDelete)
+						Logger.debug(
+							`Pre-existing file for S${String(episode.arc).padStart(2, '0')}-${String(episode.episode).padStart(2, '0')} deleted`,
+						)
+					} catch (e) {
+						Logger.error(
+							`Couldn't delete '${previousLibraryFileName}', it probably has been deleted already but Media Server didn't scan the library...`,
+						)
+					}
+				}
 
 				Logger.debug(
-					`File for S${String(episode.arc).padStart(2, '0')}-${String(episode.episode).padStart(2, '0')} detected`,
+					`Copying file for S${String(episode.arc).padStart(2, '0')}-${String(episode.episode).padStart(2, '0')}`,
 				)
-				if (!environment.PIPELINE_SKIP_DOWNLOADS_IMPORTS) {
-					if (previousLibraryFileName) {
-						const toDelete = path.resolve(
-							`${targetLibraryFile.path}${previousLibraryFileName}`.replaceAll(
-								environment.MOUNT_LIBRARY_MEDIA_SERVER,
-								environment.MOUNT_LIBRARY_ONEPACERR,
-							),
-						)
-						try {
-							unlinkSync(toDelete)
-							Logger.debug(
-								`Pre-existing file for S${String(episode.arc).padStart(2, '0')}-${String(episode.episode).padStart(2, '0')} deleted`,
-							)
-						} catch (e) {
-							Logger.error(
-								`Couldn't delete '${previousLibraryFileName}', it probably has been deleted already but Media Server didn't scan the library...`,
-							)
-						}
-					}
 
-					Logger.debug(
-						`Copying file for S${String(episode.arc).padStart(2, '0')}-${String(episode.episode).padStart(2, '0')}`,
-					)
+				mkdirSync(destinationFolder, {
+					recursive: true,
+				})
 
-					mkdirSync(destinationFolder, {
-						recursive: true,
-					})
+				await safeCopyFileSync(source, destination)
 
-					await safeCopyFileSync(source, destination)
-
-					Logger.info(
-						`File for S${String(episode.arc).padStart(2, '0')}-${String(episode.episode).padStart(2, '0')} imported successfully`,
-					)
-					await Context.pipeline.updatemetadata(
-						episode.arc,
-						episode.episode,
-						true,
-					)
-				} else {
-					Logger.info(
-						`File for S${String(episode.arc).padStart(2, '0')}-${String(episode.episode).padStart(2, '0')} skipped due to 'PIPELINE_SKIP_DOWNLOADS_IMPORTS'...`,
-					)
-				}
+				Logger.info(
+					`File for S${String(episode.arc).padStart(2, '0')}-${String(episode.episode).padStart(2, '0')} imported successfully`,
+				)
+				await Context.pipeline.updatemetadata(
+					episode.arc,
+					episode.episode,
+					true,
+				)
 			} else {
-				Logger.error(`No CRC32 found in file name: ${file}`)
+				Logger.info(
+					`File for S${String(episode.arc).padStart(2, '0')}-${String(episode.episode).padStart(2, '0')} skipped due to 'PIPELINE_SKIP_DOWNLOADS_IMPORTS'...`,
+				)
 			}
 		}
 

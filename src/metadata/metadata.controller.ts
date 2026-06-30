@@ -11,6 +11,7 @@ import {
 	ArcMetadata,
 	CRCNotInMetadata,
 	EpisodeMetadata,
+	HashNotInMetadata,
 	Metadata,
 	MetadataAbsentError,
 } from './metadata.model.js'
@@ -183,6 +184,28 @@ export class MetadataController {
 		})
 
 		if (!_found) throw new CRCNotInMetadata(`CRC32 ${CRC32} not in metadata...`)
+		else return _found.episodes[0]
+	}
+
+	findEpisodeByHash(hash: string) {
+		this.checkMetadataDownloaded()
+
+		let _found = structuredClone(this.metadata).arcs.find(a => {
+			const _found = a.episodes.find(
+				e =>
+					e.files?.standard?.hash == hash ||
+					e.files?.extended?.hash == hash ||
+					e.files?.alternate?.hash == hash ||
+					!!e.files?.archived?.find(a => a.hash == hash),
+			)
+			if (_found) {
+				a.episodes = [_found]
+				return true
+			}
+			return false
+		})
+
+		if (!_found) throw new HashNotInMetadata(`hash ${hash} not in metadata...`)
 		else return _found.episodes[0]
 	}
 
