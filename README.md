@@ -17,7 +17,7 @@ episodes fully up to date both on your disk, and on your Media Server of chosing
 
 Other than organizing your episode files, it also updates metadata and posters so that it looks nice and professional on your Media Server.
 
-It supports the most popular torrenting clients (qBittorrent, deluge and µTorrent) and the most popular Media Servers (Plex, Jellyfin, Emby), or it can even be used without a torrenting client or a Media Server at all.
+It supports the most popular torrenting clients (qBittorrent, deluge, µTorrent and transmission) and the most popular Media Servers (Plex, Jellyfin, Emby), or it can even be used without a torrenting client or a Media Server at all.
 
 Also check [One Pace public API](https://github.com/eltharynd/one-pace-api).
 
