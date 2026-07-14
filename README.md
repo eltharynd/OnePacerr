@@ -522,6 +522,7 @@ This project wouldn't be possible without the incredible work of the community:
 - **[One Pace](https://onepace.net/en):** The incredible team behind the unofficial fan edits.
 - For the custom poster artwork sets:
   - `piratezekk` (default) by **[/u/piratezekk](https://reddit.com/user/piratezekk)**.
+    - Name spelling normalization by **[@3](https://discord.com/invite/pacing)** from One Pace's Discord.
   - `mizzoufan523` by **[/u/Mizzoufan523](https://reddit.com/user/Mizzoufan523)**.
   - `official` by **[One Pace's Team](https://onepace.net/en)**
 - [One Pace public API](https://github.com/eltharynd/one-pace-api)
