@@ -229,8 +229,10 @@ export class TorrentController {
 			}
 		}
 
+		let processed = false
+
 		for (let file of files) {
-			let match = file.match(/\[([0-9A-F]{8})\]\.mkv$/i)
+			let match = file.match(/\[([0-9A-F]{8})\]\.(mkv|mp4)$/i)
 
 			if (!match && file.includes('316829437')) {
 				match = file
@@ -283,7 +285,7 @@ export class TorrentController {
 					`File for S${String(episode.arc).padStart(2, '0')}E${String(episode.episode).padStart(2, '0')} skipped due to filters...`,
 				)
 				continue
-			}
+			} else processed = true
 
 			let targetCRC32 = await Context.metadata.findCRC32(
 				episode.arc,
@@ -385,9 +387,10 @@ export class TorrentController {
 			}
 		}
 
-		await this.client.updateTorrentCategory(
-			torrent,
-			environment.TORRENT_CATEGORY_ONCE_COMPLETED,
-		)
+		if (processed)
+			await this.client.updateTorrentCategory(
+				torrent,
+				environment.TORRENT_CATEGORY_ONCE_COMPLETED,
+			)
 	}
 }
