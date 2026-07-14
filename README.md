@@ -40,7 +40,7 @@ Not affiliated with One Pace's team.
 
 *Requires [Node](https://nodejs.org/en/download) installed
 
-![Docker](docs/supported_os/node.png)
+[![Nodejs](docs/supported_os/node.png)](https://nodejs.org/en/download)
 
 ## 📃 Table of Contents
 
