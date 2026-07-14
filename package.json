@@ -1,6 +1,6 @@
 {
 	"name": "OnePacerr",
-	"version": "1.7.15",
+	"version": "1.7.16",
 	"description": "",
 	"main": "dist/index.js",
 	"type": "module",
