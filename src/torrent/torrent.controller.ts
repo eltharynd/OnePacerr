@@ -12,6 +12,7 @@ import {
 } from '../metadata/metadata.model.js'
 import { Context } from '../util/context.js'
 import { Filter } from '../util/filters.js'
+import linkOrCopyFile from '../util/link-or-copy.js'
 import safeCopyFileSync from '../util/safe-copy-file.js'
 import { DelugeController } from './clients/deluge.controller.js'
 import { qBittorrentController } from './clients/qbittorrent.controller.js'
@@ -370,7 +371,9 @@ export class TorrentController {
 					recursive: true,
 				})
 
-				await safeCopyFileSync(source, destination)
+				if (environment.LIBRARY_USE_HARDLINKS)
+					await linkOrCopyFile(source, destination)
+				else await safeCopyFileSync(source, destination)
 
 				Logger.info(
 					`File for S${String(episode.arc).padStart(2, '0')}-${String(episode.episode).padStart(2, '0')} imported successfully`,
