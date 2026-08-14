@@ -390,7 +390,7 @@ In order for an episode to be Monitored (processed/downloaded/updated/etc), it h
 | `LIBRARY_SERIES_FOLDER_NAME` | `$LIBRARY_SERIES_NAME` | Override if Media Server folder needs to be called differently from `LIBRARY_SERIES_NAME`. |
 | `LIBRARY_FILENAME_FORMAT` | `{SERIES_NAME} - S{ARC}E{EPISODE} - {TITLE}.mkv` | Overrides the filename each file should have, `{SERIES_NAME}`, `{ARC}`, `{EPISODE}` and `{TITLE}` will be replaced with values. `.mkv` automatically added if not specified. |
 | `LIBRARY_CREATE_SHOW_IF_NOT_FOUND` | `true` | If `false`, the app crashes if "LIBRARY_SERIES_NAME" isn't already a Show in your Media Server (useful for catching typos on first setup). Leave `true` to auto-create the show. |
-| `LIBRARY_USE_HARDLINKS` | `true` | If `true`, imports create a hardlink instead of copying, so the file only takes up space once and the torrent keeps seeding. Falls back to copying when the download and library folders are on different filesystems, which under Docker means anything not inside the same volume mount. |
+| `LIBRARY_USE_HARDLINKS` | `true` | If `true`, imports create a hardlink instead of copying, so the file only takes up space once and the torrent keeps seeding, and library renames move the file instead of copying it. Falls back to copying when the download and library folders are on different filesystems, which under Docker means anything not inside the same volume mount. Set to `false` to keep the previous copy behaviour. |
 
 ---
 

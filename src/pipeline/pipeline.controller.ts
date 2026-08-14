@@ -9,6 +9,7 @@ import { QueueDownloadResult } from '../torrent/torrent.model.js'
 import { Context } from '../util/context.js'
 import getFileCrc32Hash from '../util/crc32.js'
 import moveFile from '../util/move-file.js'
+import safeCopyFileSync from '../util/safe-copy-file.js'
 import {
 	NoActivePipelineError,
 	PipelineControllerConfig,
@@ -322,10 +323,13 @@ export class PipelineController {
 				)
 			})
 
-			await moveFile(serverFile, targetFile)
+			if (environment.LIBRARY_USE_HARDLINKS)
+				await moveFile(serverFile, targetFile)
+			else await safeCopyFileSync(serverFile, targetFile)
 
 			await Context.library.scanLibrary(targetLibraryFile.path, arc)
 
+			if (!environment.LIBRARY_USE_HARDLINKS) unlinkSync(serverFile)
 			if (trashFiles.length > 0)
 				Logger.info(
 					`S${arc}E${String(episode).padStart(2, '0')}${Context?.pipeline?.getReport()?.percentageString()} - Cleaning ${trashFiles.length} trash files...`,
