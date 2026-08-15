@@ -516,7 +516,7 @@ The following diagram synthesizes the pipeline:
 
 - [X] **Support uTorrent** since [v1.7.5](https://github.com/eltharynd/OnePacerr/releases/tag/v1.7.5)
 - [X] **Support Transmission** since [v1.7.5](https://github.com/eltharynd/OnePacerr/releases/tag/v1.7.5)
-- [X] **Support hard/softlinks** Thanks to Rasbandit #25
+- [X] **Support hard/softlinks** Thanks to Rasbandit [#25](https://github.com/eltharynd/OnePacerr/pull/25)
 - [ ] **Docusaurus** documentation
 - [ ] **Rest API** Manual execution/status/configuration endpoints
 - [ ] **Support Libraries with multiple folders** (currently only gets the first result from API)
