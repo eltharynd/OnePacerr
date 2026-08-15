@@ -1,4 +1,12 @@
-import { existsSync, mkdtempSync, readFileSync, rmSync, statSync, unlinkSync, writeFileSync } from 'node:fs'
+import {
+	existsSync,
+	mkdtempSync,
+	readFileSync,
+	rmSync,
+	statSync,
+	unlinkSync,
+	writeFileSync,
+} from 'node:fs'
 import { rename } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import path from 'node:path'
@@ -85,8 +93,7 @@ describe('Move file', () => {
 })
 
 async function linkForTest(from: string, to: string) {
-	let { link } = await vi.importActual<typeof import('node:fs/promises')>(
-		'node:fs/promises',
-	)
+	let { link } =
+		await vi.importActual<typeof import('node:fs/promises')>('node:fs/promises')
 	await link(from, to)
 }
