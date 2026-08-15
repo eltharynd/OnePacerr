@@ -1,17 +1,21 @@
+import { Logger } from 'ez-ts-logger'
 import { HttpError } from 'routing-controllers'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import Logger from '../../util/logger.ts'
 import { InternalServerErrorResponse } from '../interceptors/default.interceptor.ts'
 import { HttpErrorHandler } from './error.middleware.ts'
 
 //Gemini generated, check
 
 // 1. Mock External Dependencies
-vi.mock('../../util/logger.js', () => ({
-	default: {
+vi.mock('ez-ts-logger', () => ({
+	Logger: {
 		error: vi.fn(),
+		warn: vi.fn(),
+		debug: vi.fn(),
+		info: vi.fn(),
 	},
 }))
+const LoggerMock = Logger as any
 
 vi.mock('../interceptors/default.interceptor.js', () => ({
 	InternalServerErrorResponse: class {
@@ -91,13 +95,13 @@ describe('HttpErrorHandler', () => {
 		expect(mockRes.on).toHaveBeenCalledWith('finish', expect.any(Function))
 
 		// Logger should NOT be called yet because the finish event hasn't fired
-		expect(Logger.error).not.toHaveBeenCalled()
+		expect(LoggerMock.error).not.toHaveBeenCalled()
 
 		// Manually trigger the 'finish' event callback
 		if (finishCallback) finishCallback()
 
 		// Assert that logging occurs post-response finish
-		expect(Logger.error).toHaveBeenCalledWith(
+		expect(LoggerMock.error).toHaveBeenCalledWith(
 			expect.any(InternalServerErrorResponse),
 		)
 		expect(mockNext).not.toHaveBeenCalled()

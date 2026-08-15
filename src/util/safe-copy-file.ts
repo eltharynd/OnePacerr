@@ -17,7 +17,7 @@ export default function safeCopyFileSync(source: string, destination: string) {
 					Logger.error(`Error deleting '${destination}'`)
 					Logger.error(ee)
 				}
-				reject()
+				reject(e)
 			})
 	})
 }
