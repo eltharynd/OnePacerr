@@ -392,6 +392,13 @@ In order for an episode to be Monitored (processed/downloaded/updated/etc), it h
 | `LIBRARY_CREATE_SHOW_IF_NOT_FOUND` | `true` | If `false`, the app crashes if "LIBRARY_SERIES_NAME" isn't already a Show in your Media Server (useful for catching typos on first setup). Leave `true` to auto-create the show. |
 | `LIBRARY_USE_HARDLINKS` | `false` | If `true`, imports create a hardlink instead of copying, so the file only takes up space once and the torrent keeps seeding, and library renames move the file instead of copying it. Falls back to copying when the download and library folders are on different filesystems, which under Docker means anything not inside the same volume mount. Defaults to `false` (copy), which preserves the previous behaviour; set to `true` to enable hardlinks. |
 
+> [!IMPORTANT]
+> Concerning Hard Links
+>
+> In short, hard links is a way to copy a file (in this case from download folder to library folder) instantaneously and without taking double the space on your disk. There are limitations, however, the most important is that the two folders have to live on the same drive. Only turn on if you know what your doing.
+>
+> Read more about it on [trash guides](https://trash-guides.info/File-and-Folder-Structure/Hardlinks-and-Instant-Moves/).
+
 ---
 
 ### 📂 Library (Local Folder)
