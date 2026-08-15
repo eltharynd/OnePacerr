@@ -1,19 +1,20 @@
+import { Logger } from 'ez-ts-logger'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import environment from '../../environment.ts'
-import Logger from '../../util/logger.ts'
 import { LoggerMiddleware } from './logger.middleware.ts'
 
 //Gemini generated, check
 
 // 1. Mock External Dependencies
-vi.mock('../../util/logger.js', () => ({
-	default: {
+vi.mock('ez-ts-logger', () => ({
+	Logger: {
 		error: vi.fn(),
 		warn: vi.fn(),
 		debug: vi.fn(),
 		info: vi.fn(),
 	},
 }))
+const LoggerMock = Logger as any
 
 vi.mock('../../environment.js', () => ({
 	default: {
@@ -86,7 +87,7 @@ describe('LoggerMiddleware', () => {
 		// Trigger the response finish event
 		if (finishCallback) finishCallback()
 
-		expect(Logger.error).toHaveBeenCalledWith(
+		expect(LoggerMock.error).toHaveBeenCalledWith(
 			'[503] POST {internal}/api/v1/submit (from: 127.0.0.1, resolved in 1.500s)',
 		)
 		expect(mockNext).toHaveBeenCalled()
@@ -105,7 +106,7 @@ describe('LoggerMiddleware', () => {
 		vi.advanceTimersByTime(250)
 		if (finishCallback) finishCallback()
 
-		expect(Logger.warn).toHaveBeenCalledWith(
+		expect(LoggerMock.warn).toHaveBeenCalledWith(
 			'[404] GET {internal}/api/v1/resource (from: 127.0.0.1, resolved in 0.250s)',
 		)
 	})
@@ -124,7 +125,7 @@ describe('LoggerMiddleware', () => {
 		vi.advanceTimersByTime(5)
 		if (finishCallback) finishCallback()
 
-		expect(Logger.debug).toHaveBeenCalledWith(
+		expect(LoggerMock.debug).toHaveBeenCalledWith(
 			'[200] GET {internal}/api/v1/healthz (from: 127.0.0.1, resolved in 0.005s)',
 		)
 	})
@@ -142,7 +143,7 @@ describe('LoggerMiddleware', () => {
 		vi.advanceTimersByTime(1234)
 		if (finishCallback) finishCallback()
 
-		expect(Logger.info).toHaveBeenCalledWith(
+		expect(LoggerMock.info).toHaveBeenCalledWith(
 			'[200] GET {internal}/api/v1/resource (from: 127.0.0.1, resolved in 1.234s)',
 		)
 	})
@@ -162,7 +163,7 @@ describe('LoggerMiddleware', () => {
 		vi.advanceTimersByTime(0)
 		if (finishCallback) finishCallback()
 
-		expect(Logger.info).toHaveBeenCalledWith(
+		expect(LoggerMock.info).toHaveBeenCalledWith(
 			'[200] GET {internal}/api/v1/resource (from: unknown, resolved in 0.000s)',
 		)
 	})
