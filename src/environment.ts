@@ -99,7 +99,7 @@ export default {
 		process.env.LIBRARY_CREATE_SHOW_IF_NOT_FOUND || 'true',
 	),
 	LIBRARY_USE_HARDLINKS: /true/i.test(
-		process.env.LIBRARY_USE_HARDLINKS || 'true',
+		process.env.LIBRARY_USE_HARDLINKS || 'false',
 	),
 
 	/**
