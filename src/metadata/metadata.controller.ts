@@ -138,10 +138,8 @@ export class MetadataController {
 
 				const diffs = deepDiff(episode, existingEpisode)
 				for (let d of diffs) {
-					if (d.path != 'updates') {
-						episode.updates = true
-						break
-					}
+					if (d.path.startsWith('files')) episode.fileUpdates = true
+					if (d.path != 'updates') episode.updates = true
 				}
 			}
 		}

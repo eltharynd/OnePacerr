@@ -346,6 +346,7 @@ export class PipelineController {
 		} else {
 			if (
 				!this.config.PIPELINE_SKIP_UPDATE_METADATA_PRESENT_FILES ||
+				_episode.updates ||
 				updateNotificationReceived
 			) {
 				Logger.debug(
@@ -404,7 +405,7 @@ export class PipelineController {
 
 		let file = await Context.library.getExistingLibraryEpisodeFile(_episode)
 		if (file) {
-			if (skipVerification && !me.updates) {
+			if (skipVerification && !me.fileUpdates) {
 				Logger.debug(
 					`S${ma.arc}E${String(me.episode).padStart(2, '0')}${Context?.pipeline?.getReport()?.percentageString()} - Present`,
 				)
@@ -416,6 +417,7 @@ export class PipelineController {
 					)
 				} else if (
 					!this.config.PIPELINE_SKIP_UPDATE_METADATA_PRESENT_FILES ||
+					me.updates ||
 					updateNotificationReceived
 				) {
 					await this.updatemetadata(ma.arc, me.episode)
