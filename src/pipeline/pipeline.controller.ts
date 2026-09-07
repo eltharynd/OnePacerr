@@ -404,7 +404,7 @@ export class PipelineController {
 
 		let file = await Context.library.getExistingLibraryEpisodeFile(_episode)
 		if (file) {
-			if (skipVerification) {
+			if (skipVerification && !me.updates) {
 				Logger.debug(
 					`S${ma.arc}E${String(me.episode).padStart(2, '0')}${Context?.pipeline?.getReport()?.percentageString()} - Present`,
 				)

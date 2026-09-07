@@ -4,6 +4,7 @@ import { io, Socket } from 'socket.io-client'
 import { js2xml } from 'xml-js'
 import environment from '../environment.js'
 import { Context } from '../util/context.js'
+import { deepDiff } from '../util/diff.js'
 import { Filter } from '../util/filters.js'
 import resolveSeasonPosterFileName from '../util/resolve-season-poster-filename.js'
 import resolveSeriesRootFolder from '../util/resolve-series-root-folder.js'
@@ -18,7 +19,7 @@ import {
 
 export class MetadataController {
 	private metadata: Metadata
-	private newMetadata: boolean = false
+	private unprocessedMetadata: boolean = false
 	private firstRun: boolean = true
 
 	private socket: Socket
@@ -33,13 +34,16 @@ export class MetadataController {
 		Logger.info(`Refreshing Metadata...`)
 
 		try {
-			let metadata = (await axios.get(`${environment.METADATA_URL}/metadata`))
-				.data
+			let newMetadata = (
+				await axios.get(`${environment.METADATA_URL}/metadata`)
+			).data
 
-			if (!this.metadata || metadata.lastUpdate > this.metadata.lastUpdate) {
+			if (!this.metadata || newMetadata.lastUpdate > this.metadata.lastUpdate) {
 				Logger.info(`Newer Metadata found!`)
-				this.metadata = metadata
-				this.newMetadata = true
+				this.metadata = this.metadata
+					? this.compareChanges(newMetadata)
+					: newMetadata
+				this.unprocessedMetadata = true
 			}
 		} catch (e) {
 			Logger.error(`Error refreshing Metadata, will retry...`)
@@ -47,8 +51,8 @@ export class MetadataController {
 		}
 
 		try {
-			if (this.newMetadata) await this.sendToPipeline()
-			this.newMetadata = false
+			if (this.unprocessedMetadata) await this.sendToPipeline()
+			this.unprocessedMetadata = false
 		} catch (e: any) {
 			Logger.error(
 				`Unexpected error encountered when sending monitored episodes to pipeline: '${e.message}'`,
@@ -66,7 +70,9 @@ export class MetadataController {
 				if (!this.socket) {
 					Logger.debug(`Connecting WebSocket`)
 
-					this.socket = io('https://onepacerr.com', { timeout: 1000 })
+					this.socket = io(environment.METADATA_URL.replace(`/api/v1`, ''), {
+						timeout: 1000,
+					})
 
 					const timeout = setTimeout(() => {
 						if (!this.socket?.connected) {
@@ -100,14 +106,46 @@ export class MetadataController {
 
 					this.socket.on('updates', async data => {
 						Logger.info(`Metadata updates received! Processing...`)
-						this.metadata = (
+						const newMetadata = (
 							await axios.get(`${environment.METADATA_URL}/metadata`)
 						).data
+						this.metadata = this.compareChanges(newMetadata)
 						await this.sendToPipeline(true)
 					})
 				}
 			}
 		}
+	}
+
+	compareChanges(newMetadata: Metadata): Metadata {
+		if (!this.metadata) return newMetadata
+
+		for (let arc of newMetadata.arcs) {
+			const existingArc = this.metadata.arcs.find(a => arc.arc == a.arc)
+			for (let episode of arc.episodes) {
+				if (!existingArc) {
+					episode.updates = true
+					continue
+				}
+
+				const existingEpisode = existingArc.episodes.find(
+					e => episode.episode == e.episode,
+				)
+				if (!existingEpisode) {
+					episode.updates = true
+					continue
+				}
+
+				const diffs = deepDiff(episode, existingEpisode)
+				for (let d of diffs) {
+					if (d.path != 'updates') {
+						episode.updates = true
+						break
+					}
+				}
+			}
+		}
+		return newMetadata
 	}
 
 	getMonitored(): ArcMetadata[] {

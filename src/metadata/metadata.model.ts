@@ -54,6 +54,8 @@ export type EpisodeMetadata = {
 
 	released: string
 
+	updates?: boolean
+
 	files: EpisodeFilesMetadata
 }
 
