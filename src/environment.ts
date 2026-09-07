@@ -69,6 +69,10 @@ export default {
 			'false',
 	),
 
+	PIPELINE_SKIP_SUPPLEMENTS: /true/i.test(
+		process.env.PIPELINE_SKIP_SUPPLEMENTS || 'false',
+	),
+
 	PIPELINE_FILTERS_INCLUDE:
 		process.env.PIPELINE_FILTERS_INCLUDE || process.env.FILTERS_INCLUDE || '',
 	PIPELINE_FILTERS_EXCLUDE: process.env.PIPELINE_FILTERS_EXCLUDE || '',
