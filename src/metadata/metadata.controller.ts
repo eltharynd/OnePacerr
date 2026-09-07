@@ -269,7 +269,7 @@ export class MetadataController {
 		this.checkMetadataDownloaded()
 
 		if (Context.pipeline.isRunning()) await Context.pipeline.waitForFinished()
-		Context.pipeline.create()
+		Context.pipeline.create(this.firstRun)
 
 		Logger.info(`Generating monitored episodes list...`)
 		await this.generateMonitored()

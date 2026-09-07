@@ -25,7 +25,12 @@ export class PipelineReport {
 	processedEpisodes: number = 0
 	monitoredEpisodes: number = 0
 	status: PipelineStatus = 'PRE'
+	firstRun?: boolean
 	error?: string
+
+	constructor(firstRun?: boolean) {
+		this.firstRun = firstRun
+	}
 
 	percentageString(): string {
 		if (this.monitoredEpisodes < 1) return ''

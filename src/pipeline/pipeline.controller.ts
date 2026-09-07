@@ -56,7 +56,7 @@ export class PipelineController {
 		})
 	}
 
-	create() {
+	create(firstRun?: boolean) {
 		if (this.report?.status) {
 			switch (this.report.status) {
 				case 'PRE':
@@ -73,7 +73,7 @@ export class PipelineController {
 			}
 		} else {
 			Logger.info(`Creating pipeline...`)
-			this.report = new PipelineReport()
+			this.report = new PipelineReport(firstRun)
 			this.eventEmitter.emit('pre')
 		}
 	}
@@ -191,6 +191,10 @@ export class PipelineController {
 			Logger.warn(``)
 		} else {
 			Logger.info(``)
+			Logger.info(`##################################`)
+			Logger.info(`####                          ####`)
+			Logger.info(`####      PIPELINE DONE       ####`)
+			Logger.info(`####                          ####`)
 			Logger.info(`##################################`)
 			Logger.info(``)
 		}
@@ -361,6 +365,13 @@ export class PipelineController {
 		Logger.debug(
 			`S${ma.arc}E${String(me.episode).padStart(2, '0')}${Context?.pipeline?.getReport()?.percentageString()} - Processing`,
 		)
+
+		if (!this.report.firstRun && !me.updates && !me.fileUpdates) {
+			Logger.debug(
+				`S${ma.arc}E${String(me.episode).padStart(2, '0')}${Context?.pipeline?.getReport()?.percentageString()} - Skipped because no upodates were sent...`,
+			)
+			return
+		}
 
 		const skipVerification =
 			this.config.PIPELINE_SKIP_VERIFY_PRESENT_FILES &&
