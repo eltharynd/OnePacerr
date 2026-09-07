@@ -92,7 +92,7 @@ export class PipelineController {
 		this.report.status = 'READY'
 	}
 
-	async start(updateNotificationReceived?: boolean) {
+	async start() {
 		if (!this.report || this.report.status != 'READY') {
 			throw new PipelineNotReadyError('Pipeline not ready')
 		}
@@ -119,7 +119,7 @@ export class PipelineController {
 		for (let ma of this.report.monitored) {
 			for (let me of ma.episodes) {
 				try {
-					await this.process(ma, me, updateNotificationReceived)
+					await this.process(ma, me)
 					successfull.push({ arc: ma.arc, episode: me.episode })
 				} catch (e: any) {
 					Logger.error(
@@ -262,11 +262,7 @@ export class PipelineController {
 		}
 	}
 
-	private async organizeFile(
-		arc: number,
-		episode: number,
-		updateNotificationReceived?: boolean,
-	) {
+	private async organizeFile(arc: number, episode: number) {
 		Context.metadata.checkMetadataDownloaded()
 		Logger.debug(
 			`S${arc}E${String(episode).padStart(2, '0')}${Context?.pipeline?.getReport()?.percentageString()} - Verifying path format...`,
@@ -346,8 +342,7 @@ export class PipelineController {
 		} else {
 			if (
 				!this.config.PIPELINE_SKIP_UPDATE_METADATA_PRESENT_FILES ||
-				_episode.updates ||
-				updateNotificationReceived
+				_episode.updates
 			) {
 				Logger.debug(
 					`S${arc}E${String(episode).padStart(2, '0')}${Context?.pipeline?.getReport()?.percentageString()} - Correctly formatted...`,
@@ -361,11 +356,7 @@ export class PipelineController {
 		}
 	}
 
-	private async process(
-		ma: ArcMetadata,
-		me: EpisodeMetadata,
-		updateNotificationReceived?: boolean,
-	) {
+	private async process(ma: ArcMetadata, me: EpisodeMetadata) {
 		this.report.processedEpisodes++
 		Logger.debug(
 			`S${ma.arc}E${String(me.episode).padStart(2, '0')}${Context?.pipeline?.getReport()?.percentageString()} - Processing`,
@@ -410,15 +401,10 @@ export class PipelineController {
 					`S${ma.arc}E${String(me.episode).padStart(2, '0')}${Context?.pipeline?.getReport()?.percentageString()} - Present`,
 				)
 				if (!this.config.PIPELINE_SKIP_ORGANIZE_PRESENT_FILES) {
-					await this.organizeFile(
-						ma.arc,
-						me.episode,
-						updateNotificationReceived,
-					)
+					await this.organizeFile(ma.arc, me.episode)
 				} else if (
 					!this.config.PIPELINE_SKIP_UPDATE_METADATA_PRESENT_FILES ||
-					me.updates ||
-					updateNotificationReceived
+					me.updates
 				) {
 					await this.updatemetadata(ma.arc, me.episode)
 				} else {
@@ -451,14 +437,9 @@ export class PipelineController {
 							`S${ma.arc}E${String(me.episode).padStart(2, '0')}${Context?.pipeline?.getReport()?.percentageString()} - Extended present`,
 						)
 						if (!this.config.PIPELINE_SKIP_ORGANIZE_PRESENT_FILES) {
-							await this.organizeFile(
-								ma.arc,
-								me.episode,
-								updateNotificationReceived,
-							)
+							await this.organizeFile(ma.arc, me.episode)
 						} else if (
-							!this.config.PIPELINE_SKIP_UPDATE_METADATA_PRESENT_FILES ||
-							updateNotificationReceived
+							!this.config.PIPELINE_SKIP_UPDATE_METADATA_PRESENT_FILES
 						) {
 							await this.updatemetadata(ma.arc, me.episode)
 						} else
@@ -498,14 +479,9 @@ export class PipelineController {
 							`S${ma.arc}E${String(me.episode).padStart(2, '0')}${Context?.pipeline?.getReport()?.percentageString()} - Standard present`,
 						)
 						if (!this.config.PIPELINE_SKIP_ORGANIZE_PRESENT_FILES) {
-							await this.organizeFile(
-								ma.arc,
-								me.episode,
-								updateNotificationReceived,
-							)
+							await this.organizeFile(ma.arc, me.episode)
 						} else if (
-							!this.config.PIPELINE_SKIP_UPDATE_METADATA_PRESENT_FILES ||
-							updateNotificationReceived
+							!this.config.PIPELINE_SKIP_UPDATE_METADATA_PRESENT_FILES
 						) {
 							await this.updatemetadata(ma.arc, me.episode)
 						} else
@@ -538,15 +514,8 @@ export class PipelineController {
 						`S${ma.arc}E${String(me.episode).padStart(2, '0')}${Context?.pipeline?.getReport()?.percentageString()} - Standard present`,
 					)
 					if (!this.config.PIPELINE_SKIP_ORGANIZE_PRESENT_FILES) {
-						await this.organizeFile(
-							ma.arc,
-							me.episode,
-							updateNotificationReceived,
-						)
-					} else if (
-						!this.config.PIPELINE_SKIP_UPDATE_METADATA_PRESENT_FILES ||
-						updateNotificationReceived
-					) {
+						await this.organizeFile(ma.arc, me.episode)
+					} else if (!this.config.PIPELINE_SKIP_UPDATE_METADATA_PRESENT_FILES) {
 						await this.updatemetadata(ma.arc, me.episode)
 					} else
 						Logger.info(

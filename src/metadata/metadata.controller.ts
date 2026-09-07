@@ -110,7 +110,7 @@ export class MetadataController {
 							await axios.get(`${environment.METADATA_URL}/metadata`)
 						).data
 						this.metadata = this.compareChanges(newMetadata)
-						await this.sendToPipeline(true)
+						await this.sendToPipeline()
 					})
 				}
 			}
@@ -262,7 +262,7 @@ export class MetadataController {
 		return base
 	}
 
-	private async sendToPipeline(updateNotificationReceived?: boolean) {
+	private async sendToPipeline() {
 		this.checkMetadataDownloaded()
 
 		if (Context.pipeline.isRunning()) await Context.pipeline.waitForFinished()
@@ -279,7 +279,7 @@ export class MetadataController {
 		Logger.debug(`Adding monitored to pipeline`)
 		Context.pipeline.addMonitored(structuredClone(this.monitored))
 
-		Context.pipeline.start(updateNotificationReceived)
+		Context.pipeline.start()
 
 		if (this.firstRun && Context.pipeline.isRunning()) {
 			this.firstRun = false
