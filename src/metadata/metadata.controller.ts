@@ -304,14 +304,14 @@ export class MetadataController {
 					...a,
 					episodes: a.episodes.filter(
 						e =>
-							(Filter({ arc: a.arc, episode: e.episode }) &&
-								(!environment.PIPELINE_SKIP_SUPPLEMENTS ||
-									!/\[ONI\]/.test(e.title)) &&
-								(!environment.PIPELINE_SKIP_SUPPLEMENTS ||
-									!/\[SHAVED\]/.test(e.title)) &&
-								e.files?.standard?.hash) ||
-							e.files?.extended?.hash ||
-							e.files?.alternate?.hash,
+							Filter({ arc: a.arc, episode: e.episode }) &&
+							(!environment.PIPELINE_SKIP_SUPPLEMENTS ||
+								!/\[ONI\]/.test(e.title)) &&
+							(!environment.PIPELINE_SKIP_SUPPLEMENTS ||
+								!/\[SHAVED\]/.test(e.title)) &&
+							(e.files?.standard?.hash ||
+								e.files?.extended?.hash ||
+								e.files?.alternate?.hash),
 					),
 				}
 			})
