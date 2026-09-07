@@ -11,6 +11,7 @@ import {
 	MetadataAbsentError,
 } from '../metadata/metadata.model.js'
 import { Context } from '../util/context.js'
+import getFileCrc32Hash from '../util/crc32.js'
 import { Filter } from '../util/filters.js'
 import linkOrCopyFile from '../util/link-or-copy.js'
 import safeCopyFileSync from '../util/safe-copy-file.js'
@@ -254,9 +255,19 @@ export class TorrentController {
 						throw e
 					} else if (e instanceof HashNotInMetadata) {
 						Logger.debug(
-							`File '${file}' is not most up to date (probably part of an outdated batch)... Skipping import`,
+							`Torrent filename does not contain crc32 and hash is of a bundle.`,
 						)
-						continue
+						try {
+							CRC32 = await getFileCrc32Hash(file)
+							episode = await Context.metadata.findEpisodeByCRC32(CRC32)
+						} catch (e) {
+							if (e instanceof CRCNotInMetadata)
+								Logger.debug(
+									`File '${file}' is not most up to date (probably part of an outdated batch)... Skipping import`,
+								)
+							else throw e
+							continue
+						}
 					}
 				}
 				if (!episode) {
