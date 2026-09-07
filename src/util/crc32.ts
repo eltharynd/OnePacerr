@@ -2,39 +2,41 @@ import fs from 'fs'
 import { createRequire } from 'module'
 const require = createRequire(import.meta.url)
 
-// This will be perfectly typed as a callable function!
-const crc32 = require('buffer-crc32')
+const crc32 = require('@node-rs/crc32') // native, much faster than buffer-crc32
 
-/**
- * Calculates the CRC32 hash of a file and returns it as an uppercase hex string.
- * @param filePath System-independent path to the file
- */
-export default function getFileCrc32Hash(filePath: string): Promise<string> {
+const SMALL_FILE_THRESHOLD = 16 * 1024 * 1024 // 16MB — tune to your workload
+const CHUNK_SIZE = 4 * 1024 * 1024 // 4MB read chunks instead of default 64KB
+
+export default async function getFileCrc32Hash(
+	filePath: string,
+): Promise<string> {
+	const { size } = await fs.promises.stat(filePath)
+
+	// Small files: read once, hash once. Avoids all stream overhead.
+	if (size <= SMALL_FILE_THRESHOLD) {
+		const buf = await fs.promises.readFile(filePath)
+		return (crc32.crc32(buf) >>> 0).toString(16).toUpperCase().padStart(8, '0')
+	}
+
+	// Large files: stream with big chunks to minimize event overhead.
 	return new Promise((resolve, reject) => {
-		// 1. Create a readable stream for the file
-		const stream = fs.createReadStream(filePath)
-		let partialCrc: any = null
+		const stream = fs.createReadStream(filePath, { highWaterMark: CHUNK_SIZE })
+		let crc = 0
+		let sawData = false
 
-		// 2. Update the CRC value incrementally as file chunks stream in
-		stream.on('data', (chunk: Buffer | string) => {
-			partialCrc = crc32.unsigned(chunk, partialCrc)
+		stream.on('data', (chunk: Buffer) => {
+			sawData = true
+			crc = crc32.crc32(chunk, crc)
 		})
 
-		// 3. When the file finishes reading, format the hash output
 		stream.on('end', () => {
-			if (partialCrc) {
-				// Convert the buffer hash to an uppercase hexadecimal string
-				//const hexHash = partialCrc.toString('hex').toUpperCase()
-				const hexHash = (partialCrc >>> 0).toString(16).toUpperCase()
-
-				// Pad with leading zeros if it's shorter than 8 characters
-				resolve(hexHash.padStart(8, '0'))
-			} else {
+			if (!sawData && size > 0) {
 				reject(new Error('File was empty or could not be processed.'))
+				return
 			}
+			resolve((crc >>> 0).toString(16).toUpperCase().padStart(8, '0'))
 		})
 
-		// 4. Handle file system errors (e.g., file not found, permission denied)
 		stream.on('error', err => reject(err))
 	})
 }
