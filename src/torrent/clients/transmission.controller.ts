@@ -49,7 +49,7 @@ export class TransmissionController implements ITorrentController {
 				'download-dir': downloadDir,
 			})
 			if (added) {
-				await this.updateTorrentCategory({ hash: torrent.hash }, category)
+				await this.updateTorrentCategory({ hash: torrentInfo.hash }, category)
 			}
 			return !!added
 		}
