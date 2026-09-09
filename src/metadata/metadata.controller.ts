@@ -122,8 +122,18 @@ export class MetadataController {
 
 		for (let arc of newMetadata.arcs) {
 			const existingArc = this.metadata.arcs.find(a => arc.arc == a.arc)
+
+			const diffs = deepDiff(arc, existingArc)
+			let arcChanges: boolean = false
+			for (let d of diffs) {
+				if (!d.path.startsWith('episodes')) {
+					arcChanges = true
+					break
+				}
+			}
+
 			for (let episode of arc.episodes) {
-				if (!existingArc) {
+				if (!existingArc || arcChanges) {
 					episode.updates = true
 					continue
 				}
