@@ -94,7 +94,9 @@ export class MetadataController {
 						Logger.debug(`Connected with id: '${this.socket.id}'`)
 						clearTimeout(timeout)
 
-						this.socket.emit('subscribe_to_updates')
+						this.socket.emit('subscribe_to_updates', {
+							version: process.env.npm_package_version,
+						})
 
 						Logger.info(
 							`Websocket connected and listening for Metadata updates`,
