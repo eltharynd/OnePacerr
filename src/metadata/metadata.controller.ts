@@ -106,9 +106,7 @@ export class MetadataController {
 
 					this.socket.on('updates', async data => {
 						Logger.info(`Metadata updates received! Processing...`)
-						const newMetadata = (
-							await axios.get(`${environment.METADATA_URL}/metadata`)
-						).data
+						const newMetadata = data
 						this.metadata = this.compareChanges(newMetadata)
 						await this.sendToPipeline()
 					})
