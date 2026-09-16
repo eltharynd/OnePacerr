@@ -71,7 +71,8 @@ export class MetadataController {
 					Logger.debug(`Connecting WebSocket`)
 
 					this.socket = io(environment.METADATA_URL.replace(`/api/v1`, ''), {
-						transports: ['websocket', 'polling'],
+						transports: ['websocket'],
+						timeout: 15000,
 					})
 
 					const timeout = setTimeout(() => {
@@ -87,7 +88,7 @@ export class MetadataController {
 								),
 							)
 						}
-					}, 10000)
+					}, 20000)
 
 					this.socket.on('connect', () => {
 						Logger.debug(`Connected with id: '${this.socket.id}'`)
