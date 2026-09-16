@@ -70,9 +70,7 @@ export class MetadataController {
 				if (!this.socket) {
 					Logger.debug(`Connecting WebSocket`)
 
-					this.socket = io(environment.METADATA_URL.replace(`/api/v1`, ''), {
-						timeout: 1000,
-					})
+					this.socket = io(environment.METADATA_URL.replace(`/api/v1`, ''))
 
 					const timeout = setTimeout(() => {
 						if (!this.socket?.connected) {
@@ -102,6 +100,14 @@ export class MetadataController {
 
 					this.socket.on('disconnect', () => {
 						Logger.debug(`Disconnected from server`)
+					})
+
+					this.socket.on('connect_error', err => {
+						Logger.warn(`Socket connect_error: ${err.message}`)
+					})
+
+					this.socket.on('reconnect_attempt', attempt => {
+						Logger.debug(`Reconnect attempt #${attempt}`)
 					})
 
 					this.socket.on('updates', async data => {
