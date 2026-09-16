@@ -70,7 +70,9 @@ export class MetadataController {
 				if (!this.socket) {
 					Logger.debug(`Connecting WebSocket`)
 
-					this.socket = io(environment.METADATA_URL.replace(`/api/v1`, ''))
+					this.socket = io(environment.METADATA_URL.replace(`/api/v1`, ''), {
+						transports: ['websocket', 'polling'],
+					})
 
 					const timeout = setTimeout(() => {
 						if (!this.socket?.connected) {
