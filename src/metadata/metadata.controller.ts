@@ -109,7 +109,20 @@ export class MetadataController {
 					})
 
 					this.socket.on('connect_error', err => {
-						Logger.warn(`Socket connect_error: ${err.message}`)
+						//@ts-ignore
+						if (err.context?.responseText) {
+							try {
+								//@ts-ignore
+								let message = JSON.parse(err.context.responseText)
+								if (message.message) {
+									Logger.warn(`Socket connect_error: ${message.message}`)
+								}
+							} catch (e) {
+								Logger.warn(`Socket connect_error: ${err.message}`)
+							}
+						} else {
+							Logger.warn(`Socket connect_error: ${err.message}`)
+						}
 					})
 
 					this.socket.on('reconnect_attempt', attempt => {
