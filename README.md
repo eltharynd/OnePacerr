@@ -1,7 +1,3 @@
-> [!WARNING]
-> If you havn't done so yet, please update to latest version (v1.8.11). I changed the websocket notification logic and it's now more performant.
-> I want to update the server side as well so that it'll be more performant with less expenses (and less environmental impact) but I would break reverse compatibility for older versions if I were to do so currently.
-
 # ![OnePacerr](docs/logo.png)
 
 [![GitHub Packages](https://img.shields.io/badge/ghcr.io-eltharynd%2Fonepacerr-blue?style=flat-square&logo=github)](https://github.com/eltharynd/OnePacerr/pkgs/container/onepacerr)
