@@ -71,7 +71,8 @@ export class MetadataController {
 					Logger.debug(`Connecting WebSocket`)
 
 					this.socket = io(environment.METADATA_URL.replace(`/api/v1`, ''), {
-						transports: ['websocket'],
+						transports: ['websocket', 'polling'],
+						tryAllTransports: true,
 						timeout: 15000,
 					})
 
