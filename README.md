@@ -10,6 +10,9 @@
 [![GitHub Last Commit](https://img.shields.io/github/last-commit/eltharynd/onepacerr?style=flat-square)](https://github.com/eltharynd/OnePacerr/commits/main/)
 [![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)](https://github.com/eltharynd/OnePacerr?tab=MIT-1-ov-file)
 
+![Total Downloads](https://img.shields.io/badge/dynamic/json?url=https://ghcr-badge.elias.eu.org/api/eltharynd/onepacerr&query=downloadCount&label=Total%20downloads)
+![Currently connected](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fonepacerr.com%2Fapi%2Fv1%2Fhealthz%2Fclients&query=%24.clients&label=Currently%20connected)
+
 ## Automated One Pace downloads and metadata for Plex, Jellyfin, and Emby
 
 ### Built to complement your Sonarr stack
