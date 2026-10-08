@@ -1,3 +1,7 @@
+> [!WARNING]  
+> If you're having issues connecting to websocket, please update to at least v1.8.11.
+> In fact, please update to current latest anyways :) a lot of bugs fixes and performance improvements have been made.
+
 # ![OnePacerr](docs/logo.png)
 
 [![GitHub Packages](https://img.shields.io/badge/ghcr.io-eltharynd%2Fonepacerr-blue?style=flat-square&logo=github)](https://github.com/eltharynd/OnePacerr/pkgs/container/onepacerr)
