@@ -4,11 +4,11 @@
 
 # ![OnePacerr](docs/logo.png)
 
-[![GitHub Packages](https://img.shields.io/badge/ghcr.io-eltharynd%2Fonepacerr-blue?style=flat-square&logo=github)](https://github.com/eltharynd/OnePacerr/pkgs/container/onepacerr)
-[![GitHub Release](https://img.shields.io/github/v/release/eltharynd/onepacerr?style=flat-square)](https://github.com/eltharynd/OnePacerr/releases)
-[![GitHub Issues](https://img.shields.io/github/issues/eltharynd/onepacerr?style=flat-square)](https://github.com/eltharynd/OnePacerr/issues)
-[![GitHub Last Commit](https://img.shields.io/github/last-commit/eltharynd/onepacerr?style=flat-square)](https://github.com/eltharynd/OnePacerr/commits/main/)
-[![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)](https://github.com/eltharynd/OnePacerr?tab=MIT-1-ov-file)
+[![GitHub Packages](https://img.shields.io/badge/ghcr.io-eltharynd%2Fonepacerr-blue&logo=github)](https://github.com/eltharynd/OnePacerr/pkgs/container/onepacerr)
+[![GitHub Release](https://img.shields.io/github/v/release/eltharynd/onepacerr)](https://github.com/eltharynd/OnePacerr/releases)
+[![GitHub Issues](https://img.shields.io/github/issues/eltharynd/onepacerr)](https://github.com/eltharynd/OnePacerr/issues)
+[![GitHub Last Commit](https://img.shields.io/github/last-commit/eltharynd/onepacerr)](https://github.com/eltharynd/OnePacerr/commits/main/)
+[![License](https://img.shields.io/badge/license-MIT-green)](https://github.com/eltharynd/OnePacerr?tab=MIT-1-ov-file)
 
 ![Total Downloads](https://img.shields.io/badge/dynamic/json?url=https://ghcr-badge.elias.eu.org/api/eltharynd/onepacerr&query=downloadCount&label=Total%20downloads)
 ![Currently connected](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fonepacerr.com%2Fapi%2Fv1%2Fhealthz%2Fclients&query=%24.clients&label=Currently%20connected)
