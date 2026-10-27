@@ -381,7 +381,7 @@ export class MetadataController {
 					//@ts-ignore
 					mpaa: this.metadata.mpaa || this.metadata.customRating,
 					customRating: this.metadata.mpaa || this.metadata.customRating,
-					lockdata: false,
+					lockdata: environment.METADATA_NFO_LOCKDATA,
 					namedseason: namedseason,
 					art: {
 						poster: path,
@@ -423,7 +423,7 @@ export class MetadataController {
 				outline: arc.description,
 				mpaa: this.metadata.mpaa || this.metadata.customRating,
 				customRating: this.metadata.mpaa || this.metadata.customRating,
-				lockdata: false,
+				lockdata: environment.METADATA_NFO_LOCKDATA,
 				art: {
 					poster: path,
 				},
@@ -480,7 +480,7 @@ export class MetadataController {
 
 					mpaa: this.metadata.mpaa || this.metadata.customRating,
 					customrating: this.metadata.mpaa || this.metadata.customRating,
-					lockdata: false,
+					lockdata: environment.METADATA_NFO_LOCKDATA,
 				}
 
 				if (episode.released)

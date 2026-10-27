@@ -262,6 +262,7 @@ services:
       #- METADATA_URL=https://onepacerr.com/api/v1
       #- METADATA_LANGUAGE=en
       #- METADATA_POSTER_SET=default
+      #- METADATA_NFO_LOCKDATA=false
       #- METADATA_DISABLE_WEBSOCKET=false
       #- METADATA_CHECK_INTERVAL=3600
     volumes:
@@ -493,6 +494,7 @@ If you're not sure what Mount Path Mappings are you can have a read on [TRaSH Gu
 | `METADATA_URL` | `https://onepacerr.com/api/v1` | Metadata API url (untested with different ones). |
 | `METADATA_LANGUAGE` | `en` | Currently only language supported. |
 | `METADATA_POSTER_SET` | `default` | Currently `default` equals `piratezekk`. There are also `official` and `mizzoufan523` available. If a set is missing a poster it uses `default`. |
+| `METADATA_NFO_LOCKDATA` | `false` | If `true`, generated `.nfo` files include `<lockdata>true</lockdata>` so media servers can preserve their metadata. |
 | `METADATA_DISABLE_WEBSOCKET` | `false` | If `true`, disables WebSocket mode. NOT recommended but available if your setup doesn't allow WebSockets or Long Polling (also supported). |
 | `METADATA_CHECK_INTERVAL` | 3600 | Ignored if METADATA_DISABLE_WEBSOCKET is false (default). Seconds between checking for new metadata. |
 

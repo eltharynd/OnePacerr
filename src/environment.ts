@@ -186,6 +186,9 @@ export default {
 	METADATA_URL: process.env.METADATA_URL || `https://onepacerr.com/api/v1`,
 	METADATA_LANGUAGE: process.env.METADATA_LANGUAGE || 'en',
 	METADATA_POSTER_SET: process.env.METADATA_POSTER_SET || 'default',
+	METADATA_NFO_LOCKDATA: /true/i.test(
+		process.env.METADATA_NFO_LOCKDATA || 'false',
+	),
 	METADATA_DISABLE_WEBSOCKET: /true/i.test(
 		process.env.METADATA_DISABLE_WEBSOCKET || 'false',
 	),
