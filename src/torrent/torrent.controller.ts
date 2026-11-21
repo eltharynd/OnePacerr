@@ -72,6 +72,7 @@ export class TorrentController {
 					baseUrl: environment.TORRENT_URL,
 					username: environment.TORRENT_USER,
 					password: environment.TORRENT_PASSWORD,
+					apiKey: environment.TORRENT_API_KEY || undefined,
 				})
 				break
 			case 'deluge':
