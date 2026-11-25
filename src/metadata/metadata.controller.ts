@@ -21,6 +21,7 @@ export class MetadataController {
 	private metadata: Metadata
 	private unprocessedMetadata: boolean = false
 	private hasConnected = false
+	private refreshing?: Promise<void>
 	private firstRun: boolean = true
 
 	private socket: Socket
@@ -106,7 +107,10 @@ export class MetadataController {
 
 						// Updates pushed while disconnected are never replayed, so re-fetch
 						// on reconnect. No-op when lastUpdate is unchanged.
-						if (this.hasConnected) this.refreshMetadata()
+						if (this.hasConnected && !this.refreshing)
+							this.refreshing = this.refreshMetadata().finally(
+								() => (this.refreshing = undefined),
+							)
 						this.hasConnected = true
 					})
 
@@ -136,6 +140,10 @@ export class MetadataController {
 					})
 
 					this.socket.on('updates', async data => {
+						if (this.metadata && data.lastUpdate <= this.metadata.lastUpdate) {
+							Logger.debug(`Ignoring stale Metadata update`)
+							return
+						}
 						Logger.info(`Metadata updates received! Processing...`)
 						try {
 							this.metadata = this.compareChanges(data)
@@ -145,6 +153,10 @@ export class MetadataController {
 								`Error processing Metadata updates, will retry on next refresh: '${e.message}'`,
 							)
 							this.unprocessedMetadata = true
+							setTimeout(
+								() => this.refreshMetadata(),
+								environment.METADATA_CHECK_INTERVAL,
+							)
 						}
 					})
 				}
@@ -311,11 +323,19 @@ export class MetadataController {
 	}
 
 	private pipelineQueue: Promise<void> = Promise.resolve()
+	private pendingRun?: Promise<void>
 
 	// Serialized: concurrent callers (refresh + socket update) would otherwise
 	// both pass waitForFinished() and the second throws PipelineNotDoneError.
+	// Callers arriving while a run waits share it, since each run reads the
+	// latest this.metadata.
 	private sendToPipeline(): Promise<void> {
-		const run = this.pipelineQueue.then(() => this.runPipeline())
+		if (this.pendingRun) return this.pendingRun
+		const run = this.pipelineQueue.then(() => {
+			this.pendingRun = undefined
+			return this.runPipeline()
+		})
+		this.pendingRun = run
 		this.pipelineQueue = run.catch(() => {})
 		return run
 	}

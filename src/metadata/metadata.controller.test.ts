@@ -81,19 +81,39 @@ describe('MetadataController', () => {
 		await vi.waitFor(() => expect(pipeline.runs).toBe(2))
 	})
 
-	it('queues a socket update that arrives while a pipeline is running', async () => {
+	it('queues updates that arrive mid-run and merges them into one rerun', async () => {
 		get.mockResolvedValue({ data: metadata('1') })
 		await controller.refreshMetadata()
 		expect(pipeline.runs).toBe(1)
 
-		// two updates land mid-run; neither may throw, both must run in turn
+		// two updates land mid-run; neither may throw, they share one rerun
 		const a = handlers.updates(metadata('2'))
 		const b = handlers.updates(metadata('3'))
 		await Promise.resolve()
 		pipeline.finish()
+		await expect(Promise.all([a, b])).resolves.toBeDefined()
+		expect(pipeline.runs).toBe(2)
+	})
+
+	it('ignores a pushed update older than the metadata already loaded', async () => {
+		get.mockResolvedValue({ data: metadata('5') })
+		await controller.refreshMetadata()
+		pipeline.finish()
+		await handlers.updates(metadata('4'))
+		expect(pipeline.runs).toBe(1)
+	})
+
+	it('first run waits for completion, then socket updates still run', async () => {
+		;(controller as any).firstRun = true
+		get.mockResolvedValue({ data: metadata('1') })
+		const first = controller.refreshMetadata()
+		await vi.waitFor(() => expect(pipeline.runs).toBe(1))
+		expect(handlers.updates).toBeUndefined() // socket opens after first run
+		pipeline.finish()
+		await first
+		const update = handlers.updates(metadata('2'))
 		await vi.waitFor(() => expect(pipeline.runs).toBe(2))
 		pipeline.finish()
-		await expect(Promise.all([a, b])).resolves.toBeDefined()
-		expect(pipeline.runs).toBe(3)
+		await update
 	})
 })
