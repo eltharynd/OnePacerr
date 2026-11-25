@@ -442,7 +442,7 @@ export class PipelineController {
 					)
 					if (
 						CRC32 == me.files?.extended?.CRC32 ||
-						me.files?.extended?.CRC32_inFileName
+						CRC32 == me.files?.extended?.CRC32_inFileName
 					) {
 						Logger.debug(
 							`S${ma.arc}E${String(me.episode).padStart(2, '0')}${Context?.pipeline?.getReport()?.percentageString()} - Extended present`,
@@ -459,7 +459,7 @@ export class PipelineController {
 							)
 					} else if (
 						CRC32 == me.files?.standard?.CRC32 ||
-						me.files?.standard?.CRC32_inFileName
+						CRC32 == me.files?.standard?.CRC32_inFileName
 					) {
 						Logger.debug(
 							`S${ma.arc}E${String(me.episode).padStart(2, '0')}${Context?.pipeline?.getReport()?.percentageString()} - Standard present`,

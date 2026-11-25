@@ -20,6 +20,7 @@ import {
 export class MetadataController {
 	private metadata: Metadata
 	private unprocessedMetadata: boolean = false
+	private hasConnected = false
 	private firstRun: boolean = true
 
 	private socket: Socket
@@ -102,6 +103,11 @@ export class MetadataController {
 						Logger.info(
 							`Websocket connected and listening for Metadata updates`,
 						)
+
+						// Updates pushed while disconnected are never replayed, so re-fetch
+						// on reconnect. No-op when lastUpdate is unchanged.
+						if (this.hasConnected) this.refreshMetadata()
+						this.hasConnected = true
 					})
 
 					this.socket.on('disconnect', () => {
@@ -131,9 +137,15 @@ export class MetadataController {
 
 					this.socket.on('updates', async data => {
 						Logger.info(`Metadata updates received! Processing...`)
-						const newMetadata = data
-						this.metadata = this.compareChanges(newMetadata)
-						await this.sendToPipeline()
+						try {
+							this.metadata = this.compareChanges(data)
+							await this.sendToPipeline()
+						} catch (e: any) {
+							Logger.error(
+								`Error processing Metadata updates, will retry on next refresh: '${e.message}'`,
+							)
+							this.unprocessedMetadata = true
+						}
 					})
 				}
 			}
@@ -298,7 +310,17 @@ export class MetadataController {
 		return base
 	}
 
-	private async sendToPipeline() {
+	private pipelineQueue: Promise<void> = Promise.resolve()
+
+	// Serialized: concurrent callers (refresh + socket update) would otherwise
+	// both pass waitForFinished() and the second throws PipelineNotDoneError.
+	private sendToPipeline(): Promise<void> {
+		const run = this.pipelineQueue.then(() => this.runPipeline())
+		this.pipelineQueue = run.catch(() => {})
+		return run
+	}
+
+	private async runPipeline() {
 		this.checkMetadataDownloaded()
 
 		if (Context.pipeline.isRunning()) await Context.pipeline.waitForFinished()
