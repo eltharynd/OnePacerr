@@ -29,6 +29,10 @@ export class PlexController implements ILibraryController {
 			throw new Error(`Plex misconfigured`)
 		}
 		this.server = new PlexServer(config.baseUrl, config.token)
+		this.prepareWebSocket(config)
+	}
+
+	prepareWebSocket(config: { baseUrl: string; token: string }) {
 		this.ws = new WebSocket(
 			`${config.baseUrl.replace('http://', 'ws://').replace('https://', 'wss://')}/:/websockets/notifications?X-Plex-Token=${config.token}`,
 		)
@@ -46,9 +50,7 @@ export class PlexController implements ILibraryController {
 			)
 			this.ws = null
 			setTimeout(() => {
-				this.ws = new WebSocket(
-					`ws://${environment.PLEX_URL.replace('http://', '')}/:/websockets/notifications?X-Plex-Token=${environment.PLEX_TOKEN}`,
-				)
+				this.prepareWebSocket(config)
 			}, 5000)
 		})
 	}
