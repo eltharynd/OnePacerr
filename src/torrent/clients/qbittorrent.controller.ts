@@ -22,6 +22,7 @@ export class qBittorrentController implements ITorrentController {
 			baseUrl: string
 			username: string
 			password: string
+			apiKey?: string
 		},
 	) {
 		this.client = new QBittorrent({

@@ -462,6 +462,7 @@ If you set `PLEX_SKIP_METADATA_FILES=false`, you can instead generate those file
 | ⭐ `TORRENT_URL` | `http://localhost:8080` | Your torrent API URL. |
 | ⭐ `TORRENT_USER` | _None_ | Your torrent API username. |
 | ⭐ `TORRENT_PASSWORD` | _None_ | Your torrent API password. |
+| `TORRENT_API_KEY` | _None_ | qBittorrent 5.2+ only: a WebUI API key, made in qBittorrent's WebUI settings. When set, it is used instead of `TORRENT_USER` and `TORRENT_PASSWORD`. |
 | `TORRENT_CLIENT_TIMEOUT` | 10 | Seconds to wait for torrent client to respond to requests, increase if you have a LOT of torrents. |
 | `TORRENT_CATEGORY_FORCE` | `true` | If `true`, when trying to add a torrent also forces a category update if torrent already exists with a different category. |
 | `TORRENT_CATEGORY` | `onepacerr` | Creates downloads with this category, also filters completed torrents using this. |

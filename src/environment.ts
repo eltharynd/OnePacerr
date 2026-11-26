@@ -150,6 +150,8 @@ export default {
 	TORRENT_URL: process.env.TORRENT_URL || `http://localhost:8080`,
 	TORRENT_USER: process.env.TORRENT_USER || `user`,
 	TORRENT_PASSWORD: process.env.TORRENT_PASSWORD || `password`,
+	// qBittorrent 5.2+ only: when set, used instead of TORRENT_USER and TORRENT_PASSWORD
+	TORRENT_API_KEY: process.env.TORRENT_API_KEY || null,
 
 	TORRENT_CLIENT: process.env.TORRENT_CLIENT || `qbittorrent`,
 	TORRENT_CLIENT_TIMEOUT:
