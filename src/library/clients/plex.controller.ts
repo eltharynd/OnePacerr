@@ -1,4 +1,10 @@
-import { MediaPart, PlexServer, Show, ShowSection } from '@ctrl/plex'
+import {
+	MediaPart,
+	NotFoundError,
+	PlexServer,
+	Show,
+	ShowSection,
+} from '@ctrl/plex'
 import { Logger } from 'ez-ts-logger'
 import { readFileSync, writeFileSync } from 'fs'
 import path from 'path'
@@ -82,10 +88,12 @@ export class PlexController implements ILibraryController {
 				episode: episode.episode,
 			})
 		} catch (e) {
-			Logger.debug(
-				`Episode ${episode.arc}-${String(episode.episode).padStart(2, '0')} does not exists on Plex...`,
-			)
-			return null
+			if (e instanceof NotFoundError) {
+				Logger.debug(
+					`Episode ${episode.arc}-${String(episode.episode).padStart(2, '0')} does not exists on Plex...`,
+				)
+				return null
+			} else Logger.errorAndThrow(e)
 		}
 
 		if (_episode.media.length > 1) {
