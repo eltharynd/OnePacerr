@@ -242,6 +242,22 @@ export class PipelineController {
 		return this.report
 	}
 
+	private async queueMismatch(
+		ma: ArcMetadata,
+		me: EpisodeMetadata,
+		extended: boolean,
+	) {
+		const tag = `S${ma.arc}E${String(me.episode).padStart(2, '0')}${Context?.pipeline?.getReport()?.percentageString()}`
+		if (this.config.PIPELINE_SKIP_DOWNLOADS) {
+			Logger.info(`${tag} - CRC32 Mismatch [Download skipped]`)
+			return
+		}
+		const queueResult = await this.addToDownloadQueue(me, extended)
+		Logger.info(
+			`${tag} - CRC32 Mismatch [${this.formatDownloadQueueStatus(queueResult)}]`,
+		)
+	}
+
 	private async addToDownloadQueue(
 		episode: EpisodeMetadata,
 		extended?: boolean,
@@ -442,7 +458,7 @@ export class PipelineController {
 					)
 					if (
 						CRC32 == me.files?.extended?.CRC32 ||
-						me.files?.extended?.CRC32_inFileName
+						CRC32 == me.files?.extended?.CRC32_inFileName
 					) {
 						Logger.debug(
 							`S${ma.arc}E${String(me.episode).padStart(2, '0')}${Context?.pipeline?.getReport()?.percentageString()} - Extended present`,
@@ -459,7 +475,7 @@ export class PipelineController {
 							)
 					} else if (
 						CRC32 == me.files?.standard?.CRC32 ||
-						me.files?.standard?.CRC32_inFileName
+						CRC32 == me.files?.standard?.CRC32_inFileName
 					) {
 						Logger.debug(
 							`S${ma.arc}E${String(me.episode).padStart(2, '0')}${Context?.pipeline?.getReport()?.percentageString()} - Standard present`,
@@ -474,6 +490,8 @@ export class PipelineController {
 								`S${ma.arc}E${String(me.episode).padStart(2, '0')}${Context?.pipeline?.getReport()?.percentageString()} - Standard instead of extended [${this.formatDownloadQueueStatus(queueResult)}]`,
 							)
 						}
+					} else {
+						await this.queueMismatch(ma, me, true)
 					}
 				} else if (
 					!!me.files?.extended &&
@@ -516,6 +534,8 @@ export class PipelineController {
 								`S${ma.arc}E${String(me.episode).padStart(2, '0')}${Context?.pipeline?.getReport()?.percentageString()} - Extended instead of Standard [${this.formatDownloadQueueStatus(queueResult)}]`,
 							)
 						}
+					} else {
+						await this.queueMismatch(ma, me, false)
 					}
 				} else if (
 					CRC32 == me.files?.standard?.CRC32 ||

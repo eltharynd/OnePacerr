@@ -20,6 +20,8 @@ import {
 export class MetadataController {
 	private metadata: Metadata
 	private unprocessedMetadata: boolean = false
+	private hasConnected = false
+	private refreshing?: Promise<void>
 	private firstRun: boolean = true
 
 	private socket: Socket
@@ -102,6 +104,14 @@ export class MetadataController {
 						Logger.info(
 							`Websocket connected and listening for Metadata updates`,
 						)
+
+						// Updates pushed while disconnected are never replayed, so re-fetch
+						// on reconnect. No-op when lastUpdate is unchanged.
+						if (this.hasConnected && !this.refreshing)
+							this.refreshing = this.refreshMetadata().finally(
+								() => (this.refreshing = undefined),
+							)
+						this.hasConnected = true
 					})
 
 					this.socket.on('disconnect', () => {
@@ -130,10 +140,24 @@ export class MetadataController {
 					})
 
 					this.socket.on('updates', async data => {
+						if (this.metadata && data.lastUpdate <= this.metadata.lastUpdate) {
+							Logger.debug(`Ignoring stale Metadata update`)
+							return
+						}
 						Logger.info(`Metadata updates received! Processing...`)
-						const newMetadata = data
-						this.metadata = this.compareChanges(newMetadata)
-						await this.sendToPipeline()
+						try {
+							this.metadata = this.compareChanges(data)
+							await this.sendToPipeline()
+						} catch (e: any) {
+							Logger.error(
+								`Error processing Metadata updates, will retry on next refresh: '${e.message}'`,
+							)
+							this.unprocessedMetadata = true
+							setTimeout(
+								() => this.refreshMetadata(),
+								environment.METADATA_CHECK_INTERVAL,
+							)
+						}
 					})
 				}
 			}
@@ -298,7 +322,25 @@ export class MetadataController {
 		return base
 	}
 
-	private async sendToPipeline() {
+	private pipelineQueue: Promise<void> = Promise.resolve()
+	private pendingRun?: Promise<void>
+
+	// Serialized: concurrent callers (refresh + socket update) would otherwise
+	// both pass waitForFinished() and the second throws PipelineNotDoneError.
+	// Callers arriving while a run waits share it, since each run reads the
+	// latest this.metadata.
+	private sendToPipeline(): Promise<void> {
+		if (this.pendingRun) return this.pendingRun
+		const run = this.pipelineQueue.then(() => {
+			this.pendingRun = undefined
+			return this.runPipeline()
+		})
+		this.pendingRun = run
+		this.pipelineQueue = run.catch(() => {})
+		return run
+	}
+
+	private async runPipeline() {
 		this.checkMetadataDownloaded()
 
 		if (Context.pipeline.isRunning()) await Context.pipeline.waitForFinished()
